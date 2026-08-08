@@ -95,6 +95,7 @@ export function useImporterActions<TKey extends string>() {
       ignoreColumn: importer.ignoreColumn,
       unignoreColumn: importer.unignoreColumn,
       setColumnOption: importer.setColumnOption,
+      setFieldConstant: importer.setFieldConstant,
       updateRow: importer.updateRow,
       updateCell: importer.updateCell,
       deleteRows: importer.deleteRows,

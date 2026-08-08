@@ -83,6 +83,11 @@ export type ImportState<TKey extends string> = {
   headerRowIndex: number
 
   columns: Columns<TKey>
+  /**
+   * Values supplied by the user rather than by a column, for fields the sheet
+   * simply does not carry. Seeded from each field's `defaultValue`.
+   */
+  constants: Partial<RowData<TKey>>
   rows: ValidatedRow<TKey>[]
 
   /** Steps the user has completed, for stepper UIs. */
@@ -173,6 +178,11 @@ export type Importer<TKey extends string> = {
   ignoreColumn: (columnIndex: number) => void
   unignoreColumn: (columnIndex: number) => void
   setColumnOption: (columnIndex: number, entry: string, optionValue: string) => void
+  /**
+   * Supply a field's value for the whole import. Applies wherever no column
+   * provides one; pass `undefined` to clear it.
+   */
+  setFieldConstant: (fieldKey: TKey, value: CellValue) => void
 
   // -- row editing --------------------------------------------------------
   updateRow: (rowId: string, patch: Partial<RowData<TKey>>) => Promise<void>
@@ -209,6 +219,9 @@ export function createImporter<TKey extends string>(options: ImporterOptions<TKe
     sheetRows: [],
     headerRowIndex: 0,
     columns: [],
+    constants: Object.fromEntries(
+      config.fields.filter((field) => field.defaultValue !== undefined).map((field) => [field.key, field.defaultValue]),
+    ) as Partial<RowData<TKey>>,
     rows: [],
     visitedSteps: [Step.upload],
   })
@@ -367,6 +380,19 @@ export function createImporter<TKey extends string>(options: ImporterOptions<TKe
     try {
       const raw = bodyRows(state)
       let data = normalizeTableData(state.columns, raw, config.fields)
+
+      // Constants fill in what no column supplied — per row, so an empty cell
+      // in a mapped column is covered too.
+      const constants = Object.entries(state.constants) as [TKey, CellValue][]
+      if (constants.length > 0) {
+        data = data.map((row) => {
+          const filled = { ...row }
+          for (const [key, value] of constants) {
+            if (filled[key] === undefined || filled[key] === "") filled[key] = value
+          }
+          return filled
+        })
+      }
       if (config.matchColumnsHook) {
         data = await config.matchColumnsHook(data, raw, state.columns)
       }
@@ -545,6 +571,15 @@ export function createImporter<TKey extends string>(options: ImporterOptions<TKe
     mapColumn(columnIndex, (column) => setSubColumn(column, entry, optionValue))
   }
 
+  const setFieldConstant: Importer<TKey>["setFieldConstant"] = (fieldKey, value) => {
+    store.setState((current) => {
+      const constants = { ...current.constants }
+      if (value === undefined || value === "") delete constants[fieldKey]
+      else constants[fieldKey] = value
+      return { ...current, constants }
+    })
+  }
+
   // -- row editing ----------------------------------------------------------
 
   const updateRow: Importer<TKey>["updateRow"] = (rowId, changes) =>
@@ -612,6 +647,7 @@ export function createImporter<TKey extends string>(options: ImporterOptions<TKe
     ignoreColumn,
     unignoreColumn,
     setColumnOption,
+    setFieldConstant,
 
     updateRow,
     updateCell,

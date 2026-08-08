@@ -136,6 +136,13 @@ export type CollectOptions = {
     value: RawCell,
     context: { header: string; index: number },
   ) => CellValue | readonly CellValue[] | undefined
+  /**
+   * A short, human-readable account of what this column contributes, shown
+   * next to it in the match step. Without it a collecting column is a black
+   * box: the user sees "Conversions" and no way to tell that "Stuks per m2"
+   * became MTK to PCE.
+   */
+  describe?: (header: string) => string | undefined
   /** Joins the contributions. Default: `"|"`. */
   separator?: string
   /** Drop repeated contributions. Default: true. */
@@ -158,6 +165,15 @@ export type Field<TKey extends string = string> = {
    * Omitted, the field is exclusive — the usual case.
    */
   collects?: CollectOptions
+  /**
+   * Value to use when no column supplies one — either because the sheet has
+   * no such column, or because a cell is empty.
+   *
+   * A supplier price list often states the unit only in a header ("Prijs per
+   * m2") or not at all, so there is nothing to map and the fact still has to
+   * come from somewhere. The user can override it per import.
+   */
+  defaultValue?: CellValue
   /** Sample value shown before upload. */
   example?: string
 }

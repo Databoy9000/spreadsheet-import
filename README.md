@@ -309,6 +309,18 @@ Some fields are the opposite. A catalogue's `conversions` is fed by every "A per
 
 Contributions are de-duplicated and joined with `|` (both configurable). A `parse` returning `undefined` contributes nothing — add a `required` or `custom` validation if that should be reported. Every other field stays exclusive.
 
+### Values the file does not carry
+
+A price list often states the unit only in a header ("Prijs per m2") or not at all, so there is nothing to map and the fact still has to come from somewhere.
+
+```ts
+{ key: "base_unit", label: "Unit", fieldType: { type: "select", options }, defaultValue: "MTK" }
+```
+
+`defaultValue` seeds `state.constants`, which the user can change per import through `setFieldConstant(key, value)`. A constant fills in wherever no column supplied a value — including an empty cell in a mapped column — and never overwrites one that did. `useColumnMatching().unmappedFields` lists the fields a UI should offer this for; both shipped UIs render it as a panel in the match step.
+
+`collects.describe(header)` gives a collecting column a caption, so "Stuks per m2" can show what it actually contributed instead of leaving the user to guess.
+
 ### Compound keys
 
 `unique` is a property of one field. When identity spans several fields, declare it on the importer instead:
@@ -574,7 +586,7 @@ Modernized: React 19, TypeScript 5.9 with `noUncheckedIndexedAccess`, Vitest, ts
 ```bash
 pnpm install
 pnpm fixtures     # generate test data into ./fixtures
-pnpm test         # 488 tests
+pnpm test         # 498 tests
 pnpm typecheck
 pnpm lint
 pnpm build

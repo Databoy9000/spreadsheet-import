@@ -232,8 +232,9 @@ export function useHeaderSelection<TKey extends string>() {
 
 export function useColumnMatching<TKey extends string>() {
   const importer = useImporter<TKey>()
-  const { setColumnField, ignoreColumn, unignoreColumn, setColumnOption, commitColumns, back } =
+  const { setColumnField, ignoreColumn, unignoreColumn, setColumnOption, setFieldConstant, commitColumns, back } =
     useImporterActions<TKey>()
+  const constants = useImporterState<TKey, Partial<Record<TKey, CellValue>>>((state) => state.constants)
 
   const columns = useImporterState<TKey, Column<TKey>[]>((state) => state.columns)
   const isBusy = useImporterState<TKey, boolean>((state) => state.isBusy)
@@ -271,6 +272,18 @@ export function useColumnMatching<TKey extends string>() {
     getSample: (columnIndex: number, count = 3) =>
       bodyRows.slice(0, count).map((row) => row[columnIndex]),
     getOptionsFor: (fieldKey: TKey) => getFieldOptions(importer.fields, fieldKey),
+    /** What a collecting column contributes, when the field can say. */
+    getColumnNote: (column: Column<TKey>) => {
+      if (!isMatchedColumn(column)) return undefined
+      const field = importer.fields.find((candidate) => candidate.key === column.value)
+      return field?.collects?.describe?.(column.header)
+    },
+    /** Fields no column supplies, so a UI can offer one value for the import. */
+    unmappedFields: importer.fields.filter(
+      (field) => !columns.some((column) => isMatchedColumn(column) && column.value === field.key),
+    ),
+    constants,
+    setFieldConstant,
     setColumnField,
     ignoreColumn,
     unignoreColumn,

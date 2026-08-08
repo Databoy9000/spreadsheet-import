@@ -12,6 +12,7 @@ import {
   Badge,
   Card,
   CardContent,
+  Input,
   Label,
   Select,
   SelectContent,
@@ -34,6 +35,7 @@ type ColumnCardProps<TKey extends string> = {
   onUnignore: (index: number) => void
   onOption: (index: number, entry: string, value: string) => void
   optionsFor: (key: TKey) => readonly { label: string; value: string }[]
+  note?: string | undefined
 }
 
 function ColumnCard<TKey extends string>({
@@ -46,6 +48,7 @@ function ColumnCard<TKey extends string>({
   onUnignore,
   onOption,
   optionsFor,
+  note,
 }: ColumnCardProps<TKey>) {
   const selectId = useId()
   const ignored = column.type === ColumnType.ignored
@@ -91,6 +94,10 @@ function ColumnCard<TKey extends string>({
               </SelectContent>
             </Select>
           </div>
+
+          {note ? (
+            <p className="rounded-md bg-muted/50 px-2 py-1 font-mono text-xs text-muted-foreground">{note}</p>
+          ) : null}
 
           {"matchedOptions" in column ? (
             <div className="space-y-2 rounded-md bg-muted/50 p-2">
@@ -157,6 +164,60 @@ export function MatchColumnsStep<TKey extends string>() {
         </Alert>
       ) : null}
 
+      {matching.unmappedFields.length > 0 ? (
+        <Card>
+          <CardContent className="space-y-3 p-4">
+            <div className="space-y-1">
+              <p className="text-sm font-medium">Niet in het bestand</p>
+              <p className="text-xs text-muted-foreground">
+                Geen kolom levert deze velden. Vul een waarde in en die geldt voor de hele import.
+              </p>
+            </div>
+
+            <div className="grid gap-2 sm:grid-cols-2">
+              {matching.unmappedFields.map((field) => {
+                const options = field.fieldType.type === "select" ? field.fieldType.options : null
+                const current = matching.constants[field.key]
+
+                return (
+                  <label key={field.key} className="flex items-center justify-between gap-2 text-sm">
+                    <span className="truncate">{field.label}</span>
+                    {options ? (
+                      <Select
+                        value={String(current ?? NONE)}
+                        onValueChange={(next) =>
+                          matching.setFieldConstant(field.key, next === NONE ? undefined : next)
+                        }
+                      >
+                        <SelectTrigger aria-label={`Waarde voor ${field.label}`} className="h-8 w-1/2 text-xs">
+                          <SelectValue placeholder="Leeg laten" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={NONE}>Leeg laten</SelectItem>
+                          {options.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input
+                        aria-label={`Waarde voor ${field.label}`}
+                        className="h-8 w-1/2 text-xs"
+                        placeholder="Leeg laten"
+                        defaultValue={String(current ?? "")}
+                        onBlur={(event) => matching.setFieldConstant(field.key, event.target.value || undefined)}
+                      />
+                    )}
+                  </label>
+                )
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
+
       <div className="grid gap-3">
         {matching.columns.map((column) => (
           <ColumnCard
@@ -170,6 +231,7 @@ export function MatchColumnsStep<TKey extends string>() {
             onUnignore={matching.unignoreColumn}
             onOption={matching.setColumnOption}
             optionsFor={matching.getOptionsFor}
+            note={matching.getColumnNote(column)}
           />
         ))}
       </div>

@@ -11,6 +11,7 @@ export default defineConfig({
     // Point at source so editing the packages hot-reloads the demo.
     alias: [
       { find: "@spreadsheet-import/core/parsers", replacement: resolve("../../packages/core/src/parsers/index.ts") },
+      { find: "@spreadsheet-import/parsers", replacement: resolve("../../packages/parsers/src/index.ts") },
       { find: "@spreadsheet-import/core", replacement: resolve("../../packages/core/src/index.ts") },
       { find: "@spreadsheet-import/react", replacement: resolve("../../packages/react/src/index.ts") },
       { find: "@spreadsheet-import/ui-react", replacement: resolve("../../packages/ui-react/src/index.ts") },
