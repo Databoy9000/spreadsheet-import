@@ -285,6 +285,19 @@ validations: [
 
 `level` is `"error"` (default), `"warning"` or `"info"`. Only `"error"` keeps a row out of `validData`.
 
+### Compound keys
+
+`unique` is a property of one field. When identity spans several fields, declare it on the importer instead:
+
+```ts
+createImporter({
+  fields,
+  uniqueKeys: [{ fields: ["productId", "variant"], caseInsensitive: true }],
+})
+```
+
+A repeated `productId` is then fine as long as the pair is distinct — which is exactly the shape a promo card with a variant table underneath produces. Every field in the key is flagged, so a UI can highlight the whole key rather than an arbitrary part of it. `allowEmpty` skips rows where any part is missing, and several constraints can coexist.
+
 Number and date fields validate themselves — a cell that could not be parsed keeps its original text and is flagged, so the review step shows the user exactly what was rejected. `validData` only ever carries real numbers and real dates.
 
 Notes:
@@ -512,7 +525,7 @@ Modernized: React 19, TypeScript 5.9 with `noUncheckedIndexedAccess`, Vitest, ts
 ```bash
 pnpm install
 pnpm fixtures     # generate test data into ./fixtures
-pnpm test         # 411 tests
+pnpm test         # 433 tests
 pnpm typecheck
 pnpm lint
 pnpm build

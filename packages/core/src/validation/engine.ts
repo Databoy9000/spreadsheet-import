@@ -6,6 +6,7 @@ import {
   type RowData,
   type RowErrors,
   type RowInput,
+  type UniqueKey,
   type ValidatedRow,
 } from "../types.js"
 import { parseDate, toBoundary, toDateValue } from "../matching/date.js"
@@ -24,6 +25,8 @@ export type TableHook<TKey extends string> = (
 
 export type ValidateOptions<TKey extends string> = {
   fields: Fields<TKey>
+  /** Table-level uniqueness, including compound keys. */
+  uniqueKeys?: readonly UniqueKey<TKey>[]
   rowHook?: RowHook<TKey>
   tableHook?: TableHook<TKey>
   /**
@@ -47,7 +50,7 @@ export async function validateTable<TKey extends string>(
   input: readonly RowInput<TKey>[],
   options: ValidateOptions<TKey>,
 ): Promise<ValidatedRow<TKey>[]> {
-  const { fields, rowHook, tableHook, changedRowIndexes } = options
+  const { fields, uniqueKeys, rowHook, tableHook, changedRowIndexes } = options
 
   let data: RowInput<TKey>[] = [...input]
   const errors = new Map<number, RowErrors<TKey>>()
@@ -270,6 +273,47 @@ export async function validateTable<TKey extends string>(
             }
           }
           break
+        }
+      }
+    }
+  }
+
+  for (const key of uniqueKeys ?? []) {
+    if (key.fields.length === 0) continue
+
+    const label = key.fields
+      .map((fieldKey) => fields.find((field) => field.key === fieldKey)?.label ?? fieldKey)
+      .join(" + ")
+    const seen = new Map<string, number[]>()
+
+    data.forEach((row, index) => {
+      const values = key.fields.map((fieldKey) => row[fieldKey])
+      if (key.allowEmpty && values.some(isEmpty)) return
+
+      // Field values are joined with a separator that cannot occur in a cell,
+      // so ("a|b", "c") and ("a", "b|c") stay distinct.
+      const composite = values
+        .map((value) => {
+          const text = String(value ?? "")
+          return key.caseInsensitive ? text.toLowerCase() : text
+        })
+        .join("\u0000")
+
+      const bucket = seen.get(composite)
+      if (bucket) bucket.push(index)
+      else seen.set(composite, [index])
+    })
+
+    for (const indexes of seen.values()) {
+      if (indexes.length < 2) continue
+      for (const index of indexes) {
+        // Flag every field in the key, so a UI highlights the whole key
+        // rather than an arbitrary one of its parts.
+        for (const fieldKey of key.fields) {
+          addError(ErrorSource.Table, index, fieldKey, {
+            level: key.level ?? "error",
+            message: key.errorMessage ?? `${label} must be unique together`,
+          })
         }
       }
     }

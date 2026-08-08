@@ -12,6 +12,7 @@ import {
   type Parser,
   type RawRow,
   type RowData,
+  type UniqueKey,
   type ValidatedRow,
 } from "./types.js"
 import { createStore, type Listener, type Store, type Unsubscribe } from "./store.js"
@@ -91,6 +92,11 @@ export type ImportState<TKey extends string> = {
 export type ImporterOptions<TKey extends string> = {
   fields: Fields<TKey>
   parser: Parser
+  /**
+   * Table-level uniqueness. Use it for a compound primary key — the one thing
+   * a per-field `unique` validation cannot express.
+   */
+  uniqueKeys?: readonly UniqueKey<TKey>[]
 
   onSubmit?: (result: ImportResult<TKey>, file: FileLike | null) => void | Promise<void>
   /** Called for every recoverable error, so the host can toast it. */
@@ -367,6 +373,7 @@ export function createImporter<TKey extends string>(options: ImporterOptions<TKe
 
       const rows = await validateTable(data, {
         fields: config.fields,
+        ...(config.uniqueKeys ? { uniqueKeys: config.uniqueKeys } : {}),
         rowHook: config.rowHook,
         tableHook: config.tableHook,
       })
@@ -404,6 +411,7 @@ export function createImporter<TKey extends string>(options: ImporterOptions<TKe
     try {
       const next = await validateTable(rows, {
         fields: config.fields,
+        ...(config.uniqueKeys ? { uniqueKeys: config.uniqueKeys } : {}),
         rowHook: config.rowHook,
         tableHook: config.tableHook,
         changedRowIndexes,

@@ -218,6 +218,26 @@ export type PartialRowMeta<TKey extends string = string> = {
 
 export type RowInput<TKey extends string = string> = RowData<TKey> & PartialRowMeta<TKey>
 
+/**
+ * A uniqueness constraint over one or more fields.
+ *
+ * The single-field `unique` validation is a property of a field. This is a
+ * property of the *table*, which is why it lives beside `fields` rather than
+ * inside one: "sku is unique" and "(productId, variant) is unique together"
+ * are the same kind of statement, and only the second has nowhere to live on
+ * a field.
+ */
+export type UniqueKey<TKey extends string = string> = {
+  /** One field for a simple key, several for a compound one. Order is irrelevant. */
+  fields: readonly TKey[]
+  /** Compare case-insensitively. Default: false. */
+  caseInsensitive?: boolean
+  /** Skip rows where any field in the key is empty. Default: false. */
+  allowEmpty?: boolean
+  errorMessage?: string
+  level?: ErrorLevel
+}
+
 // ---------------------------------------------------------------------------
 // Column matching
 // ---------------------------------------------------------------------------
