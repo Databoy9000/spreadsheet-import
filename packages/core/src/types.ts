@@ -35,7 +35,17 @@ export type CheckboxFieldType = {
   booleanMatches?: Record<string, boolean>
 }
 
-export type SelectOption = { label: string; value: string }
+export type SelectOption = {
+  label: string
+  value: string
+  /**
+   * Extra spellings that should auto-map to this option, e.g. a UN/CEFACT unit
+   * `PCE` accepting "stuk", "st", "pcs". Compared with the same normalization
+   * as headers, so case, accents, separators and superscripts are already
+   * handled — "m²" and "m2" are the same string by the time this is consulted.
+   */
+  alternateMatches?: readonly string[]
+}
 
 export type SelectFieldType = {
   type: "select"

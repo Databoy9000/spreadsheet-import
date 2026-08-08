@@ -240,7 +240,20 @@ ISO, four-digit-year-first and month names are never affected — they are unamb
 }
 ```
 
-The user maps each distinct value found in the column onto an option, and the record receives the option's `value`. Set `autoMapSelectValues: true` on the importer to pre-map values that already match a label or a value.
+The user maps each **distinct** value found in the column onto an option, and the record receives the option's `value`. Distinct, not per row: 5 000 rows containing five spellings is five decisions.
+
+`alternateMatches` on an option declares the spellings that mean it, so the mapping is done before the user sees it:
+
+```ts
+options: [
+  { value: "PCE", label: "Piece", alternateMatches: ["stuk", "stuks", "st", "pc", "pcs"] },
+  { value: "MTK", label: "Square metre", alternateMatches: ["m2", "vierkante meter", "sqm"] },
+]
+```
+
+Set `autoMapSelectValues: true` on the importer to apply it. Comparison uses the same normalization as headers, so case, accents, punctuation and superscripts are already handled — `m²`, `M2.` and `m 2` are one string before any synonym is consulted.
+
+This is how you map a supplier's vocabulary onto an internal code list — UN/CEFACT units, currencies, VAT categories, country codes. The list is yours; nothing in this package knows what the codes mean. Whatever does not auto-map is left for the user to pick in the match step rather than guessed at.
 
 ### Checkbox
 

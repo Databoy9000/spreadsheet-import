@@ -42,17 +42,22 @@ export function setColumn<TKey extends string>(
       const options = field.fieldType.options
       const entries = uniqueEntries(rows, column.index)
 
+      // Built once per column rather than per distinct entry: a units column
+      // can hold hundreds of spellings across thousands of rows.
+      const bySpelling = new Map<string, string>()
+      for (const option of options) {
+        for (const spelling of [option.value, option.label, ...(option.alternateMatches ?? [])]) {
+          const normalized = normalizeHeader(spelling)
+          // First option to claim a spelling keeps it, so declaration order is
+          // the tie-break when two options share a synonym.
+          if (normalized && !bySpelling.has(normalized)) bySpelling.set(normalized, option.value)
+        }
+      }
+
       const matchedOptions: OptionMatch[] = entries.map((entry) => {
         if (!autoMapSelectValues) return { entry }
-        const normalized = normalizeHeader(entry)
-        const hit = options.find(
-          (option) =>
-            option.value === entry ||
-            option.label === entry ||
-            normalizeHeader(option.value) === normalized ||
-            normalizeHeader(option.label) === normalized,
-        )
-        return hit ? { entry, value: hit.value } : { entry }
+        const hit = bySpelling.get(normalizeHeader(entry))
+        return hit ? { entry, value: hit } : { entry }
       })
 
       const allMatched = matchedOptions.every((option) => Boolean(option.value))
