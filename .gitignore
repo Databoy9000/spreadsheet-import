@@ -3,7 +3,9 @@ dist/
 coverage/
 .tsbuild/
 *.tsbuildinfo
-fixtures/
+# Anchored: an unanchored `fixtures/` also swallows tools/fixtures/, which is
+# source, not output.
+/fixtures/
 .DS_Store
 
 # Stale emit from a stray `tsc` run — types come from tsdown into dist/
