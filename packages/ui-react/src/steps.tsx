@@ -409,6 +409,7 @@ export function ValidationStep<TKey extends string>() {
                           value={cell.value}
                           error={cell.error}
                           numeric={field.fieldType.type === "number"}
+                          monospace={field.fieldType.type === "date"}
                           onCommit={(next) => void cell.onValueChange(next)}
                         />
                       )}

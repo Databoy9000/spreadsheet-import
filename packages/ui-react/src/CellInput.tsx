@@ -11,6 +11,8 @@ export type CellInputProps = {
   onCommit: (value: string) => void
   /** Right-aligns the cell and asks mobile keyboards for digits. */
   numeric?: boolean
+  /** Tabular figures, so a column of dates lines up. */
+  monospace?: boolean
 }
 
 /**
@@ -24,7 +26,7 @@ export type CellInputProps = {
  * draft locally, commit on blur or Enter, and accept outside changes only when
  * the field is not focused.
  */
-export function CellInput({ value, error, label, onCommit, numeric = false }: CellInputProps) {
+export function CellInput({ value, error, label, onCommit, numeric = false, monospace = false }: CellInputProps) {
   const external = String(value ?? "")
   const [draft, setDraft] = useState(external)
   const isEditing = useRef(false)
@@ -56,6 +58,7 @@ export function CellInput({ value, error, label, onCommit, numeric = false }: Ce
       className={cx(
         "w-full min-w-32 rounded border px-2 py-1 text-sm dark:bg-slate-900",
         numeric && "text-right tabular-nums",
+        monospace && "tabular-nums",
         error?.level === "error"
           ? "border-red-400 bg-red-50 dark:bg-red-950"
           : error

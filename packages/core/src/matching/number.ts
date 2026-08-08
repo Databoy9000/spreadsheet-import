@@ -5,6 +5,30 @@ const SPACES = /[\s\u00a0\u202f\u2009]/g
 /** Currency symbols and the like, stripped before parsing. */
 const SYMBOLS = /[€$£¥₹%]/g
 
+const separatorCache = new Map<string, "." | "," | null>()
+
+/**
+ * The decimal separator a locale uses, straight from `Intl`.
+ *
+ * Beats hardcoding a locale table: the runtime already ships this data, and it
+ * covers every locale it knows rather than the handful anyone would write out.
+ */
+function localeDecimalSeparator(locale: string): "." | "," | null {
+  const cached = separatorCache.get(locale)
+  if (cached !== undefined) return cached
+
+  let separator: "." | "," | null = null
+  try {
+    const part = new Intl.NumberFormat(locale).formatToParts(1.5).find((candidate) => candidate.type === "decimal")
+    if (part?.value === "." || part?.value === ",") separator = part.value
+  } catch {
+    // An unknown locale tag falls back to inference rather than throwing.
+  }
+
+  separatorCache.set(locale, separator)
+  return separator
+}
+
 export type ParseNumberResult =
   | { ok: true; value: number }
   | { ok: false; reason: "empty" | "not-a-number" }
@@ -54,7 +78,9 @@ export function parseNumber(input: unknown, options: NumberFieldType = { type: "
   // Everything that survives stripping must be digits and separators.
   if (!/^[\d.,]+$/.test(text)) return { ok: false, reason: "not-a-number" }
 
-  const decimalSeparator = options.decimalSeparator ?? "auto"
+  // Explicit wins; then the locale, if one was given; then inference.
+  const decimalSeparator =
+    options.decimalSeparator ?? (options.locale ? (localeDecimalSeparator(options.locale) ?? "auto") : "auto")
   const normalized = normalizeSeparators(text, decimalSeparator)
   if (normalized === null) return { ok: false, reason: "not-a-number" }
 

@@ -31,12 +31,14 @@ function EditableCell({
   label,
   onCommit,
   numeric = false,
+  monospace = false,
 }: {
   value: CellValue
   error: CellError | null
   label: string
   onCommit: (next: string) => void
   numeric?: boolean
+  monospace?: boolean
 }) {
   const external = String(value ?? "")
   const [draft, setDraft] = useState(external)
@@ -58,6 +60,7 @@ function EditableCell({
       className={cn(
         "h-8 border-transparent bg-transparent shadow-none hover:border-input",
         numeric && "text-right tabular-nums",
+        monospace && "tabular-nums",
         error?.level === "error" && "border-destructive bg-destructive/5",
         error && error.level !== "error" && "border-amber-500 bg-amber-500/5",
       )}
@@ -159,6 +162,7 @@ export function ValidationStep<TKey extends string>() {
                           value={cell.value}
                           error={cell.error}
                           numeric={field.fieldType.type === "number"}
+                          monospace={field.fieldType.type === "date"}
                           onCommit={(next) => void cell.onValueChange(next)}
                         />
                       )}

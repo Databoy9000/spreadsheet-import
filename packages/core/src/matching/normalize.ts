@@ -1,4 +1,5 @@
 import { ColumnType, type CellValue, type Columns, type Field, type Fields, type RawRow, type RowData } from "../types.js"
+import { parseDate, toDateValue } from "./date.js"
 import { parseNumber } from "./number.js"
 
 const DEFAULT_TRUE = new Set(["true", "yes", "y", "1", "on", "x", "✓"])
@@ -47,6 +48,11 @@ export function coerceValue(field: Field<string> | undefined, raw: CellValue): C
       // show what was rejected. The engine turns that into an error.
       return result.reason === "empty" ? undefined : String(raw)
     }
+    case "date": {
+      const result = parseDate(raw, field.fieldType)
+      if (result.ok) return toDateValue(result.value, result.hasTime, field.fieldType.valueType)
+      return result.reason === "empty" ? undefined : String(raw)
+    }
     default:
       return raw === "" ? undefined : raw
   }
@@ -81,7 +87,8 @@ export function normalizeTableData<TKey extends string>(
           record[column.value] = cell === "" ? undefined : cell
           break
         }
-        case ColumnType.matchedNumber: {
+        case ColumnType.matchedNumber:
+        case ColumnType.matchedDate: {
           record[column.value] = coerceValue(fieldByKey.get(column.value) as Field<string> | undefined, cell)
           break
         }

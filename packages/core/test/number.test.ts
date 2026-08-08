@@ -304,3 +304,32 @@ describe("end to end, the shape the caller receives", () => {
     expect(fixed.__errors).toBeNull()
   })
 })
+
+describe("locale-driven separators", () => {
+  it("takes the decimal separator from the locale", () => {
+    // Intl knows this for every locale the runtime supports, so no table here.
+    expect(value("1.500", { type: "number", locale: "de-DE" })).toBe(1500)
+    expect(value("1,500", { type: "number", locale: "de-DE" })).toBe(1.5)
+
+    expect(value("1,500", { type: "number", locale: "en-US" })).toBe(1500)
+    expect(value("1.500", { type: "number", locale: "en-US" })).toBe(1.5)
+  })
+
+  it("lets an explicit decimalSeparator override the locale", () => {
+    expect(value("1,500", { type: "number", locale: "de-DE", decimalSeparator: "." })).toBe(1500)
+  })
+
+  it("follows Intl's own negotiation for an unrecognised tag", () => {
+    // Intl resolves a well-formed but unknown tag to the runtime default
+    // rather than throwing, so "xx-YY" behaves like the runtime locale.
+    // That is Intl's contract, not something this package papers over.
+    const runtimeDecimal = new Intl.NumberFormat().formatToParts(1.5).find((part) => part.type === "decimal")!.value
+    const expected = runtimeDecimal === "." ? 1.5 : 1500
+    expect(value("1.500", { type: "number", locale: "xx-YY" })).toBe(expected)
+  })
+
+  it("falls back to inference for a malformed tag", () => {
+    // A malformed tag makes Intl throw; parsing must survive it.
+    expect(value("1.234,56", { type: "number", locale: "!!!" })).toBe(1234.56)
+  })
+})

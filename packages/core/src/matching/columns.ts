@@ -70,6 +70,8 @@ export function setColumn<TKey extends string>(
       return { ...base, type: ColumnType.matchedCheckbox, value: field.key }
     case "number":
       return { ...base, type: ColumnType.matchedNumber, value: field.key }
+    case "date":
+      return { ...base, type: ColumnType.matchedDate, value: field.key }
     case "input":
       return { ...base, type: ColumnType.matched, value: field.key }
     default:

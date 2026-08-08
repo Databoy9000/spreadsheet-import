@@ -18,7 +18,7 @@ export type RawRow = RawCell[]
  * in the review step — the validation engine flags those rows, so `validData`
  * never carries a string where a number was asked for.
  */
-export type CellValue = string | number | boolean | undefined
+export type CellValue = string | number | boolean | Date | undefined
 
 /** A normalized record, keyed by field key. */
 export type RowData<TKey extends string> = { [K in TKey]: CellValue }
@@ -50,6 +50,12 @@ export type NumberFieldType = {
    * for the exact inference rules.
    */
   decimalSeparator?: "." | "," | "auto"
+  /**
+   * Take the decimal separator from a locale instead, e.g. `"de-DE"` or
+   * `"en-US"`. Resolved through `Intl.NumberFormat`, so any locale the runtime
+   * supports works. Ignored when `decimalSeparator` is set explicitly.
+   */
+  locale?: string
   /** Reject values with a fractional part. */
   integer?: boolean
   min?: number
@@ -58,7 +64,46 @@ export type NumberFieldType = {
   errorMessage?: string
 }
 
-export type FieldType = InputFieldType | CheckboxFieldType | SelectFieldType | NumberFieldType
+export type DateFieldType = {
+  type: "date"
+  /**
+   * Explicit formats, tried in order. Tokens: `yyyy yy MMM MM M dd d HH H mm ss`,
+   * e.g. `["dd/MM/yyyy", "d MMM yyyy"]`. Given this, nothing is guessed.
+   */
+  formats?: readonly string[]
+  /**
+   * How to read a purely numeric date like `03/04/2024`. Default: `true`
+   * (3 April). Set `false` for US-style data (4 March).
+   *
+   * A component over 12 overrides this — `13/04/2024` can only be day-first.
+   * ISO dates, month names and four-digit-year-first are never affected.
+   */
+  dayFirst?: boolean
+  /**
+   * What lands in the record. Default `"iso"`: `"2024-03-15"` for a date-only
+   * cell, a full ISO string when the cell carried a time. `"date"` gives a
+   * `Date`, `"timestamp"` epoch milliseconds.
+   */
+  valueType?: "iso" | "date" | "timestamp"
+  /**
+   * Locales whose month names should be recognised, e.g. `"nl-BE"` or
+   * `["de", "fr"]`. Names come from `Intl`, so any locale the runtime supports
+   * works. English and the runtime's own locale are always included.
+   */
+  locale?: string | readonly string[]
+  /** Read bare numbers as Excel serial days. Default: true. */
+  excelSerial?: boolean
+  min?: string | Date
+  max?: string | Date
+  errorMessage?: string
+}
+
+export type FieldType =
+  | InputFieldType
+  | CheckboxFieldType
+  | SelectFieldType
+  | NumberFieldType
+  | DateFieldType
 
 export type Field<TKey extends string = string> = {
   /** Stable identifier; becomes the key on the resulting record. */
@@ -173,6 +218,7 @@ export const ColumnType = {
   matched: "matched",
   matchedCheckbox: "matchedCheckbox",
   matchedNumber: "matchedNumber",
+  matchedDate: "matchedDate",
   /** Select field where at least one distinct entry is still unmapped. */
   matchedSelect: "matchedSelect",
   /** Select field where every distinct entry maps to an option. */
@@ -204,6 +250,10 @@ export type MatchedNumberColumn<TKey extends string> = ColumnBase & {
   type: typeof ColumnType.matchedNumber
   value: TKey
 }
+export type MatchedDateColumn<TKey extends string> = ColumnBase & {
+  type: typeof ColumnType.matchedDate
+  value: TKey
+}
 export type MatchedSelectColumn<TKey extends string> = ColumnBase & {
   type: typeof ColumnType.matchedSelect
   value: TKey
@@ -221,6 +271,7 @@ export type Column<TKey extends string = string> =
   | MatchedColumn<TKey>
   | MatchedCheckboxColumn<TKey>
   | MatchedNumberColumn<TKey>
+  | MatchedDateColumn<TKey>
   | MatchedSelectColumn<TKey>
   | MatchedSelectOptionsColumn<TKey>
 
@@ -233,6 +284,7 @@ export function isMatchedColumn<TKey extends string>(
   | MatchedColumn<TKey>
   | MatchedCheckboxColumn<TKey>
   | MatchedNumberColumn<TKey>
+  | MatchedDateColumn<TKey>
   | MatchedSelectColumn<TKey>
   | MatchedSelectOptionsColumn<TKey> {
   return "value" in column

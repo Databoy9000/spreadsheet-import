@@ -11,7 +11,7 @@ import { HeadlessImport } from "./HeadlessImport.js"
 import { mountVanilla } from "./vanilla.js"
 import "./styles.css"
 
-type Key = "firstName" | "lastName" | "email" | "department" | "active" | "salary"
+type Key = "firstName" | "lastName" | "email" | "department" | "active" | "startDate" | "salary"
 
 const fields: readonly Field<Key>[] = [
   {
@@ -62,6 +62,15 @@ const fields: readonly Field<Key>[] = [
     example: "yes",
     alternateMatches: ["isActive"],
     fieldType: { type: "checkbox", booleanMatches: { ja: true, nee: false } },
+  },
+  {
+    key: "startDate",
+    label: "Start Date",
+    example: "2024-03-15",
+    alternateMatches: ["start_date", "startdatum"],
+    // Reads 2024-03-15, 15/03/2024, "15 Mar 2024" and Excel serials alike,
+    // and hands back a clean ISO string.
+    fieldType: { type: "date", min: "2000-01-01" },
   },
   {
     key: "salary",

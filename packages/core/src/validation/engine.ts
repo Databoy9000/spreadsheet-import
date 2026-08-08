@@ -8,6 +8,7 @@ import {
   type RowInput,
   type ValidatedRow,
 } from "../types.js"
+import { parseDate, toBoundary, toDateValue } from "../matching/date.js"
 import { createId } from "../utils/id.js"
 
 export type RowHook<TKey extends string> = (
@@ -134,6 +135,57 @@ export async function validateTable<TKey extends string>(
         addError(ErrorSource.Row, index, field.key, {
           level: "error",
           message: errorMessage ?? `${field.label} must be at most ${max}`,
+        })
+      }
+    }
+  }
+
+  // Dates, same contract as numbers: a cell that survived coercion as a string
+  // is one that could not be parsed, and its text is kept so the user can see
+  // what was rejected.
+  for (const field of fields) {
+    if (field.fieldType.type !== "date") continue
+    const { min, max, errorMessage, valueType } = field.fieldType
+    const lower = toBoundary(min)
+    const upper = toBoundary(max)
+
+    for (const index of rowScopedIndexes) {
+      const row = data[index]
+      if (!row) continue
+      const value = row[field.key]
+      if (isEmpty(value)) continue
+
+      let asDate: Date | null = null
+      if (value instanceof Date) {
+        asDate = value
+      } else if (valueType === "timestamp" && typeof value === "number") {
+        asDate = new Date(value)
+      } else if (typeof value === "string") {
+        // For the default "iso" output the stored value is a string, so a
+        // successful re-parse is the only way to tell a date from the text
+        // `coerceValue` kept because it could not parse it.
+        const parsed = parseDate(value)
+        asDate = parsed.ok ? parsed.value : null
+      }
+
+      if (!asDate || Number.isNaN(asDate.getTime())) {
+        addError(ErrorSource.Row, index, field.key, {
+          level: "error",
+          message: errorMessage ?? `${field.label} must be a date`,
+        })
+        continue
+      }
+      if (lower && asDate.getTime() < lower.getTime()) {
+        addError(ErrorSource.Row, index, field.key, {
+          level: "error",
+          message: errorMessage ?? `${field.label} must not be before ${toDateValue(lower, false)}`,
+        })
+        continue
+      }
+      if (upper && asDate.getTime() > upper.getTime()) {
+        addError(ErrorSource.Row, index, field.key, {
+          level: "error",
+          message: errorMessage ?? `${field.label} must not be after ${toDateValue(upper, false)}`,
         })
       }
     }

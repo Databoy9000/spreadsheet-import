@@ -16,6 +16,8 @@ export { findMatch, findBestMatch, normalizeHeader } from "./matching/findMatch.
 export { levenshtein } from "./matching/levenshtein.js"
 export { coerceValue, normalizeCheckboxValue, normalizeTableData } from "./matching/normalize.js"
 export { parseNumber, formatNumber } from "./matching/number.js"
+export { parseDate, parseWithFormat, toDateValue } from "./matching/date.js"
+export type { ParseDateResult } from "./matching/date.js"
 export type { ParseNumberResult } from "./matching/number.js"
 
 export { validateTable, isRowValid, stripMeta } from "./validation/engine.js"

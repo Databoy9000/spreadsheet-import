@@ -137,6 +137,7 @@ Available: `useSpreadsheetImport`, `useFileDrop`, `useSheetSelection`, `useHeade
 | `{ type: "input" }` | `string \| undefined` | Empty cells become `undefined`. |
 | `{ type: "number" }` | `number \| undefined` | See below. |
 | `{ type: "checkbox" }` | `boolean` | `booleanMatches` adds your own vocabulary, e.g. `{ ja: true, nee: false }`. |
+| `{ type: "date" }` | `string \| undefined` | ISO by default; see below. |
 | `{ type: "select", options }` | `string \| undefined` | The matched option's `value`. |
 
 ### Numbers
@@ -147,7 +148,9 @@ A `number` field produces a real number, so `JSON.stringify` gives you `"salary"
 { key: "salary", label: "Salary", fieldType: { type: "number", integer: true, min: 0 } }
 ```
 
-Options: `decimalSeparator` (`"."`, `","` or `"auto"`), `integer`, `min`, `max`, `errorMessage`.
+Options: `decimalSeparator` (`"."`, `","` or `"auto"`), `locale`, `integer`, `min`, `max`, `errorMessage`.
+
+`locale: "de-DE"` takes the decimal separator from `Intl.NumberFormat` rather than inferring it, which is the deterministic option when you know where the file came from.
 
 Spreadsheet numbers are rarely clean, so parsing strips currency symbols, percent signs and grouping spaces, and understands accounting negatives: `€ 1.234,56`, `$1,234.56`, `12 345`, `(1234)` → `-1234`.
 
@@ -168,6 +171,41 @@ Content is judged strictly. `12abc`, `1.2.3.4,5` and `--5` are rejected rather t
 A cell that cannot be parsed **keeps its original text** and gets an error, so the review step shows the user exactly what was rejected. Rows with errors land in `invalidData`; `validData` only ever carries real numbers.
 
 > Upstream has no number type at all: its `Data` type is `string | boolean | undefined`, every column is normalized with `curr === "" ? undefined : curr`, and `mapWorkbook` reads the sheet with SheetJS's `raw: false`, so even genuinely numeric Excel cells arrive as formatted text. Converting meant writing your own `rowHook` and fighting the types.
+
+### Dates
+
+```ts
+{ key: "startDate", label: "Start date", fieldType: { type: "date", min: "2000-01-01" } }
+```
+
+Options: `formats`, `dayFirst`, `locale`, `valueType`, `excelSerial`, `min`, `max`, `errorMessage`.
+
+Recognised with no configuration: ISO (`2024-03-15`, `2024-03-15T10:30:00Z`), English month names, the CJK `2024年3月15日` layout, and **Excel serial numbers** — the `45366` you get when a spreadsheet hands over a numeric date cell.
+
+Month names come from `Intl`, not from a table in this repo, so `locale` opens up every language the runtime supports:
+
+```ts
+fieldType: { type: "date", locale: ["nl-BE", "fr"] }   // "15 mei 2024", "15 mai 2024"
+```
+
+Both the standalone and the inflected form are recognised, because several languages decline month names inside a date — Russian standalone is `март` but a date reads `15 марта`. English and the runtime's own locale are always included, so a Dutch browser reads `15 mrt 2024` with no configuration at all.
+
+**Why not `new Date(string)`?** Because the ECMAScript specification makes any non-ISO date string *implementation-defined*. `new Date("15/03/2024")` gives different answers — sometimes `NaN` — depending on the engine, so the same CSV would import differently in Chrome, Safari and Node. Parsing explicitly is what makes the result the same everywhere. `Temporal` will be the right answer once it is available without a polyfill; it is not yet.
+
+`valueType` decides the shape: `"iso"` (default) gives `"2024-03-15"`, or a full ISO string when the cell carried a time; `"date"` gives a `Date`; `"timestamp"` gives epoch milliseconds. A date-only cell stays date-only, because appending a time would invent a timezone the cell never had. Everything is built in UTC, so `"2024-03-15"` does not become the 14th for anyone west of Greenwich.
+
+#### The ambiguity you cannot compute your way out of
+
+`03/04/2024` is 3 April in Brussels and 4 March in Chicago. Both readings are correct; the cell simply does not say which. So:
+
+- **`formats` wins.** `formats: ["dd/MM/yyyy", "d MMM yyyy"]` — tried in order, nothing inferred, anything else rejected. Use this when you know the shape.
+- **`dayFirst` decides the rest.** Default `true` (3 April). Set `dayFirst: false` for US-style data.
+- **A component over 12 overrides both.** `13/04/2024` can only be day-first, whatever the option says.
+- ISO, four-digit-year-first and month names are never affected — they are unambiguous already.
+
+A default had to be picked and every choice is wrong somewhere; `dayFirst: true` covers the larger share of the world, and machine-generated exports are usually ISO anyway. **If your data is US-shaped, set it.** Getting this wrong is silent: 3 April and 4 March are both real dates, so nothing will look broken.
+
+Overflow is rejected rather than rolled over: `2024-02-31` is an error, not 2 March, because turning a typo into a plausible wrong date is worse than refusing it. A bare `2024` is not read as a serial either — serial 2024 is 16 July 1905, which is never what a cell reading "2024" means.
 
 ## Parsers are pluggable
 
@@ -222,7 +260,7 @@ Behavioural fixes, each covered by a test:
 - **Uniqueness can be case-insensitive**, and empty values are no longer silently compared as equal unless you ask.
 - **Regex validation skips empty optional values** and rebuilds `lastIndex`, so a `/g` flag no longer makes every second row fail.
 - **The first error on a cell wins**, so "Field is required" is not overwritten by a regex complaint about the same empty value.
-- A `custom` validation rule was added, and a **`number` field type** — see [Field types](#field-types). Upstream could only ever hand you strings.
+- A `custom` validation rule was added, plus **`number` and `date` field types** — see [Field types](#field-types). Upstream could only ever hand you strings; its `Data` type had no room for anything else.
 
 Modernization: React 19, TypeScript 5.9 with `noUncheckedIndexedAccess`, Vitest, tsdown, pnpm workspaces. Gone: Chakra UI, Emotion, framer-motion, `react-data-grid`, `react-icons`, lodash, uuid, `js-levenshtein`, `ttypescript`, Rollup 2, Jest, Storybook. The core has **no runtime dependencies** at all.
 
@@ -237,7 +275,7 @@ Bundle: core 8.2 kB gzip, React adapter 3.0 kB, `ui-react` 5.8 kB, `ui-shadcn` 9
 ```bash
 pnpm install
 pnpm fixtures     # generate test data into ./fixtures
-pnpm test         # 332 tests
+pnpm test         # 407 tests
 pnpm typecheck
 pnpm build
 pnpm playground   # http://localhost:5173
