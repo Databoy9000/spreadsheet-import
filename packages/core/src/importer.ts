@@ -514,10 +514,14 @@ export function createImporter<TKey extends string>(options: ImporterOptions<TKe
       fieldKey === null ? undefined : config.fields.find((candidate) => candidate.key === fieldKey)
 
     const rows = bodyRows(state)
-    // A field can only live on one column; clear whichever column held it.
-    const previousOwner = state.columns.findIndex(
-      (column) => isMatchedColumn(column) && column.value === fieldKey && column.index !== columnIndex,
-    )
+    // A field lives on one column, so assigning it elsewhere clears the old
+    // one — unless the field collects, in which case several columns feeding
+    // it is the entire point.
+    const previousOwner = field?.collects
+      ? -1
+      : state.columns.findIndex(
+          (column) => isMatchedColumn(column) && column.value === fieldKey && column.index !== columnIndex,
+        )
 
     store.setState((current) => ({
       ...current,

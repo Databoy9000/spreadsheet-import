@@ -246,11 +246,20 @@ export function useColumnMatching<TKey extends string>() {
     [importer.fields, columns],
   )
 
-  /** Field keys already taken, so a UI can grey them out instead of surprising the user. */
-  const takenFieldKeys = useMemo(
-    () => new Set(columns.filter(isMatchedColumn).map((column) => column.value)),
-    [columns],
-  )
+  /**
+   * Field keys already taken, so a UI can grey them out instead of surprising
+   * the user. Collecting fields are never listed: several columns mapping to
+   * one is what they are for.
+   */
+  const takenFieldKeys = useMemo(() => {
+    const collects = new Set(importer.fields.filter((field) => field.collects).map((field) => field.key))
+    return new Set(
+      columns
+        .filter(isMatchedColumn)
+        .map((column) => column.value)
+        .filter((key) => !collects.has(key)),
+    )
+  }, [columns, importer.fields])
 
   return {
     columns,

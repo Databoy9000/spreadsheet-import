@@ -115,6 +115,33 @@ export type FieldType =
   | NumberFieldType
   | DateFieldType
 
+/**
+ * How a field that accepts several columns combines them.
+ *
+ * Most fields are exclusive: assigning one to a second column releases the
+ * first, so an `email` and an `e-mail` column cannot silently overwrite each
+ * other. A few fields are the opposite — a catalogue's `conversions` is fed by
+ * every "A per B" column in the sheet at once — and this is how they say so.
+ */
+export type CollectOptions = {
+  /**
+   * Turn one column's cell into its contribution. Receives the column header,
+   * which is often where the meaning lives: "Stuks per m2" says what the
+   * number counts and what it counts per.
+   *
+   * Return `undefined` to contribute nothing. Add a `required` or `custom`
+   * validation to the field if a missing contribution should be reported.
+   */
+  parse?: (
+    value: RawCell,
+    context: { header: string; index: number },
+  ) => CellValue | readonly CellValue[] | undefined
+  /** Joins the contributions. Default: `"|"`. */
+  separator?: string
+  /** Drop repeated contributions. Default: true. */
+  unique?: boolean
+}
+
 export type Field<TKey extends string = string> = {
   /** Stable identifier; becomes the key on the resulting record. */
   key: TKey
@@ -126,6 +153,11 @@ export type Field<TKey extends string = string> = {
   alternateMatches?: readonly string[]
   validations?: readonly Validation[]
   fieldType: FieldType
+  /**
+   * Let several columns map to this field and combine what they give.
+   * Omitted, the field is exclusive — the usual case.
+   */
+  collects?: CollectOptions
   /** Sample value shown before upload. */
   example?: string
 }

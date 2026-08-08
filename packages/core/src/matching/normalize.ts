@@ -1,4 +1,14 @@
-import { ColumnType, type CellValue, type Columns, type Field, type Fields, type RawRow, type RowData } from "../types.js"
+import {
+  ColumnType,
+  isMatchedColumn,
+  type CellValue,
+  type Column,
+  type Columns,
+  type Field,
+  type Fields,
+  type RawRow,
+  type RowData,
+} from "../types.js"
 import { parseDate, toDateValue } from "./date.js"
 import { parseNumber } from "./number.js"
 
@@ -69,10 +79,27 @@ export function normalizeTableData<TKey extends string>(
 ): RowData<TKey>[] {
   const fieldByKey = new Map(fields.map((field) => [field.key, field]))
 
+  // Split the mapping once, rather than per row: exclusive columns write a
+  // value, collecting ones append to a list.
+  const exclusive: Column<TKey>[] = []
+  const collecting = new Map<TKey, { column: Column<TKey>; field: Field<TKey> }[]>()
+
+  for (const column of columns) {
+    if (!isMatchedColumn(column)) continue
+    const field = fieldByKey.get(column.value)
+    if (field?.collects) {
+      const group = collecting.get(column.value) ?? []
+      group.push({ column, field })
+      collecting.set(column.value, group)
+    } else {
+      exclusive.push(column)
+    }
+  }
+
   return rows.map((row) => {
     const record = {} as RowData<TKey>
 
-    for (const column of columns) {
+    for (const column of exclusive) {
       const cell = row[column.index]
 
       switch (column.type) {
@@ -102,6 +129,31 @@ export function normalizeTableData<TKey extends string>(
         case ColumnType.ignored:
           break
       }
+    }
+
+    for (const [key, group] of collecting) {
+      const options = group[0]!.field.collects!
+      const contributions: CellValue[] = []
+
+      for (const { column } of group) {
+        const cell = row[column.index]
+        // Without a parse the raw cell is the contribution; an empty cell
+        // contributes nothing either way.
+        const produced = options.parse
+          ? options.parse(cell, { header: column.header, index: column.index })
+          : cell === "" || cell === undefined
+            ? undefined
+            : cell
+
+        if (produced === undefined) continue
+        for (const value of Array.isArray(produced) ? produced : [produced as CellValue]) {
+          if (value === undefined || value === "") continue
+          contributions.push(value)
+        }
+      }
+
+      const kept = options.unique === false ? contributions : [...new Set(contributions)]
+      record[key] = kept.length === 0 ? undefined : kept.join(options.separator ?? "|")
     }
 
     return record

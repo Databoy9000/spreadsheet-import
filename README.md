@@ -286,6 +286,29 @@ validations: [
 
 `level` is `"error"` (default), `"warning"` or `"info"`. Only `"error"` keeps a row out of `validData`.
 
+### Fields fed by several columns
+
+Fields are exclusive by default: assigning one to a second column releases the first, so an `email` and an `e-mail` column cannot silently overwrite each other.
+
+Some fields are the opposite. A catalogue's `conversions` is fed by every "A per B" column in the sheet at once — four of them in one real file. `collects` says so:
+
+```ts
+{
+  key: "conversions",
+  label: "Conversions",
+  fieldType: { type: "input" },
+  collects: {
+    // The header carries the meaning; the cell carries the factor.
+    parse: (value, { header }) => {
+      const result = parseRatio(header, value, { vocabulary })
+      return result.ok ? [String(result.forward), String(result.inverse)] : undefined
+    },
+  },
+}
+```
+
+Contributions are de-duplicated and joined with `|` (both configurable). A `parse` returning `undefined` contributes nothing — add a `required` or `custom` validation if that should be reported. Every other field stays exclusive.
+
 ### Compound keys
 
 `unique` is a property of one field. When identity spans several fields, declare it on the importer instead:
@@ -551,7 +574,7 @@ Modernized: React 19, TypeScript 5.9 with `noUncheckedIndexedAccess`, Vitest, ts
 ```bash
 pnpm install
 pnpm fixtures     # generate test data into ./fixtures
-pnpm test         # 476 tests
+pnpm test         # 488 tests
 pnpm typecheck
 pnpm lint
 pnpm build
