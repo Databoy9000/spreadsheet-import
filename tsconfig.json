@@ -7,6 +7,7 @@
     "paths": {
       "@spreadsheet-import/core": ["./packages/core/src/index.ts"],
       "@spreadsheet-import/core/parsers": ["./packages/core/src/parsers/index.ts"],
+      "@spreadsheet-import/parsers": ["./packages/parsers/src/index.ts"],
       "@spreadsheet-import/react": ["./packages/react/src/index.ts"],
       "@spreadsheet-import/ui-react": ["./packages/ui-react/src/index.ts"],
       "@spreadsheet-import/ui-shadcn": ["./packages/ui-shadcn/src/index.ts"]

@@ -33,6 +33,7 @@ Rewritten from [`react-spreadsheet-import`](https://github.com/UgnisSoftware/rea
 | --- | --- | --- |
 | `@spreadsheet-import/core` | State machine, parsing, column matching, validation. No DOM, **no runtime dependencies**. | 13.6 kB |
 | `@spreadsheet-import/react` | Hooks and prop getters. React 18.3+ / 19. | 3.1 kB |
+| `@spreadsheet-import/parsers` | Optional. Quantities with units, and unit ratios a column header declares. | 2.5 kB |
 | `@spreadsheet-import/ui-shadcn` | Ready-made UI for shadcn/ui projects. Radix, your theme tokens. | 8.3 kB |
 | `@spreadsheet-import/ui-react` | Ready-made UI with its own styling. Plain Tailwind, no Radix. | 5.9 kB |
 
@@ -371,6 +372,31 @@ const parser = combineParsers(
 
 ---
 
+## Column parsers (optional)
+
+Supplier data holds shapes a field type cannot express. `@spreadsheet-import/parsers` is a separate package so nobody importing a list of names has to carry it.
+
+**Quantities with a unit.** Anchors the number and reads what follows; never strips non-digits, because `"35 m2"` stripped that way becomes `352` and fails silently with a number that looks fine.
+
+```ts
+parseQuantity("11,8 stuks", { vocabulary })   // { value: 11.8, unit: "PCE" }
+parseQuantity("12.60 (2R.)", { vocabulary })  // { value: 12.6, residue: "(2R.)" }
+parseQuantity("36M2", { vocabulary, max: 10 }) // out-of-range: an R-value column holding an area
+```
+
+**Ratios declared by the header.** A column headed `Stuks per m2` says what it counts and what it counts per. The header gives the units, the cell gives the factor:
+
+```ts
+parseRatio("Stuks per m2", "11,8 stuks", { vocabulary })
+// forward: MTK>PCE:11.8   inverse: PCE>MTK:0.08474576271
+```
+
+The connector is not part of the grammar — `Stuks / m2`, `Stuks m2` and `Aantal stuks à m2` all read the same, because the rule is only "two units, in order". Zero, one or three-plus units means it is not a ratio, and it says so instead of picking two.
+
+The cell's own unit is **checked against the header**, not trusted or ignored. A column headed `Stuks per m2` holding `"21 m²"` is misaligned, and recording 21 pieces per square metre would be worse than refusing.
+
+The vocabulary is yours — the same `{ value, label, alternateMatches }` shape you already pass to a select field. This package ships no unit codes.
+
 ## Headless usage
 
 Every hook returns state plus prop getters. Nothing is rendered for you and no class name is imposed.
@@ -525,7 +551,7 @@ Modernized: React 19, TypeScript 5.9 with `noUncheckedIndexedAccess`, Vitest, ts
 ```bash
 pnpm install
 pnpm fixtures     # generate test data into ./fixtures
-pnpm test         # 433 tests
+pnpm test         # 476 tests
 pnpm typecheck
 pnpm lint
 pnpm build
