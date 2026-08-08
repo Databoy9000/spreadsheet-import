@@ -23,7 +23,7 @@ import {
   setIgnoreColumn,
   setSubColumn,
 } from "./matching/columns.js"
-import { normalizeTableData } from "./matching/normalize.js"
+import { coerceValue, normalizeTableData } from "./matching/normalize.js"
 import { isRowValid, stripMeta, validateTable, type RowHook, type TableHook } from "./validation/engine.js"
 import { createId } from "./utils/id.js"
 
@@ -543,8 +543,16 @@ export function createImporter<TKey extends string>(options: ImporterOptions<TKe
       const index = state.rows.findIndex((row) => row.__index === rowId)
       if (index === -1) return
 
+      // Coerce through the same path an import takes, so a "1.234,56" typed
+      // into a number cell lands as 1234.56 rather than as a string.
+      const coerced = {} as Partial<RowData<TKey>>
+      for (const [key, value] of Object.entries(changes) as [TKey, CellValue][]) {
+        const field = config.fields.find((candidate) => candidate.key === key)
+        coerced[key] = coerceValue(field as Field<string> | undefined, value)
+      }
+
       const next = [...state.rows]
-      next[index] = { ...next[index]!, ...changes }
+      next[index] = { ...next[index]!, ...coerced }
       await revalidate(next, [index])
     })
 

@@ -67,8 +67,9 @@ const fields: readonly Field<Key>[] = [
     key: "salary",
     label: "Salary",
     example: "45000",
-    fieldType: { type: "input" },
-    validations: [{ rule: "regex", value: "^\\d+$", errorMessage: "Whole numbers only", level: "warning" }],
+    // Comes back as a real number: 45000, not "45000". Handles "€ 45.000,50"
+    // and "45,000.50" alike.
+    fieldType: { type: "number", min: 0 },
   },
 ]
 
@@ -94,7 +95,7 @@ function VanillaPanel({ onResult }: { onResult: (result: ImportResult<never>) =>
     return mountVanilla(ref.current, onResult as never)
   }, [onResult])
 
-  return <div ref={ref} className="rounded-lg border border-slate-200 p-4 dark:border-slate-800" />
+  return <div ref={ref} className="rounded-lg border p-4" />
 }
 
 function App() {
@@ -106,7 +107,7 @@ function App() {
     <main className="mx-auto flex h-full max-w-5xl flex-col gap-6 p-6">
       <header>
         <h1 className="text-xl font-semibold">spreadsheet-import</h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400">
+        <p className="text-sm text-muted-foreground">
           One core, five front ends. Try <code>fixtures/clean.csv</code>, <code>fixtures/messy-semicolon.csv</code> or{" "}
           <code>fixtures/multi-sheet.xlsx</code>.
         </p>
@@ -125,8 +126,8 @@ function App() {
             }}
             className={
               tab === entry.id
-                ? "rounded-md bg-sky-600 px-3 py-1.5 text-sm font-medium text-white"
-                : "rounded-md px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                ? "rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground"
+                : "rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
             }
           >
             {entry.label}
@@ -146,13 +147,13 @@ function App() {
           />
         )}
         {tab === "shadcn-dialog" && (
-          <div className="rounded-lg border border-slate-200 p-6 dark:border-slate-800">
-            <p className="mb-3 text-sm text-slate-600 dark:text-slate-400">
+          <div className="rounded-lg border p-6">
+            <p className="mb-3 text-sm text-muted-foreground">
               How most apps ship it: a button somewhere that opens the flow over the page.
             </p>
             <button
               onClick={() => setDialogOpen(true)}
-              className="rounded-md bg-sky-600 px-3 py-1.5 text-sm font-medium text-white"
+              className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground"
             >
               Import data
             </button>
@@ -181,11 +182,11 @@ function App() {
       </section>
 
       {result ? (
-        <details className="rounded-lg border border-slate-200 p-3 text-sm dark:border-slate-800" open>
+        <details className="rounded-lg border p-3 text-sm" open>
           <summary className="cursor-pointer font-medium">
             Result: {result.validData.length} valid, {result.invalidData.length} invalid
           </summary>
-          <pre className="mt-2 max-h-64 overflow-auto rounded bg-slate-50 p-2 text-xs dark:bg-slate-900">
+          <pre className="mt-2 max-h-64 overflow-auto rounded bg-muted p-2 text-xs">
             {JSON.stringify(result.validData.slice(0, 5), null, 2)}
           </pre>
         </details>

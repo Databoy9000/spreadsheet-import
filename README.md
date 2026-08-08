@@ -56,6 +56,17 @@ import { SpreadsheetImportDialog } from "@spreadsheet-import/ui-shadcn"
 
 There is also an inline `<SpreadsheetImport>` for a dedicated import page, and each step (`UploadStep`, `SelectSheetStep`, `SelectHeaderStep`, `MatchColumnsStep`, `ValidationStep`) is exported separately if you want your own shell.
 
+#### Tell Tailwind where the classes are
+
+**Required, and the first thing that goes wrong if you skip it.** Tailwind v4 discovers class names by scanning your project, and it does not look inside `node_modules`. Import a pre-built UI package without this and you get correct markup with no styling at all — no rounded corners, no backgrounds, no spacing:
+
+```css
+@import "tailwindcss";
+@source "../node_modules/@spreadsheet-import/ui-shadcn/dist";
+```
+
+Use the path from your CSS file to the package. The same applies to `ui-react`. Installing through the shadcn registry instead sidesteps this entirely, because the files land in your own source tree where Tailwind already looks.
+
 **Prefer the files in your repo?** That is how shadcn is meant to work, so the package doubles as a registry:
 
 ```bash
@@ -119,6 +130,45 @@ Handlers you pass in run *before* ours rather than being overwritten, so `getRoo
 
 Available: `useSpreadsheetImport`, `useFileDrop`, `useSheetSelection`, `useHeaderSelection`, `useColumnMatching`, `useValidation`, plus `useImporterState(selector, isEqual)` for anything else.
 
+## Field types
+
+| `fieldType` | Yields | Notes |
+| --- | --- | --- |
+| `{ type: "input" }` | `string \| undefined` | Empty cells become `undefined`. |
+| `{ type: "number" }` | `number \| undefined` | See below. |
+| `{ type: "checkbox" }` | `boolean` | `booleanMatches` adds your own vocabulary, e.g. `{ ja: true, nee: false }`. |
+| `{ type: "select", options }` | `string \| undefined` | The matched option's `value`. |
+
+### Numbers
+
+A `number` field produces a real number, so `JSON.stringify` gives you `"salary": 65051` rather than `"salary": "65051"`.
+
+```ts
+{ key: "salary", label: "Salary", fieldType: { type: "number", integer: true, min: 0 } }
+```
+
+Options: `decimalSeparator` (`"."`, `","` or `"auto"`), `integer`, `min`, `max`, `errorMessage`.
+
+Spreadsheet numbers are rarely clean, so parsing strips currency symbols, percent signs and grouping spaces, and understands accounting negatives: `€ 1.234,56`, `$1,234.56`, `12 345`, `(1234)` → `-1234`.
+
+Separators are inferred per cell when `decimalSeparator` is `"auto"` (the default):
+
+| Cell | Reads as | Why |
+| --- | --- | --- |
+| `1.234,56` | `1234.56` | both present, rightmost is the decimal |
+| `1,234.56` | `1234.56` | same rule, other way round |
+| `1.234.567` | `1234567` | repeated separator is grouping |
+| `1,500` / `1.500` | `1500` | one separator, exactly three digits after it |
+| `1,5` / `1.5` | `1.5` | one separator, not a group of three |
+
+That fifth row is the only genuinely ambiguous case: `1.500` could be fifteen hundred or one and a half. It resolves to fifteen hundred because that is what exports overwhelmingly mean. **Set `decimalSeparator` explicitly if your data says otherwise.**
+
+Content is judged strictly. `12abc`, `1.2.3.4,5` and `--5` are rejected rather than truncated the way `parseFloat` would — an importer that quietly turns `12abc` into `12` is worse than one that asks.
+
+A cell that cannot be parsed **keeps its original text** and gets an error, so the review step shows the user exactly what was rejected. Rows with errors land in `invalidData`; `validData` only ever carries real numbers.
+
+> Upstream has no number type at all: its `Data` type is `string | boolean | undefined`, every column is normalized with `curr === "" ? undefined : curr`, and `mapWorkbook` reads the sheet with SheetJS's `raw: false`, so even genuinely numeric Excel cells arrive as formatted text. Converting meant writing your own `rowHook` and fighting the types.
+
 ## Parsers are pluggable
 
 The core never assumes SheetJS. A parser is:
@@ -172,7 +222,7 @@ Behavioural fixes, each covered by a test:
 - **Uniqueness can be case-insensitive**, and empty values are no longer silently compared as equal unless you ask.
 - **Regex validation skips empty optional values** and rebuilds `lastIndex`, so a `/g` flag no longer makes every second row fail.
 - **The first error on a cell wins**, so "Field is required" is not overwritten by a regex complaint about the same empty value.
-- A `custom` validation rule was added.
+- A `custom` validation rule was added, and a **`number` field type** — see [Field types](#field-types). Upstream could only ever hand you strings.
 
 Modernization: React 19, TypeScript 5.9 with `noUncheckedIndexedAccess`, Vitest, tsdown, pnpm workspaces. Gone: Chakra UI, Emotion, framer-motion, `react-data-grid`, `react-icons`, lodash, uuid, `js-levenshtein`, `ttypescript`, Rollup 2, Jest, Storybook. The core has **no runtime dependencies** at all.
 
@@ -187,7 +237,7 @@ Bundle: core 8.2 kB gzip, React adapter 3.0 kB, `ui-react` 5.8 kB, `ui-shadcn` 9
 ```bash
 pnpm install
 pnpm fixtures     # generate test data into ./fixtures
-pnpm test         # 260 tests
+pnpm test         # 332 tests
 pnpm typecheck
 pnpm build
 pnpm playground   # http://localhost:5173

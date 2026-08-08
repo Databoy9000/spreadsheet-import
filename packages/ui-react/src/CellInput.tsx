@@ -9,6 +9,8 @@ export type CellInputProps = {
   error: CellError | null
   label: string
   onCommit: (value: string) => void
+  /** Right-aligns the cell and asks mobile keyboards for digits. */
+  numeric?: boolean
 }
 
 /**
@@ -22,7 +24,7 @@ export type CellInputProps = {
  * draft locally, commit on blur or Enter, and accept outside changes only when
  * the field is not focused.
  */
-export function CellInput({ value, error, label, onCommit }: CellInputProps) {
+export function CellInput({ value, error, label, onCommit, numeric = false }: CellInputProps) {
   const external = String(value ?? "")
   const [draft, setDraft] = useState(external)
   const isEditing = useRef(false)
@@ -50,8 +52,10 @@ export function CellInput({ value, error, label, onCommit }: CellInputProps) {
       aria-label={label}
       aria-invalid={error?.level === "error" || undefined}
       title={error?.message}
+      inputMode={numeric ? "decimal" : undefined}
       className={cx(
         "w-full min-w-32 rounded border px-2 py-1 text-sm dark:bg-slate-900",
+        numeric && "text-right tabular-nums",
         error?.level === "error"
           ? "border-red-400 bg-red-50 dark:bg-red-950"
           : error

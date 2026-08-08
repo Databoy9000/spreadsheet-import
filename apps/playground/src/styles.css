@@ -1,11 +1,27 @@
 @import "tailwindcss";
 
 /*
+ * Tailwind v4 auto-detects sources by walking up from this file, which stops
+ * at the app directory — the packages live outside it and are reached through
+ * a Vite alias, so Tailwind never sees their class names and emits no CSS for
+ * them. Point it at them explicitly.
+ *
+ * Consumers of the published packages need the same line against node_modules;
+ * see the README.
+ */
+@source "../../../packages/ui-shadcn/src";
+@source "../../../packages/ui-react/src";
+
+/*
  * The shadcn/ui token layer. A real shadcn project already has this in its
  * globals.css — it is repeated here so the ui-shadcn tab renders with a real
  * theme instead of falling back to unstyled defaults.
  */
 @theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -28,6 +44,7 @@
 }
 
 :root {
+  --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);

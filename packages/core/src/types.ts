@@ -10,8 +10,15 @@ export type RawCell = string | undefined
 /** One row of an unparsed sheet, indexed by column position. */
 export type RawRow = RawCell[]
 
-/** Value a field can hold after normalization. */
-export type CellValue = string | boolean | undefined
+/**
+ * Value a field can hold after normalization.
+ *
+ * A `number` field yields a real number. When its cell cannot be parsed the
+ * original text is kept instead, so the user can see and fix what they typed
+ * in the review step — the validation engine flags those rows, so `validData`
+ * never carries a string where a number was asked for.
+ */
+export type CellValue = string | number | boolean | undefined
 
 /** A normalized record, keyed by field key. */
 export type RowData<TKey extends string> = { [K in TKey]: CellValue }
@@ -35,7 +42,23 @@ export type SelectFieldType = {
   options: readonly SelectOption[]
 }
 
-export type FieldType = InputFieldType | CheckboxFieldType | SelectFieldType
+export type NumberFieldType = {
+  type: "number"
+  /**
+   * How to read "1.234,56" and friends. Default: "auto", which infers per
+   * cell. Set it explicitly when your data is unambiguous — see `parseNumber`
+   * for the exact inference rules.
+   */
+  decimalSeparator?: "." | "," | "auto"
+  /** Reject values with a fractional part. */
+  integer?: boolean
+  min?: number
+  max?: number
+  /** Overrides the default "must be a number" message. */
+  errorMessage?: string
+}
+
+export type FieldType = InputFieldType | CheckboxFieldType | SelectFieldType | NumberFieldType
 
 export type Field<TKey extends string = string> = {
   /** Stable identifier; becomes the key on the resulting record. */
@@ -149,6 +172,7 @@ export const ColumnType = {
   ignored: "ignored",
   matched: "matched",
   matchedCheckbox: "matchedCheckbox",
+  matchedNumber: "matchedNumber",
   /** Select field where at least one distinct entry is still unmapped. */
   matchedSelect: "matchedSelect",
   /** Select field where every distinct entry maps to an option. */
@@ -176,6 +200,10 @@ export type MatchedCheckboxColumn<TKey extends string> = ColumnBase & {
   type: typeof ColumnType.matchedCheckbox
   value: TKey
 }
+export type MatchedNumberColumn<TKey extends string> = ColumnBase & {
+  type: typeof ColumnType.matchedNumber
+  value: TKey
+}
 export type MatchedSelectColumn<TKey extends string> = ColumnBase & {
   type: typeof ColumnType.matchedSelect
   value: TKey
@@ -192,6 +220,7 @@ export type Column<TKey extends string = string> =
   | IgnoredColumn
   | MatchedColumn<TKey>
   | MatchedCheckboxColumn<TKey>
+  | MatchedNumberColumn<TKey>
   | MatchedSelectColumn<TKey>
   | MatchedSelectOptionsColumn<TKey>
 
@@ -203,6 +232,7 @@ export function isMatchedColumn<TKey extends string>(
 ): column is
   | MatchedColumn<TKey>
   | MatchedCheckboxColumn<TKey>
+  | MatchedNumberColumn<TKey>
   | MatchedSelectColumn<TKey>
   | MatchedSelectOptionsColumn<TKey> {
   return "value" in column

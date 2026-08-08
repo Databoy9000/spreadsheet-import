@@ -1,4 +1,5 @@
-import { ColumnType, type CellValue, type Columns, type Fields, type RawRow, type RowData } from "../types.js"
+import { ColumnType, type CellValue, type Columns, type Field, type Fields, type RawRow, type RowData } from "../types.js"
+import { parseNumber } from "./number.js"
 
 const DEFAULT_TRUE = new Set(["true", "yes", "y", "1", "on", "x", "✓"])
 const DEFAULT_FALSE = new Set(["false", "no", "n", "0", "off", ""])
@@ -29,6 +30,29 @@ export function normalizeCheckboxValue(
 }
 
 /**
+ * Coerce one raw value to whatever its field holds.
+ *
+ * The single place cell values are produced, so an import and a hand edit in
+ * the review step cannot disagree — typing "1.234,56" into a number cell has
+ * to land as 1234.56 exactly like the imported column did.
+ */
+export function coerceValue(field: Field<string> | undefined, raw: CellValue): CellValue {
+  switch (field?.fieldType.type) {
+    case "checkbox":
+      return typeof raw === "boolean" ? raw : normalizeCheckboxValue(raw as string | undefined, field.fieldType.booleanMatches)
+    case "number": {
+      const result = parseNumber(raw, field.fieldType)
+      if (result.ok) return result.value
+      // Empty is absent; anything else keeps its text so the review step can
+      // show what was rejected. The engine turns that into an error.
+      return result.reason === "empty" ? undefined : String(raw)
+    }
+    default:
+      return raw === "" ? undefined : raw
+  }
+}
+
+/**
  * Turn raw rows plus a column mapping into keyed records.
  * Unmapped, empty and ignored columns simply do not appear on the result.
  */
@@ -55,6 +79,10 @@ export function normalizeTableData<TKey extends string>(
         }
         case ColumnType.matched: {
           record[column.value] = cell === "" ? undefined : cell
+          break
+        }
+        case ColumnType.matchedNumber: {
+          record[column.value] = coerceValue(fieldByKey.get(column.value) as Field<string> | undefined, cell)
           break
         }
         case ColumnType.matchedSelect:

@@ -408,6 +408,7 @@ export function ValidationStep<TKey extends string>() {
                           label={field.label}
                           value={cell.value}
                           error={cell.error}
+                          numeric={field.fieldType.type === "number"}
                           onCommit={(next) => void cell.onValueChange(next)}
                         />
                       )}

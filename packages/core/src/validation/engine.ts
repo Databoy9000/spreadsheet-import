@@ -96,6 +96,49 @@ export async function validateTable<TKey extends string>(
 
   const rowScopedIndexes = changedRowIndexes ?? data.map((_, index) => index)
 
+  // Number fields validate themselves: a cell that survived coercion as a
+  // string is one that could not be parsed, and the value is kept so the user
+  // can see what was rejected.
+  for (const field of fields) {
+    if (field.fieldType.type !== "number") continue
+    const { integer, min, max, errorMessage } = field.fieldType
+
+    for (const index of rowScopedIndexes) {
+      const row = data[index]
+      if (!row) continue
+      const value = row[field.key]
+      if (isEmpty(value)) continue
+
+      if (typeof value !== "number") {
+        addError(ErrorSource.Row, index, field.key, {
+          level: "error",
+          message: errorMessage ?? `${field.label} must be a number`,
+        })
+        continue
+      }
+      if (integer && !Number.isInteger(value)) {
+        addError(ErrorSource.Row, index, field.key, {
+          level: "error",
+          message: errorMessage ?? `${field.label} must be a whole number`,
+        })
+        continue
+      }
+      if (min !== undefined && value < min) {
+        addError(ErrorSource.Row, index, field.key, {
+          level: "error",
+          message: errorMessage ?? `${field.label} must be at least ${min}`,
+        })
+        continue
+      }
+      if (max !== undefined && value > max) {
+        addError(ErrorSource.Row, index, field.key, {
+          level: "error",
+          message: errorMessage ?? `${field.label} must be at most ${max}`,
+        })
+      }
+    }
+  }
+
   for (const field of fields) {
     if (!field.validations?.length) continue
 

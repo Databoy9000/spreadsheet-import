@@ -30,11 +30,13 @@ function EditableCell({
   error,
   label,
   onCommit,
+  numeric = false,
 }: {
   value: CellValue
   error: CellError | null
   label: string
   onCommit: (next: string) => void
+  numeric?: boolean
 }) {
   const external = String(value ?? "")
   const [draft, setDraft] = useState(external)
@@ -52,8 +54,10 @@ function EditableCell({
       aria-label={label}
       aria-invalid={error?.level === "error" || undefined}
       title={error?.message}
+      inputMode={numeric ? "decimal" : undefined}
       className={cn(
         "h-8 border-transparent bg-transparent shadow-none hover:border-input",
+        numeric && "text-right tabular-nums",
         error?.level === "error" && "border-destructive bg-destructive/5",
         error && error.level !== "error" && "border-amber-500 bg-amber-500/5",
       )}
@@ -154,6 +158,7 @@ export function ValidationStep<TKey extends string>() {
                           label={field.label}
                           value={cell.value}
                           error={cell.error}
+                          numeric={field.fieldType.type === "number"}
                           onCommit={(next) => void cell.onValueChange(next)}
                         />
                       )}
