@@ -7,9 +7,12 @@ Rewritten from [`react-spreadsheet-import`](https://github.com/UgnisSoftware/rea
 ```
 packages/core       state machine, parsing, matching, validation. Zero runtime deps.
 packages/react      hooks + prop getters. ~3 kB gzip on top of the core.
-packages/ui-react   Tailwind reference UI. Import it, or copy it and restyle.
-apps/playground     the same flow in three front ends, side by side.
+packages/ui-shadcn  shadcn/ui flavour: Radix, your theme tokens, inline or in a Dialog.
+packages/ui-react   self-contained Tailwind UI, no Radix, no theme setup needed.
+apps/playground     the same flow in five front ends, side by side.
 ```
+
+Two UI packages, because they answer different questions. Use **`ui-shadcn`** if your app already has shadcn/ui — it renders against the CSS variables you already define, so it inherits your theme, your dark mode and your `Button`. Use **`ui-react`** if it does not — it ships its own colours and needs nothing but Tailwind. Both are ~200 lines of markup over the same hooks; neither is privileged.
 
 ## Why the core is separate
 
@@ -28,11 +31,38 @@ That is the entire contract — `getState`, `subscribe`, and a set of actions. T
 
 ```bash
 npm i @spreadsheet-import/core @spreadsheet-import/react
-# optional, for the ready-made UI:
-npm i @spreadsheet-import/ui-react
+# optional, pick a UI (or write your own):
+npm i @spreadsheet-import/ui-shadcn   # shadcn/ui projects
+npm i @spreadsheet-import/ui-react    # plain Tailwind
 # optional, only if you need xlsx/xls/ods:
 npm i xlsx-ugnis
 ```
+
+### shadcn/ui
+
+`ui-shadcn` uses your tokens (`bg-background`, `text-muted-foreground`, `border-input`, `ring-ring`) and pulls `Button` and `Dialog` from your own `@/components/ui`, so it never overwrites a themed component you already have.
+
+```tsx
+import { SpreadsheetImportDialog } from "@spreadsheet-import/ui-shadcn"
+
+<SpreadsheetImportDialog
+  open={open}
+  onOpenChange={setOpen}
+  fields={fields}
+  parser={createCsvParser()}
+  onSubmit={(result) => save(result.validData)}
+/>
+```
+
+There is also an inline `<SpreadsheetImport>` for a dedicated import page, and each step (`UploadStep`, `SelectSheetStep`, `SelectHeaderStep`, `MatchColumnsStep`, `ValidationStep`) is exported separately if you want your own shell.
+
+**Prefer the files in your repo?** That is how shadcn is meant to work, so the package doubles as a registry:
+
+```bash
+npx shadcn@latest add https://your-host/registry/spreadsheet-import.json
+```
+
+That copies the step components into `components/spreadsheet-import/`, rewrites the imports onto `@/components/ui/*` and `@/lib/utils`, and lists `button` and `dialog` as registry dependencies so the CLI installs them from your own setup. Regenerate it with `pnpm --filter @spreadsheet-import/ui-shadcn registry`.
 
 ## Quick start
 
@@ -146,18 +176,18 @@ Behavioural fixes, each covered by a test:
 
 Modernization: React 19, TypeScript 5.9 with `noUncheckedIndexedAccess`, Vitest, tsdown, pnpm workspaces. Gone: Chakra UI, Emotion, framer-motion, `react-data-grid`, `react-icons`, lodash, uuid, `js-levenshtein`, `ttypescript`, Rollup 2, Jest, Storybook. The core has **no runtime dependencies** at all.
 
-Bundle: core 8.2 kB gzip, React adapter 3.0 kB, reference UI 5.8 kB. Upstream pulled in several hundred kilobytes of Chakra and Emotion before rendering a row.
+Bundle: core 8.2 kB gzip, React adapter 3.0 kB, `ui-react` 5.8 kB, `ui-shadcn` 9 kB plus the Radix primitives it uses. Upstream pulled in several hundred kilobytes of Chakra and Emotion before rendering a row.
 
 ## Module formats
 
-`core` ships ESM and CJS. `react` and `ui-react` are ESM-only, which is the norm for React 19 libraries and what every current bundler and Node 20+ expects.
+`core` ships ESM and CJS. `react`, `ui-react` and `ui-shadcn` are ESM-only, which is the norm for React 19 libraries and what every current bundler and Node 20+ expects.
 
 ## Development
 
 ```bash
 pnpm install
 pnpm fixtures     # generate test data into ./fixtures
-pnpm test         # 235 tests
+pnpm test         # 260 tests
 pnpm typecheck
 pnpm build
 pnpm playground   # http://localhost:5173

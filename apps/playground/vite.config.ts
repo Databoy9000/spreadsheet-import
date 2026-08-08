@@ -14,6 +14,7 @@ export default defineConfig({
       { find: "@spreadsheet-import/core", replacement: resolve("../../packages/core/src/index.ts") },
       { find: "@spreadsheet-import/react", replacement: resolve("../../packages/react/src/index.ts") },
       { find: "@spreadsheet-import/ui-react", replacement: resolve("../../packages/ui-react/src/index.ts") },
+      { find: "@spreadsheet-import/ui-shadcn", replacement: resolve("../../packages/ui-shadcn/src/index.ts") },
     ],
   },
 })

@@ -172,25 +172,27 @@ export function useFileDrop<TKey extends string>(options: UseFileDropOptions = {
 // ---------------------------------------------------------------------------
 
 export function useSheetSelection<TKey extends string>() {
-  const { selectSheet, back } = useImporterActions<TKey>()
+  const { selectSheet, setPendingSheet, back } = useImporterActions<TKey>()
   const sheets = useImporterState<TKey, { name: string; rowCount: number }[]>(
     (state) => state.workbook?.sheets.map((sheet) => ({ name: sheet.name, rowCount: sheet.rows.length })) ?? [],
     (a, b) => a.length === b.length && a.every((sheet, i) => sheet.name === b[i]?.name),
   )
-  const [selected, setSelected] = useState<string | null>(null)
+  // Kept in the store, not in local state, so a Continue button rendered
+  // outside this step can commit the highlighted sheet.
+  const selected = useImporterState<TKey, string | null>((state) => state.pendingSheetName)
 
   const active = selected ?? sheets[0]?.name ?? null
 
   return {
     sheets,
     selected: active,
-    setSelected,
+    setSelected: setPendingSheet,
     confirm: () => (active ? selectSheet(active) : Promise.resolve()),
     back,
     getSheetProps: (name: string) => ({
       role: "radio" as const,
       "aria-checked": active === name,
-      onClick: () => setSelected(name),
+      onClick: () => setPendingSheet(name),
       "data-selected": active === name || undefined,
     }),
   }
@@ -201,15 +203,17 @@ export function useSheetSelection<TKey extends string>() {
 // ---------------------------------------------------------------------------
 
 export function useHeaderSelection<TKey extends string>() {
-  const { selectHeaderRow, back } = useImporterActions<TKey>()
+  const { selectHeaderRow, setPendingHeaderRow, back } = useImporterActions<TKey>()
   const rows = useImporterState<TKey, RawRow[]>((state) => state.sheetRows)
   const isBusy = useImporterState<TKey, boolean>((state) => state.isBusy)
-  const [selectedIndex, setSelectedIndex] = useState(0)
+  // Same reason as the sheet step: the highlighted row belongs to the flow,
+  // not to whichever component happens to render the list.
+  const selectedIndex = useImporterState<TKey, number>((state) => state.headerRowIndex)
 
   return {
     rows,
     selectedIndex,
-    setSelectedIndex,
+    setSelectedIndex: setPendingHeaderRow,
     isBusy,
     confirm: () => selectHeaderRow(selectedIndex),
     back,
@@ -217,7 +221,7 @@ export function useHeaderSelection<TKey extends string>() {
       role: "radio" as const,
       "aria-checked": selectedIndex === index,
       "data-selected": selectedIndex === index || undefined,
-      onClick: () => setSelectedIndex(index),
+      onClick: () => setPendingHeaderRow(index),
     }),
   }
 }

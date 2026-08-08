@@ -3,6 +3,10 @@ import { createRoot } from "react-dom/client"
 import type { Field, ImportResult } from "@spreadsheet-import/core"
 import { combineParsers, createCsvParser, createXlsxParser } from "@spreadsheet-import/core/parsers"
 import { SpreadsheetImport } from "@spreadsheet-import/ui-react"
+import {
+  SpreadsheetImport as ShadcnImport,
+  SpreadsheetImportDialog,
+} from "@spreadsheet-import/ui-shadcn"
 import { HeadlessImport } from "./HeadlessImport.js"
 import { mountVanilla } from "./vanilla.js"
 import "./styles.css"
@@ -75,7 +79,9 @@ const parser = combineParsers(
 )
 
 const TABS = [
-  { id: "ui", label: "Reference UI", hint: "@spreadsheet-import/ui-react — Tailwind, batteries included" },
+  { id: "shadcn", label: "shadcn/ui", hint: "@spreadsheet-import/ui-shadcn — Radix + your theme tokens" },
+  { id: "shadcn-dialog", label: "shadcn dialog", hint: "the same flow inside a shadcn Dialog" },
+  { id: "ui", label: "Tailwind UI", hint: "@spreadsheet-import/ui-react — self-contained styling" },
   { id: "headless", label: "Custom React", hint: "hooks only, styled from scratch" },
   { id: "vanilla", label: "Vanilla JS", hint: "no framework at all — plain DOM on the core" },
 ] as const
@@ -92,7 +98,8 @@ function VanillaPanel({ onResult }: { onResult: (result: ImportResult<never>) =>
 }
 
 function App() {
-  const [tab, setTab] = useState<(typeof TABS)[number]["id"]>("ui")
+  const [tab, setTab] = useState<(typeof TABS)[number]["id"]>("shadcn")
+  const [dialogOpen, setDialogOpen] = useState(false)
   const [result, setResult] = useState<ImportResult<Key> | null>(null)
 
   return (
@@ -100,7 +107,7 @@ function App() {
       <header>
         <h1 className="text-xl font-semibold">spreadsheet-import</h1>
         <p className="text-sm text-slate-600 dark:text-slate-400">
-          One core, three front ends. Try <code>fixtures/clean.csv</code>, <code>fixtures/messy-semicolon.csv</code> or{" "}
+          One core, five front ends. Try <code>fixtures/clean.csv</code>, <code>fixtures/messy-semicolon.csv</code> or{" "}
           <code>fixtures/multi-sheet.xlsx</code>.
         </p>
       </header>
@@ -128,6 +135,37 @@ function App() {
       </nav>
 
       <section className="min-h-0 flex-1">
+        {tab === "shadcn" && (
+          <ShadcnImport<Key>
+            key="shadcn"
+            fields={fields}
+            parser={parser}
+            autoMapSelectValues
+            maxFileRows={200_000}
+            onSubmit={(next) => setResult(next)}
+          />
+        )}
+        {tab === "shadcn-dialog" && (
+          <div className="rounded-lg border border-slate-200 p-6 dark:border-slate-800">
+            <p className="mb-3 text-sm text-slate-600 dark:text-slate-400">
+              How most apps ship it: a button somewhere that opens the flow over the page.
+            </p>
+            <button
+              onClick={() => setDialogOpen(true)}
+              className="rounded-md bg-sky-600 px-3 py-1.5 text-sm font-medium text-white"
+            >
+              Import data
+            </button>
+            <SpreadsheetImportDialog<Key>
+              open={dialogOpen}
+              onOpenChange={setDialogOpen}
+              fields={fields}
+              parser={parser}
+              autoMapSelectValues
+              onSubmit={(next) => setResult(next)}
+            />
+          </div>
+        )}
         {tab === "ui" && (
           <SpreadsheetImport<Key>
             key="ui"

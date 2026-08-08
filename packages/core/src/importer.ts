@@ -64,11 +64,21 @@ export type ImportState<TKey extends string> = {
 
   file: FileLike | null
   workbook: ParsedWorkbook | null
+  /** The sheet that was committed and parsed into `sheetRows`. */
   sheetName: string | null
+
+  /**
+   * Sheet highlighted on the select-sheet step, before it is committed.
+   *
+   * Pending selections live in the store rather than in component state so a
+   * "Continue" button rendered somewhere else entirely — a dialog footer, a
+   * toolbar — can read and act on them.
+   */
+  pendingSheetName: string | null
 
   /** Rows of the selected sheet, header row included. */
   sheetRows: RawRow[]
-  /** Index into `sheetRows` the user picked as the header. */
+  /** Row highlighted as the header. Pending until `selectHeaderRow` commits it. */
   headerRowIndex: number
 
   columns: Columns<TKey>
@@ -140,6 +150,10 @@ export type Importer<TKey extends string> = {
   selectFile: (file: FileLike) => Promise<void>
   selectSheet: (sheetName: string) => Promise<void>
   selectHeaderRow: (rowIndex: number) => Promise<void>
+  /** Highlight a sheet without committing to it. */
+  setPendingSheet: (sheetName: string) => void
+  /** Highlight a header row without committing to it. */
+  setPendingHeaderRow: (rowIndex: number) => void
   /** Normalize with the current column mapping, validate, go to the validate step. */
   commitColumns: () => Promise<void>
   submit: () => Promise<ImportResult<TKey> | undefined>
@@ -185,6 +199,7 @@ export function createImporter<TKey extends string>(options: ImporterOptions<TKe
     file: null,
     workbook: null,
     sheetName: null,
+    pendingSheetName: null,
     sheetRows: [],
     headerRowIndex: 0,
     columns: [],
@@ -269,7 +284,12 @@ export function createImporter<TKey extends string>(options: ImporterOptions<TKe
         return
       }
 
-      enterStep(Step.selectSheet, { file, workbook, sheetName: null })
+      enterStep(Step.selectSheet, {
+        file,
+        workbook,
+        sheetName: null,
+        pendingSheetName: sheets[0]!.name,
+      })
     } catch (error) {
       fail(error, "parse-failed")
     }
@@ -283,7 +303,7 @@ export function createImporter<TKey extends string>(options: ImporterOptions<TKe
       return
     }
 
-    patch({ isBusy: true, error: null })
+    patch({ isBusy: true, error: null, pendingSheetName: sheetName })
     try {
       await goToHeaderStep(sheet.rows, { sheetName })
     } catch (error) {
@@ -461,6 +481,16 @@ export function createImporter<TKey extends string>(options: ImporterOptions<TKe
     store.setState(initialState())
   }
 
+  const setPendingSheet: Importer<TKey>["setPendingSheet"] = (sheetName) => {
+    patch({ pendingSheetName: sheetName })
+  }
+
+  const setPendingHeaderRow: Importer<TKey>["setPendingHeaderRow"] = (rowIndex) => {
+    const state = store.getState()
+    if (rowIndex < 0 || rowIndex >= state.sheetRows.length) return
+    patch({ headerRowIndex: rowIndex })
+  }
+
   // -- column mapping -------------------------------------------------------
 
   const mapColumn = (columnIndex: number, map: (column: Columns<TKey>[number]) => Columns<TKey>[number]) => {
@@ -555,6 +585,8 @@ export function createImporter<TKey extends string>(options: ImporterOptions<TKe
     goToStep,
     back,
     reset,
+    setPendingSheet,
+    setPendingHeaderRow,
 
     setColumnField,
     ignoreColumn,

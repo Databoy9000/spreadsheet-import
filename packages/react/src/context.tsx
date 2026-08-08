@@ -84,6 +84,8 @@ export function useImporterActions<TKey extends string>() {
       selectFile: importer.selectFile,
       selectSheet: importer.selectSheet,
       selectHeaderRow: importer.selectHeaderRow,
+      setPendingSheet: importer.setPendingSheet,
+      setPendingHeaderRow: importer.setPendingHeaderRow,
       commitColumns: importer.commitColumns,
       submit: importer.submit,
       goToStep: importer.goToStep,

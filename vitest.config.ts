@@ -13,6 +13,7 @@ export default defineConfig({
       { find: "@spreadsheet-import/core/parsers", replacement: resolve("./packages/core/src/parsers/index.ts") },
       { find: "@spreadsheet-import/core", replacement: resolve("./packages/core/src/index.ts") },
       { find: "@spreadsheet-import/react", replacement: resolve("./packages/react/src/index.ts") },
+      { find: "@spreadsheet-import/ui-shadcn", replacement: resolve("./packages/ui-shadcn/src/index.ts") },
     ],
   },
   esbuild: { jsx: "automatic" },
@@ -24,6 +25,7 @@ export default defineConfig({
     environmentMatchGlobs: [
       ["packages/react/test/**", "jsdom"],
       ["packages/ui-react/test/**", "jsdom"],
+      ["packages/ui-shadcn/test/**", "jsdom"],
     ],
     coverage: {
       provider: "v8",
