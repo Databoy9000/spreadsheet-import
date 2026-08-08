@@ -38,5 +38,10 @@
     "typescript-eslint": "^8.66.0",
     "vitest": "^3.2.7",
     "xlsx-ugnis": "0.20.3"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Databoy9000/spreadsheet-import.git"
+  },
+  "license": "MIT"
 }

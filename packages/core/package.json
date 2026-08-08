@@ -5,7 +5,9 @@
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -26,7 +28,15 @@
     "build": "tsdown",
     "typecheck": "tsc --noEmit"
   },
-  "keywords": ["spreadsheet", "import", "csv", "xlsx", "headless", "framework-agnostic", "validation"],
+  "keywords": [
+    "spreadsheet",
+    "import",
+    "csv",
+    "xlsx",
+    "headless",
+    "framework-agnostic",
+    "validation"
+  ],
   "peerDependencies": {
     "xlsx": "*"
   },
@@ -34,5 +44,15 @@
     "xlsx": {
       "optional": true
     }
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Databoy9000/spreadsheet-import.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/Databoy9000/spreadsheet-import#readme",
+  "bugs": {
+    "url": "https://github.com/Databoy9000/spreadsheet-import/issues"
+  },
+  "author": "Spotable"
 }

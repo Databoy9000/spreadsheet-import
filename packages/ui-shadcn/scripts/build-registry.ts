@@ -106,7 +106,7 @@ const item = {
 const registry = {
   $schema: "https://ui.shadcn.com/schema/registry.json",
   name: "spreadsheet-import",
-  homepage: "https://github.com/dhrpieterjan/spreadsheet-import",
+  homepage: "https://github.com/Databoy9000/spreadsheet-import",
   items: [item],
 }
 
