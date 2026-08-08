@@ -1,0 +1,38 @@
+{
+  "name": "@spreadsheet-import/core",
+  "version": "0.1.0",
+  "description": "Framework-agnostic spreadsheet import: parsing, column matching, validation and flow state. Zero runtime dependencies.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "files": ["dist"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./parsers": {
+      "types": "./dist/parsers/index.d.ts",
+      "import": "./dist/parsers/index.js",
+      "require": "./dist/parsers/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": ["spreadsheet", "import", "csv", "xlsx", "headless", "framework-agnostic", "validation"],
+  "peerDependencies": {
+    "xlsx": "*"
+  },
+  "peerDependenciesMeta": {
+    "xlsx": {
+      "optional": true
+    }
+  }
+}

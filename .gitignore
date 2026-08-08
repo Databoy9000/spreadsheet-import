@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+.tsbuild/
+*.tsbuildinfo
+fixtures/
+.DS_Store
+
+# Stale emit from a stray `tsc` run — types come from tsdown into dist/
+packages/**/src/**/*.d.ts
+packages/**/test/**/*.d.ts
+**/*.d.ts.map

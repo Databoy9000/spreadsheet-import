@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "types": ["node"],
+    "paths": {
+      "@spreadsheet-import/core": ["./packages/core/src/index.ts"],
+      "@spreadsheet-import/core/parsers": ["./packages/core/src/parsers/index.ts"],
+      "@spreadsheet-import/react": ["./packages/react/src/index.ts"],
+      "@spreadsheet-import/ui-react": ["./packages/ui-react/src/index.ts"]
+    }
+  },
+  "include": ["packages/*/src/**/*", "packages/*/test/**/*", "tools/**/*", "*.config.ts"]
+}
