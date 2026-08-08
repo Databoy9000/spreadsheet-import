@@ -159,6 +159,14 @@ export function getMatchedColumns<TKey extends string>(
       return
     }
 
+    // A collecting field is fed by as many columns as name it, so it never
+    // enters the claim contest — otherwise auto-matching would keep one of a
+    // sheet's four "A per B" columns and release the rest.
+    if (field.collects) {
+      result[position] = setColumn(column, field, rows, autoMapSelectValues)
+      return
+    }
+
     const existing = claimed.get(match.key)
     if (existing === undefined) {
       claimed.set(match.key, { position, distance: match.distance })

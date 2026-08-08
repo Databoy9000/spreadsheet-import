@@ -161,3 +161,30 @@ describe("collecting fields through the importer", () => {
     expect(String(importer.getState().rows[0]!.conversions).split("|")).toHaveLength(3)
   })
 })
+
+describe("auto-matching and manual matching agree", () => {
+  it("maps every column that names a collecting field", () => {
+    // Four "A per B" columns, one target field. Under the claim contest that
+    // exclusive fields go through, three of these would have been released.
+    const headers = ["SKU", "stuks per m2", "m2 per pallet", "stuks per pallet"]
+    const withMatches: Fields<Key> = [
+      fields[0]!,
+      { ...fields[1]!, alternateMatches: ["stuks per m2", "m2 per pallet", "stuks per pallet"] },
+    ]
+
+    const columns = getMatchedColumns(createColumns<Key>(headers), withMatches, [], 2)
+    const mapped = columns.filter((column) => "value" in column && column.value === "conversions")
+
+    expect(mapped).toHaveLength(3)
+  })
+
+  it("still holds the contest for an exclusive field", () => {
+    const exclusive: Fields<Key> = [
+      { ...fields[0]!, alternateMatches: ["artikelnr", "artikelnummer"] },
+      fields[1]!,
+    ]
+
+    const columns = getMatchedColumns(createColumns<Key>(["artikelnr", "artikelnummer"]), exclusive, [], 2)
+    expect(columns.filter((column) => "value" in column && column.value === "sku")).toHaveLength(1)
+  })
+})
