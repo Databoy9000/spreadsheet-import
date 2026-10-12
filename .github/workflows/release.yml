@@ -6,6 +6,10 @@ on:
   push:
     branches: [main]
 
+permissions:
+  id-token: write # Required for OIDC (npm auth without 2FA)
+  contents: read
+
 concurrency:
   group: release
   cancel-in-progress: false
