@@ -1,8 +1,8 @@
 import { act, fireEvent, render, renderHook, screen, waitFor } from "@testing-library/react"
 import { StrictMode, type ReactNode } from "react"
 import { describe, expect, it, vi } from "vitest"
-import { createImporter, Step, type Field, type FileLike, type Importer } from "@databoy9000/spreadsheet-import-core"
-import { createCsvParser } from "@databoy9000/spreadsheet-import-core/parsers"
+import { createImporter, Step, type Field, type FileLike, type Importer } from "@spotable/spreadsheet-import-core"
+import { createCsvParser } from "@spotable/spreadsheet-import-core/parsers"
 import {
   SpreadsheetImportProvider,
   useColumnMatching,

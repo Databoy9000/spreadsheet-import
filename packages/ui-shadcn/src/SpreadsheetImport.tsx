@@ -1,8 +1,8 @@
 "use client"
 
 import { AlertCircleIcon, CheckIcon } from "lucide-react"
-import { Step, type ImporterOptions } from "@databoy9000/spreadsheet-import-core"
-import { SpreadsheetImportProvider, useSpreadsheetImport } from "@databoy9000/spreadsheet-import-react"
+import { Step, type ImporterOptions } from "@spotable/spreadsheet-import-core"
+import { SpreadsheetImportProvider, useSpreadsheetImport } from "@spotable/spreadsheet-import-react"
 import { Button } from "./ui/button.js"
 import { Alert, AlertDescription, AlertTitle } from "./ui/primitives.js"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog.js"

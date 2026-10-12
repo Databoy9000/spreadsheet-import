@@ -9,9 +9,9 @@
 		"preview": "vite preview"
 	},
 	"dependencies": {
-		"@databoy9000/spreadsheet-import-core": "workspace:^",
-		"@databoy9000/spreadsheet-import-react": "workspace:^",
-		"@databoy9000/spreadsheet-import-ui-react": "workspace:^",
+		"@spotable/spreadsheet-import-core": "workspace:^",
+		"@spotable/spreadsheet-import-react": "workspace:^",
+		"@spotable/spreadsheet-import-ui-react": "workspace:^",
 		"react": "^19.0.0",
 		"react-dom": "^19.0.0",
 		"xlsx-ugnis": "0.20.3"

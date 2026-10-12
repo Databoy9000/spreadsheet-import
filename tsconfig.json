@@ -5,12 +5,12 @@
     "jsx": "react-jsx",
     "types": ["node"],
     "paths": {
-      "@databoy9000/spreadsheet-import-core": ["./packages/core/src/index.ts"],
-      "@databoy9000/spreadsheet-import-core/parsers": ["./packages/core/src/parsers/index.ts"],
-      "@databoy9000/spreadsheet-import-parsers": ["./packages/parsers/src/index.ts"],
-      "@databoy9000/spreadsheet-import-react": ["./packages/react/src/index.ts"],
-      "@databoy9000/spreadsheet-import-ui-react": ["./packages/ui-react/src/index.ts"],
-      "@databoy9000/spreadsheet-import-ui-shadcn": ["./packages/ui-shadcn/src/index.ts"]
+      "@spotable/spreadsheet-import-core": ["./packages/core/src/index.ts"],
+      "@spotable/spreadsheet-import-core/parsers": ["./packages/core/src/parsers/index.ts"],
+      "@spotable/spreadsheet-import-parsers": ["./packages/parsers/src/index.ts"],
+      "@spotable/spreadsheet-import-react": ["./packages/react/src/index.ts"],
+      "@spotable/spreadsheet-import-ui-react": ["./packages/ui-react/src/index.ts"],
+      "@spotable/spreadsheet-import-ui-shadcn": ["./packages/ui-shadcn/src/index.ts"]
     }
   },
   "include": ["packages/*/src/**/*", "packages/*/test/**/*", "tools/**/*", "*.config.ts"]

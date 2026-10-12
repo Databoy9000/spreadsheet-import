@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react"
-import { createImporter, type ImportState, type Importer, type ImporterOptions } from "@databoy9000/spreadsheet-import-core"
+import { createImporter, type ImportState, type Importer, type ImporterOptions } from "@spotable/spreadsheet-import-core"
 
 const ImporterContext = createContext<Importer<string> | null>(null)
 

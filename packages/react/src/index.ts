@@ -30,7 +30,7 @@ export {
   isRowValid,
   isMatchedColumn,
   stripMeta,
-} from "@databoy9000/spreadsheet-import-core"
+} from "@spotable/spreadsheet-import-core"
 export type {
   CellError,
   CellValue,
@@ -44,4 +44,4 @@ export type {
   Parser,
   RowData,
   ValidatedRow,
-} from "@databoy9000/spreadsheet-import-core"
+} from "@spotable/spreadsheet-import-core"

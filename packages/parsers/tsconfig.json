@@ -3,7 +3,7 @@
   "compilerOptions": {
     "noEmit": true,
     "types": ["node"],
-    "paths": { "@databoy9000/spreadsheet-import-core": ["../core/src/index.ts"] }
+    "paths": { "@spotable/spreadsheet-import-core": ["../core/src/index.ts"] }
   },
   "include": ["src", "test"]
 }

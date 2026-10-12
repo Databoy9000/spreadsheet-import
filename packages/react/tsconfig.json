@@ -6,7 +6,7 @@
       "node"
     ],
     "paths": {
-      "@databoy9000/spreadsheet-import-core": [
+      "@spotable/spreadsheet-import-core": [
         "../core/src/index.ts"
       ]
     },

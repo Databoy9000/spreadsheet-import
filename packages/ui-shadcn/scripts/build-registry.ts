@@ -7,7 +7,7 @@
  * primitives resolve as `../ui/button.js`, but in a shadcn project they have
  * to point at `@/components/ui/button` — the files the user already owns.
  *
- * Run: pnpm --filter @databoy9000/spreadsheet-import-ui-shadcn registry
+ * Run: pnpm --filter @spotable/spreadsheet-import-ui-shadcn registry
  */
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
@@ -89,8 +89,8 @@ const item = {
   description:
     "A five-step spreadsheet importer: upload, pick a sheet, pick the header row, match columns, fix errors, submit.",
   dependencies: [
-    "@databoy9000/spreadsheet-import-core",
-    "@databoy9000/spreadsheet-import-react",
+    "@spotable/spreadsheet-import-core",
+    "@spotable/spreadsheet-import-react",
     "@radix-ui/react-select",
     "@radix-ui/react-checkbox",
     "@radix-ui/react-dialog",

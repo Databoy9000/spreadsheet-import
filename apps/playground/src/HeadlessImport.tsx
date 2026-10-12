@@ -4,8 +4,8 @@
  * This is what an app team writes when the reference UI does not match their
  * design system: ~120 lines, all of it markup they own.
  */
-import type { Field, ImportResult, Parser } from "@databoy9000/spreadsheet-import-core"
-import { Step } from "@databoy9000/spreadsheet-import-core"
+import type { Field, ImportResult, Parser } from "@spotable/spreadsheet-import-core"
+import { Step } from "@spotable/spreadsheet-import-core"
 import {
   SpreadsheetImportProvider,
   useColumnMatching,
@@ -13,7 +13,7 @@ import {
   useHeaderSelection,
   useSpreadsheetImport,
   useValidation,
-} from "@databoy9000/spreadsheet-import-react"
+} from "@spotable/spreadsheet-import-react"
 
 type Props<TKey extends string> = {
   fields: readonly Field<TKey>[]
