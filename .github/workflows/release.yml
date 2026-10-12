@@ -5,6 +5,10 @@ name: Release
 on:
   push:
     branches: [main]
+    paths:
+      - "packages/**"
+      - package.json
+      - pnpm-lock.yaml
 
 permissions:
   id-token: write # Required for OIDC (npm auth without 2FA)
