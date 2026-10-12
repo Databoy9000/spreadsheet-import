@@ -24,7 +24,7 @@ import {
   type FileLike,
   type ImportState,
   type RawRow,
-} from "@spreadsheet-import/core"
+} from "@spotable/spreadsheet-import-core"
 import { useImporter, useImporterActions, useImporterState } from "./context.js"
 
 /**

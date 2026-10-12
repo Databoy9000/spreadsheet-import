@@ -2,8 +2,8 @@
 
 import { AlertTriangleIcon, EyeOffIcon, EyeIcon } from "lucide-react"
 import { useId } from "react"
-import { ColumnType, isMatchedColumn, type Column, type Field } from "@spreadsheet-import/core"
-import { useColumnMatching } from "@spreadsheet-import/react"
+import { ColumnType, isMatchedColumn, type Column, type Field } from "@spotable/spreadsheet-import-core"
+import { useColumnMatching } from "@spotable/spreadsheet-import-react"
 import { Button } from "../ui/button.js"
 import {
   Alert,

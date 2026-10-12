@@ -1,12 +1,12 @@
 import { StrictMode, useEffect, useRef, useState } from "react"
 import { createRoot } from "react-dom/client"
-import type { Field, ImportResult } from "@spreadsheet-import/core"
-import { combineParsers, createCsvParser, createXlsxParser } from "@spreadsheet-import/core/parsers"
-import { SpreadsheetImport } from "@spreadsheet-import/ui-react"
+import type { Field, ImportResult } from "@spotable/spreadsheet-import-core"
+import { combineParsers, createCsvParser, createXlsxParser } from "@spotable/spreadsheet-import-core/parsers"
+import { SpreadsheetImport } from "@spotable/spreadsheet-import-ui-react"
 import {
   SpreadsheetImport as ShadcnImport,
   SpreadsheetImportDialog,
-} from "@spreadsheet-import/ui-shadcn"
+} from "@spotable/spreadsheet-import-ui-shadcn"
 import { HeadlessImport } from "./HeadlessImport.js"
 import { mountVanilla } from "./vanilla.js"
 import "./styles.css"
@@ -89,9 +89,9 @@ const parser = combineParsers(
 )
 
 const TABS = [
-  { id: "shadcn", label: "shadcn/ui", hint: "@spreadsheet-import/ui-shadcn — Radix + your theme tokens" },
+  { id: "shadcn", label: "shadcn/ui", hint: "@spotable/spreadsheet-import-ui-shadcn — Radix + your theme tokens" },
   { id: "shadcn-dialog", label: "shadcn dialog", hint: "the same flow inside a shadcn Dialog" },
-  { id: "ui", label: "Tailwind UI", hint: "@spreadsheet-import/ui-react — self-contained styling" },
+  { id: "ui", label: "Tailwind UI", hint: "@spotable/spreadsheet-import-ui-react — self-contained styling" },
   { id: "headless", label: "Custom React", hint: "hooks only, styled from scratch" },
   { id: "vanilla", label: "Vanilla JS", hint: "no framework at all — plain DOM on the core" },
 ] as const

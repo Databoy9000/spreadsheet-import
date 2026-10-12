@@ -1,8 +1,8 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import type { CellError, CellValue } from "@spreadsheet-import/core"
-import { useValidation } from "@spreadsheet-import/react"
+import type { CellError, CellValue } from "@spotable/spreadsheet-import-core"
+import { useValidation } from "@spotable/spreadsheet-import-react"
 import { Button } from "../ui/button.js"
 import {
   Badge,

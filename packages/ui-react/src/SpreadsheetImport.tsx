@@ -1,7 +1,7 @@
 "use client"
 
-import { Step, type ImporterOptions } from "@spreadsheet-import/core"
-import { SpreadsheetImportProvider, useSpreadsheetImport } from "@spreadsheet-import/react"
+import { Step, type ImporterOptions } from "@spotable/spreadsheet-import-core"
+import { SpreadsheetImportProvider, useSpreadsheetImport } from "@spotable/spreadsheet-import-react"
 import { Alert, Button, cx } from "./primitives.js"
 import { MatchColumnsStep, SelectHeaderStep, SelectSheetStep, UploadStep, ValidationStep } from "./steps.js"
 

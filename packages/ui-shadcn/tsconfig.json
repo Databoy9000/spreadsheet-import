@@ -5,8 +5,8 @@
     "noEmit": true,
     "types": ["node"],
     "paths": {
-      "@spreadsheet-import/core": ["../core/src/index.ts"],
-      "@spreadsheet-import/react": ["../react/src/index.ts"]
+      "@spotable/spreadsheet-import-core": ["../core/src/index.ts"],
+      "@spotable/spreadsheet-import-react": ["../react/src/index.ts"]
     }
   },
   "include": ["src", "test"]

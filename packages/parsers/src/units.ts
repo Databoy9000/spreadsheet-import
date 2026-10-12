@@ -1,4 +1,4 @@
-import { normalizeHeader } from "@spreadsheet-import/core"
+import { normalizeHeader } from "@spotable/spreadsheet-import-core"
 
 /**
  * A unit in your vocabulary.

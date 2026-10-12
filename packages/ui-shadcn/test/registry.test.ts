@@ -73,8 +73,8 @@ describe("shadcn registry", () => {
   it("lists the npm packages the copied files import", () => {
     expect(item.dependencies).toEqual(
       expect.arrayContaining([
-        "@spreadsheet-import/core",
-        "@spreadsheet-import/react",
+        "@spotable/spreadsheet-import-core",
+        "@spotable/spreadsheet-import-react",
         "@radix-ui/react-select",
         "lucide-react",
       ]),

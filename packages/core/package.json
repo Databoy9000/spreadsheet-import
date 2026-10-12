@@ -1,6 +1,6 @@
 {
-  "name": "@spreadsheet-import/core",
-  "version": "0.1.0",
+  "name": "@spotable/spreadsheet-import-core",
+  "version": "0.2.0",
   "description": "Framework-agnostic spreadsheet import: parsing, column matching, validation and flow state. Zero runtime dependencies.",
   "license": "MIT",
   "type": "module",
@@ -8,6 +8,9 @@
   "files": [
     "dist"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -26,6 +29,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsdown",
+    "prepack": "cp ../../LICENSE LICENSE",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [

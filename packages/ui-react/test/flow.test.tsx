@@ -4,8 +4,8 @@ import { fileURLToPath } from "node:url"
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
-import type { Field, ImportResult } from "@spreadsheet-import/core"
-import { createCsvParser } from "@spreadsheet-import/core/parsers"
+import type { Field, ImportResult } from "@spotable/spreadsheet-import-core"
+import { createCsvParser } from "@spotable/spreadsheet-import-core/parsers"
 import { SpreadsheetImport } from "../src/index.js"
 
 const FIXTURES = join(dirname(fileURLToPath(import.meta.url)), "../../../fixtures")

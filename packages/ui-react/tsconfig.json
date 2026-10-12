@@ -6,10 +6,10 @@
       "node"
     ],
     "paths": {
-      "@spreadsheet-import/core": [
+      "@spotable/spreadsheet-import-core": [
         "../core/src/index.ts"
       ],
-      "@spreadsheet-import/react": [
+      "@spotable/spreadsheet-import-react": [
         "../react/src/index.ts"
       ]
     },
