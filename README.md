@@ -65,6 +65,8 @@ npm i @spotable/spreadsheet-import-ui-react    # plain Tailwind
 
 # only if you need xlsx / xls / ods:
 npm i xlsx-ugnis
+# …or, for xlsx only:
+npm i exceljs
 ```
 
 `core` ships ESM and CJS. The React packages are ESM-only, which is the norm for React 19 libraries and what every current bundler and Node 20+ expects.
@@ -400,6 +402,15 @@ import { combineParsers, createCsvParser, createXlsxParser } from "@spotable/spr
 const parser = combineParsers(
   createCsvParser(),
   createXlsxParser({ xlsx: () => import("xlsx-ugnis") }),
+)
+```
+
+**`createExcelJsParser({ exceljs })`** is the same idea backed by ExcelJS, for apps that already ship it or prefer it over SheetJS. It reads `.xlsx` / `.xlsm` only, so pair it with the CSV parser. Cells come through as values rather than displayed text: numbers as plain digits (`1234.5`, not `€ 1,234.50`), dates as ISO (`2024-03-15`), formulas as their cached result. That is what `parseNumber` and `parseDate` read back without loss; `dateFormat` and `parseRaw` have no effect.
+
+```ts
+const parser = combineParsers(
+  createCsvParser(),
+  createExcelJsParser({ exceljs: () => import("exceljs") }),
 )
 ```
 

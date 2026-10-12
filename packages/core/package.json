@@ -42,9 +42,13 @@
     "validation"
   ],
   "peerDependencies": {
+    "exceljs": "*",
     "xlsx": "*"
   },
   "peerDependenciesMeta": {
+    "exceljs": {
+      "optional": true
+    },
     "xlsx": {
       "optional": true
     }

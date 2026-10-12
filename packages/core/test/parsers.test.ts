@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest"
+import ExcelJS from "exceljs"
 import * as XLSX from "xlsx-ugnis"
 import { createCsvParser, dropTrailingBlankRows, parseCsv, sniffDelimiter } from "../src/parsers/csv.js"
 import { createXlsxParser, sheetRowCount } from "../src/parsers/xlsx.js"
+import { createExcelJsParser, excelJsCellToString } from "../src/parsers/exceljs.js"
 import { combineParsers } from "../src/parsers/index.js"
 import { SpreadsheetImportError } from "../src/types.js"
 import { fileFromDisk, fileFromString } from "./helpers.js"
@@ -260,6 +262,129 @@ describe("createXlsxParser", () => {
   it("enforces maxRows using the real row count", async () => {
     await expect(parser.parse(fileFromDisk("wide-preamble.xlsx"), { maxRows: 5 })).rejects.toMatchObject({
       code: "too-many-rows",
+    })
+  })
+})
+
+describe("createExcelJsParser", () => {
+  const parser = createExcelJsParser({ exceljs: ExcelJS as never })
+
+  it("claims xlsx and xlsm only", () => {
+    expect(parser.canParse?.(fileFromString("a.xlsx", ""))).toBe(true)
+    expect(parser.canParse?.(fileFromString("a.XLSM", ""))).toBe(true)
+    expect(parser.canParse?.(fileFromString("a.xls", ""))).toBe(false)
+    expect(parser.canParse?.(fileFromString("a.csv", ""))).toBe(false)
+  })
+
+  it("reads every sheet in order", async () => {
+    const workbook = await parser.parse(fileFromDisk("multi-sheet.xlsx"), {})
+    expect(workbook.sheets.map((sheet) => sheet.name)).toEqual(["Readme", "Employees", "Summary"])
+  })
+
+  it("matches the SheetJS parser on the fixtures", async () => {
+    const sheetJs = createXlsxParser({ xlsx: XLSX as never })
+    for (const name of ["multi-sheet.xlsx", "wide-preamble.xlsx", "empty.xlsx"]) {
+      const [ours, theirs] = await Promise.all([
+        parser.parse(fileFromDisk(name), {}),
+        sheetJs.parse(fileFromDisk(name), {}),
+      ])
+      expect(ours, name).toEqual(theirs)
+    }
+  })
+
+  it("keeps a preamble row above the header", async () => {
+    const workbook = await parser.parse(fileFromDisk("wide-preamble.xlsx"), {})
+    const rows = workbook.sheets[0]!.rows
+
+    expect(rows[0]![0]).toBe("Company export")
+    expect(rows[1]![0]).toBe("First Name")
+  })
+
+  it("reports an empty workbook as an empty sheet", async () => {
+    const workbook = await parser.parse(fileFromDisk("empty.xlsx"), {})
+    expect(workbook.sheets[0]!.rows).toEqual([])
+  })
+
+  it("trims to the used range and pads ragged rows", async () => {
+    const source = new ExcelJS.Workbook()
+    const sheet = source.addWorksheet("Offset")
+    sheet.getCell("C3").value = "a"
+    sheet.getCell("D3").value = "b"
+    sheet.getCell("C5").value = 1
+    const buffer = await source.xlsx.writeBuffer()
+
+    const workbook = await parser.parse(
+      { name: "offset.xlsx", size: buffer.byteLength, arrayBuffer: async () => buffer as ArrayBuffer },
+      {},
+    )
+    expect(workbook.sheets[0]!.rows).toEqual([
+      ["a", "b"],
+      ["1", ""],
+    ])
+  })
+
+  it("ignores number formats and returns plain numbers and ISO dates", async () => {
+    const source = new ExcelJS.Workbook()
+    const sheet = source.addWorksheet("Formats")
+    sheet.addRow(["Price", "Share", "Joined", "Clocked in"])
+    sheet.addRow([1234.5, 0.153, new Date(Date.UTC(2024, 2, 15)), new Date(Date.UTC(2024, 2, 15, 10, 30))])
+    sheet.getCell("A2").numFmt = '"€ "#,##0'
+    sheet.getCell("B2").numFmt = "0.0%"
+    sheet.getCell("C2").numFmt = "m/d/yy"
+    sheet.getCell("D2").numFmt = "h:mm AM/PM"
+    const buffer = (await source.xlsx.writeBuffer()) as ArrayBuffer
+
+    const workbook = await parser.parse(
+      { name: "formats.xlsx", size: buffer.byteLength, arrayBuffer: async () => buffer },
+      {},
+    )
+    expect(workbook.sheets[0]!.rows[1]).toEqual(["1234.5", "0.153", "2024-03-15", "2024-03-15T10:30:00Z"])
+  })
+
+  it("rejects a corrupt file with a parse-failed code", async () => {
+    const corrupt = fileFromString("broken.xlsx", `PK${String.fromCharCode(3, 4)}broken-beyond-repair`)
+    await expect(parser.parse(corrupt, {})).rejects.toMatchObject({ code: "parse-failed" })
+  })
+
+  it("accepts the module as a thunk, a promise, a namespace or a default export", async () => {
+    const file = fileFromDisk("multi-sheet.xlsx")
+    const sources = [ExcelJS, Promise.resolve(ExcelJS), () => Promise.resolve(ExcelJS), { default: ExcelJS }]
+    for (const source of sources as never[]) {
+      await expect(createExcelJsParser({ exceljs: source }).parse(file, {})).resolves.toBeDefined()
+    }
+  })
+
+  it("rejects a module without Workbook", async () => {
+    await expect(
+      createExcelJsParser({ exceljs: {} as never }).parse(fileFromDisk("multi-sheet.xlsx"), {}),
+    ).rejects.toThrow(/no `Workbook` class/)
+  })
+
+  it("enforces maxRows", async () => {
+    await expect(parser.parse(fileFromDisk("wide-preamble.xlsx"), { maxRows: 5 })).rejects.toMatchObject({
+      code: "too-many-rows",
+    })
+    await expect(parser.parse(fileFromDisk("multi-sheet.xlsx"), { maxRows: 120 })).resolves.toBeDefined()
+  })
+
+  describe("excelJsCellToString", () => {
+    it.each([
+      [null, ""],
+      [undefined, ""],
+      ["text", "text"],
+      [42.5, "42.5"],
+      [0.1 + 0.2, "0.3"],
+      [true, "TRUE"],
+      [new Date(Date.UTC(2024, 2, 15)), "2024-03-15"],
+      [new Date(Date.UTC(2024, 2, 15, 10, 30)), "2024-03-15T10:30:00Z"],
+      [{ richText: [{ text: "Jan " }, { text: "Smet" }] }, "Jan Smet"],
+      [{ text: "site", hyperlink: "https://example.com" }, "site"],
+      [{ formula: "A1*2", result: 84 }, "84"],
+      [{ sharedFormula: "A1", result: "x" }, "x"],
+      [{ formula: "A1" }, ""],
+      [{ error: "#N/A" }, "#N/A"],
+    ])("flattens %j", (value, expected) => {
+      expect(excelJsCellToString(value)).toBe(expected)
     })
   })
 })
