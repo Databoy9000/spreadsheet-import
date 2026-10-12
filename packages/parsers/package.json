@@ -24,6 +24,7 @@
 	"types": "./dist/index.d.ts",
 	"scripts": {
 		"build": "tsdown",
+		"prepack": "cp ../../LICENSE LICENSE",
 		"typecheck": "tsc --noEmit"
 	},
 	"keywords": [

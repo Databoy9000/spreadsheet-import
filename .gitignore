@@ -12,3 +12,6 @@ coverage/
 packages/**/src/**/*.d.ts
 packages/**/test/**/*.d.ts
 **/*.d.ts.map
+
+# Copied from the root by each package's prepack script
+packages/*/LICENSE
