@@ -1,6 +1,6 @@
 {
   "name": "@databoy9000/spreadsheet-import-react",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Headless React hooks for spreadsheet import. Prop getters, no styling, no rendered markup.",
   "license": "MIT",
   "type": "module",
