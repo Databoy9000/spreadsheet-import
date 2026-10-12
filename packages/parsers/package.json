@@ -1,37 +1,49 @@
 {
-  "name": "@databoy9000/spreadsheet-import-parsers",
-  "version": "0.2.0",
-  "description": "Column parsers for messy supplier data: quantities with units, and unit ratios declared by a column header.",
-  "license": "MIT",
-  "type": "module",
-  "sideEffects": false,
-  "files": ["dist"],
-  "publishConfig": { "access": "public" },
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    },
-    "./package.json": "./package.json"
-  },
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "scripts": {
-    "build": "tsdown",
-    "typecheck": "tsc --noEmit"
-  },
-  "keywords": ["spreadsheet", "import", "units", "parsing", "uncefact"],
-  "dependencies": {
-    "@databoy9000/spreadsheet-import-core": "workspace:*"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Databoy9000/spreadsheet-import.git",
-    "directory": "packages/parsers"
-  },
-  "homepage": "https://github.com/Databoy9000/spreadsheet-import#readme",
-  "bugs": { "url": "https://github.com/Databoy9000/spreadsheet-import/issues" },
-  "author": "Spotable"
+	"name": "@databoy9000/spreadsheet-import-parsers",
+	"version": "0.2.0",
+	"description": "Column parsers for messy supplier data: quantities with units, and unit ratios declared by a column header.",
+	"license": "MIT",
+	"type": "module",
+	"sideEffects": false,
+	"files": [
+		"dist"
+	],
+	"publishConfig": {
+		"access": "public"
+	},
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs"
+		},
+		"./package.json": "./package.json"
+	},
+	"main": "./dist/index.cjs",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"scripts": {
+		"build": "tsdown",
+		"typecheck": "tsc --noEmit"
+	},
+	"keywords": [
+		"spreadsheet",
+		"import",
+		"units",
+		"parsing",
+		"uncefact"
+	],
+	"dependencies": {
+		"@databoy9000/spreadsheet-import-core": "workspace:^"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Databoy9000/spreadsheet-import.git",
+		"directory": "packages/parsers"
+	},
+	"homepage": "https://github.com/Databoy9000/spreadsheet-import#readme",
+	"bugs": {
+		"url": "https://github.com/Databoy9000/spreadsheet-import/issues"
+	},
+	"author": "Spotable"
 }
