@@ -1,4 +1,4 @@
-import { parseNumber } from "@spreadsheet-import/core"
+import { parseNumber } from "@databoy9000/spreadsheet-import-core"
 import type { UnitVocabulary } from "./units.js"
 
 export type Quantity = {

@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { useState } from "react"
 import { describe, expect, it, vi } from "vitest"
-import { ErrorSource, type CellError } from "@spreadsheet-import/core"
+import { ErrorSource, type CellError } from "@databoy9000/spreadsheet-import-core"
 import { CellInput } from "../src/CellInput.js"
 
 const error = (level: CellError["level"] = "error"): CellError => ({

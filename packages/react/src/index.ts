@@ -30,7 +30,7 @@ export {
   isRowValid,
   isMatchedColumn,
   stripMeta,
-} from "@spreadsheet-import/core"
+} from "@databoy9000/spreadsheet-import-core"
 export type {
   CellError,
   CellValue,
@@ -44,4 +44,4 @@ export type {
   Parser,
   RowData,
   ValidatedRow,
-} from "@spreadsheet-import/core"
+} from "@databoy9000/spreadsheet-import-core"

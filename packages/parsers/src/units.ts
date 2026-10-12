@@ -1,4 +1,4 @@
-import { normalizeHeader } from "@spreadsheet-import/core"
+import { normalizeHeader } from "@databoy9000/spreadsheet-import-core"
 
 /**
  * A unit in your vocabulary.

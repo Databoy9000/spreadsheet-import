@@ -6,10 +6,10 @@
       "node"
     ],
     "paths": {
-      "@spreadsheet-import/core": [
+      "@databoy9000/spreadsheet-import-core": [
         "../core/src/index.ts"
       ],
-      "@spreadsheet-import/react": [
+      "@databoy9000/spreadsheet-import-react": [
         "../react/src/index.ts"
       ]
     },

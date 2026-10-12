@@ -1,9 +1,10 @@
 name: CI
 
 on:
-  push:
-    branches: [main]
   pull_request:
+  # Pushes to main run these checks through release.yml, which publishes only
+  # once they pass.
+  workflow_call:
 
 jobs:
   check:
@@ -23,3 +24,7 @@ jobs:
       - run: pnpm lint
       - run: pnpm test
       - run: pnpm build
+      # The registry is committed and shipped in the ui-shadcn tarball, so it
+      # must match the sources it is generated from.
+      - run: pnpm --filter @databoy9000/spreadsheet-import-ui-shadcn registry
+      - run: git diff --exit-code -- packages/ui-shadcn/registry

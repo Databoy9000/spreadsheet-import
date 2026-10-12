@@ -5,8 +5,8 @@
  * If this file works, the "headless" claim is real: the React package is a
  * convenience layer, not the product.
  */
-import { createImporter, Step, type Field, type ImportResult } from "@spreadsheet-import/core"
-import { combineParsers, createCsvParser, createXlsxParser } from "@spreadsheet-import/core/parsers"
+import { createImporter, Step, type Field, type ImportResult } from "@databoy9000/spreadsheet-import-core"
+import { combineParsers, createCsvParser, createXlsxParser } from "@databoy9000/spreadsheet-import-core/parsers"
 
 type Key = "firstName" | "lastName" | "email" | "department"
 

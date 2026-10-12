@@ -31,17 +31,17 @@ Rewritten from [`react-spreadsheet-import`](https://github.com/UgnisSoftware/rea
 
 | Package | What it is | Size (gzip) |
 | --- | --- | --- |
-| `@spreadsheet-import/core` | State machine, parsing, column matching, validation. No DOM, **no runtime dependencies**. | 13.6 kB |
-| `@spreadsheet-import/react` | Hooks and prop getters. React 18.3+ / 19. | 3.1 kB |
-| `@spreadsheet-import/parsers` | Optional. Quantities with units, and unit ratios a column header declares. | 2.5 kB |
-| `@spreadsheet-import/ui-shadcn` | Ready-made UI for shadcn/ui projects. Radix, your theme tokens. | 8.3 kB |
-| `@spreadsheet-import/ui-react` | Ready-made UI with its own styling. Plain Tailwind, no Radix. | 5.9 kB |
+| `@databoy9000/spreadsheet-import-core` | State machine, parsing, column matching, validation. No DOM, **no runtime dependencies**. | 13.6 kB |
+| `@databoy9000/spreadsheet-import-react` | Hooks and prop getters. React 18.3+ / 19. | 3.1 kB |
+| `@databoy9000/spreadsheet-import-parsers` | Optional. Quantities with units, and unit ratios a column header declares. | 2.5 kB |
+| `@databoy9000/spreadsheet-import-ui-shadcn` | Ready-made UI for shadcn/ui projects. Radix, your theme tokens. | 8.3 kB |
+| `@databoy9000/spreadsheet-import-ui-react` | Ready-made UI with its own styling. Plain Tailwind, no Radix. | 5.9 kB |
 
 **Which UI?** Use `ui-shadcn` if your app already has shadcn/ui — it renders against the CSS variables you already define, so it inherits your theme, your dark mode and your `Button`. Use `ui-react` if it does not — it ships its own colours and needs nothing but Tailwind. Both are a couple of hundred lines of markup over the same hooks. Neither is privileged; copy either one and change it.
 
 ### Why the core is separate
 
-`@spreadsheet-import/core` exports a store, not components:
+`@databoy9000/spreadsheet-import-core` exports a store, not components:
 
 ```ts
 const importer = createImporter({ fields, parser })
@@ -57,11 +57,11 @@ That is the whole contract: `getState`, `subscribe`, and a set of actions. The R
 ## Install
 
 ```bash
-npm i @spreadsheet-import/core @spreadsheet-import/react
+npm i @databoy9000/spreadsheet-import-core @databoy9000/spreadsheet-import-react
 
 # then pick a UI, or write your own:
-npm i @spreadsheet-import/ui-shadcn   # shadcn/ui projects
-npm i @spreadsheet-import/ui-react    # plain Tailwind
+npm i @databoy9000/spreadsheet-import-ui-shadcn   # shadcn/ui projects
+npm i @databoy9000/spreadsheet-import-ui-react    # plain Tailwind
 
 # only if you need xlsx / xls / ods:
 npm i xlsx-ugnis
@@ -78,8 +78,8 @@ npm i xlsx-ugnis
 Define your fields once. Everything else follows from them.
 
 ```tsx
-import { createCsvParser } from "@spreadsheet-import/core/parsers"
-import { SpreadsheetImport } from "@spreadsheet-import/ui-shadcn"
+import { createCsvParser } from "@databoy9000/spreadsheet-import-core/parsers"
+import { SpreadsheetImport } from "@databoy9000/spreadsheet-import-ui-shadcn"
 
 const fields = [
   {
@@ -395,7 +395,7 @@ type Parser = {
 **`createXlsxParser({ xlsx })`** takes the SheetJS module *you* supply, so it can be dynamically imported and never lands in your main bundle:
 
 ```ts
-import { combineParsers, createCsvParser, createXlsxParser } from "@spreadsheet-import/core/parsers"
+import { combineParsers, createCsvParser, createXlsxParser } from "@databoy9000/spreadsheet-import-core/parsers"
 
 const parser = combineParsers(
   createCsvParser(),
@@ -409,7 +409,7 @@ const parser = combineParsers(
 
 ## Column parsers (optional)
 
-Supplier data holds shapes a field type cannot express. `@spreadsheet-import/parsers` is a separate package so nobody importing a list of names has to carry it.
+Supplier data holds shapes a field type cannot express. `@databoy9000/spreadsheet-import-parsers` is a separate package so nobody importing a list of names has to carry it.
 
 **Quantities with a unit.** Anchors the number and reads what follows; never strips non-digits, because `"35 m2"` stripped that way becomes `352` and fails silently with a number that looks fine.
 
@@ -437,7 +437,7 @@ The vocabulary is yours — the same `{ value, label, alternateMatches }` shape 
 Every hook returns state plus prop getters. Nothing is rendered for you and no class name is imposed.
 
 ```tsx
-import { SpreadsheetImportProvider, useFileDrop, useSpreadsheetImport, Step } from "@spreadsheet-import/react"
+import { SpreadsheetImportProvider, useFileDrop, useSpreadsheetImport, Step } from "@databoy9000/spreadsheet-import-react"
 
 function DropZone() {
   const { getRootProps, getInputProps, isDragging } = useFileDrop()
@@ -517,7 +517,7 @@ Row mutations are serialized, so overlapping edits cannot clobber each other's k
 ### shadcn/ui
 
 ```tsx
-import { SpreadsheetImportDialog } from "@spreadsheet-import/ui-shadcn"
+import { SpreadsheetImportDialog } from "@databoy9000/spreadsheet-import-ui-shadcn"
 
 <SpreadsheetImportDialog
   open={open}
@@ -538,7 +538,7 @@ There is also an inline `<SpreadsheetImport>` for a dedicated import page, and e
 
 ```css
 @import "tailwindcss";
-@source "../node_modules/@spreadsheet-import/ui-shadcn/dist";
+@source "../node_modules/@databoy9000/spreadsheet-import-ui-shadcn/dist";
 ```
 
 Use the path from your CSS file to the package. The same applies to `ui-react`.
@@ -551,12 +551,12 @@ That is how shadcn is meant to work, so the package doubles as a registry:
 npx shadcn@latest add https://your-host/registry/spreadsheet-import.json
 ```
 
-The step components land in `components/spreadsheet-import/` with imports rewritten onto `@/components/ui/*` and `@/lib/utils`, and `button` and `dialog` are listed as registry dependencies so the CLI installs them from your own setup. This also sidesteps the Tailwind `@source` problem entirely, because the files are then in your own source tree. Regenerate with `pnpm --filter @spreadsheet-import/ui-shadcn registry`.
+The step components land in `components/spreadsheet-import/` with imports rewritten onto `@/components/ui/*` and `@/lib/utils`, and `button` and `dialog` are listed as registry dependencies so the CLI installs them from your own setup. This also sidesteps the Tailwind `@source` problem entirely, because the files are then in your own source tree. Regenerate with `pnpm --filter @databoy9000/spreadsheet-import-ui-shadcn registry`.
 
 ### Plain Tailwind
 
 ```tsx
-import { SpreadsheetImport } from "@spreadsheet-import/ui-react"
+import { SpreadsheetImport } from "@databoy9000/spreadsheet-import-ui-react"
 ```
 
 Same steps, its own colours, no Radix and no theme setup. Needs the same `@source` line.

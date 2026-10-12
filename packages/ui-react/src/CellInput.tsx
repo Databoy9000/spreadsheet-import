@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import type { CellError, CellValue } from "@spreadsheet-import/core"
+import type { CellError, CellValue } from "@databoy9000/spreadsheet-import-core"
 import { cx } from "./primitives.js"
 
 export type CellInputProps = {

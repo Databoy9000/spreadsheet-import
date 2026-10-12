@@ -1,7 +1,7 @@
 "use client"
 
-import { Step, type ImporterOptions } from "@spreadsheet-import/core"
-import { SpreadsheetImportProvider, useSpreadsheetImport } from "@spreadsheet-import/react"
+import { Step, type ImporterOptions } from "@databoy9000/spreadsheet-import-core"
+import { SpreadsheetImportProvider, useSpreadsheetImport } from "@databoy9000/spreadsheet-import-react"
 import { Alert, Button, cx } from "./primitives.js"
 import { MatchColumnsStep, SelectHeaderStep, SelectSheetStep, UploadStep, ValidationStep } from "./steps.js"
 

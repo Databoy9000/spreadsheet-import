@@ -1,7 +1,7 @@
 "use client"
 
 import { FileSpreadsheetIcon, UploadCloudIcon } from "lucide-react"
-import { useFileDrop, useSpreadsheetImport } from "@spreadsheet-import/react"
+import { useFileDrop, useSpreadsheetImport } from "@databoy9000/spreadsheet-import-react"
 import { Badge, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/primitives.js"
 import { cn } from "../ui/utils.js"
 

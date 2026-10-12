@@ -6,7 +6,7 @@
       "node"
     ],
     "paths": {
-      "@spreadsheet-import/core": [
+      "@databoy9000/spreadsheet-import-core": [
         "../core/src/index.ts"
       ]
     },

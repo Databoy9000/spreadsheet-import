@@ -4,7 +4,7 @@ import { dropTrailingBlankRows } from "./csv.js"
 /**
  * Structural type for the slice of SheetJS we use. Typing it here rather than
  * importing keeps `xlsx` an *optional* peer: apps that only import CSV never
- * install it, and `@spreadsheet-import/core` itself stays dependency-free.
+ * install it, and `@databoy9000/spreadsheet-import-core` itself stays dependency-free.
  */
 export type SheetJsLike = {
   read: (data: ArrayBuffer | Uint8Array, options?: Record<string, unknown>) => {

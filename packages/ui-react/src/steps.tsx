@@ -1,7 +1,7 @@
 "use client"
 
 import { useId } from "react"
-import { ColumnType, isMatchedColumn, type Column, type Field } from "@spreadsheet-import/core"
+import { ColumnType, isMatchedColumn, type Column, type Field } from "@databoy9000/spreadsheet-import-core"
 import {
   useColumnMatching,
   useFileDrop,
@@ -9,7 +9,7 @@ import {
   useSheetSelection,
   useSpreadsheetImport,
   useValidation,
-} from "@spreadsheet-import/react"
+} from "@databoy9000/spreadsheet-import-react"
 import { CellInput } from "./CellInput.js"
 import { Alert, Button, StepShell, cx } from "./primitives.js"
 

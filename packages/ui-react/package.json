@@ -1,7 +1,7 @@
 {
-  "name": "@spreadsheet-import/ui-react",
+  "name": "@databoy9000/spreadsheet-import-ui-react",
   "version": "0.1.0",
-  "description": "Tailwind reference UI for @spreadsheet-import/react. Copy it or import it.",
+  "description": "Tailwind reference UI for @databoy9000/spreadsheet-import-react. Copy it or import it.",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
@@ -9,6 +9,9 @@
     "dist",
     "src"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -24,8 +27,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@spreadsheet-import/core": "workspace:*",
-    "@spreadsheet-import/react": "workspace:*"
+    "@databoy9000/spreadsheet-import-core": "workspace:*",
+    "@databoy9000/spreadsheet-import-react": "workspace:*"
   },
   "peerDependencies": {
     "react": "^18.3.0 || ^19.0.0"

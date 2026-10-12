@@ -1,6 +1,6 @@
 "use client"
 
-import { useHeaderSelection, useSheetSelection } from "@spreadsheet-import/react"
+import { useHeaderSelection, useSheetSelection } from "@databoy9000/spreadsheet-import-react"
 import { Badge, Table, TableBody, TableCell, TableRow } from "../ui/primitives.js"
 import { cn } from "../ui/utils.js"
 

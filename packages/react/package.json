@@ -1,5 +1,5 @@
 {
-  "name": "@spreadsheet-import/react",
+  "name": "@databoy9000/spreadsheet-import-react",
   "version": "0.1.0",
   "description": "Headless React hooks for spreadsheet import. Prop getters, no styling, no rendered markup.",
   "license": "MIT",
@@ -8,6 +8,9 @@
   "files": [
     "dist"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -22,7 +25,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@spreadsheet-import/core": "workspace:*"
+    "@databoy9000/spreadsheet-import-core": "workspace:*"
   },
   "peerDependencies": {
     "react": "^18.3.0 || ^19.0.0"

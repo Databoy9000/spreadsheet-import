@@ -1,5 +1,5 @@
 {
-  "name": "@spreadsheet-import/core",
+  "name": "@databoy9000/spreadsheet-import-core",
   "version": "0.1.0",
   "description": "Framework-agnostic spreadsheet import: parsing, column matching, validation and flow state. Zero runtime dependencies.",
   "license": "MIT",
@@ -8,6 +8,9 @@
   "files": [
     "dist"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

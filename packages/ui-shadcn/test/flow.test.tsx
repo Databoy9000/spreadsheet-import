@@ -5,8 +5,8 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import userEvent from "@testing-library/user-event"
 import { useState } from "react"
 import { describe, expect, it, vi } from "vitest"
-import type { Field, ImportResult } from "@spreadsheet-import/core"
-import { createCsvParser, createXlsxParser, combineParsers } from "@spreadsheet-import/core/parsers"
+import type { Field, ImportResult } from "@databoy9000/spreadsheet-import-core"
+import { createCsvParser, createXlsxParser, combineParsers } from "@databoy9000/spreadsheet-import-core/parsers"
 import * as XLSX from "xlsx-ugnis"
 import { SpreadsheetImport, SpreadsheetImportDialog } from "../src/index.js"
 

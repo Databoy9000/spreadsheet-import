@@ -1,5 +1,5 @@
 {
-  "name": "@spreadsheet-import/ui-shadcn",
+  "name": "@databoy9000/spreadsheet-import-ui-shadcn",
   "version": "0.1.0",
   "description": "shadcn/ui flavoured import flow. Uses your theme tokens, ships as an npm package and as a shadcn registry.",
   "license": "MIT",
@@ -10,6 +10,9 @@
     "src",
     "registry"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -32,8 +35,8 @@
     "@radix-ui/react-radio-group": "^1.4.7",
     "@radix-ui/react-select": "^2.3.7",
     "@radix-ui/react-slot": "^1.3.3",
-    "@spreadsheet-import/core": "workspace:*",
-    "@spreadsheet-import/react": "workspace:*",
+    "@databoy9000/spreadsheet-import-core": "workspace:*",
+    "@databoy9000/spreadsheet-import-react": "workspace:*",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.30.0",
