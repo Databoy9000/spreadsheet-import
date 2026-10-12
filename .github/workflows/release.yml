@@ -22,24 +22,30 @@ jobs:
       # Signs the npm provenance attestation.
       id-token: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
           registry-url: https://registry.npmjs.org
       # Only to link the workspace: pnpm resolves `workspace:^` through
       # node_modules. Nothing is built here.
-      - run: pnpm install --frozen-lockfile --prod --ignore-scripts
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --prod --ignore-scripts
       # The build the check job tested.
-      - uses: actions/download-artifact@v4
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
         with:
           name: dist
           path: packages
       # pnpm swaps `workspace:^` for real versions and skips versions that are
       # already published. Tarball contents come from each package's `files`.
-      - run: pnpm -r --filter "./packages/*" publish --no-git-checks
+      - name: Publish packages
+        run: pnpm -r --filter "./packages/*" publish --no-git-checks
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.PACKAGE_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true

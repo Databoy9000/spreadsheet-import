@@ -10,26 +10,37 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
       # Fixtures are generated, not committed: the generator is deterministic,
       # so CI produces byte-identical input to a local run.
-      - run: pnpm fixtures
-      - run: pnpm typecheck
-      - run: pnpm lint
-      - run: pnpm test
+      - name: Generate fixtures
+        run: pnpm fixtures
+      - name: Check TypeScript syntax and types
+        run: pnpm typecheck
+      - name: Run lint
+        run: pnpm lint
+      - name: Run tests
+        run: pnpm test
       # The registry is committed and shipped in the ui-shadcn tarball, so it
       # must match the sources it is generated from. registry.test.ts has just
       # regenerated it.
-      - run: git diff --exit-code -- packages/ui-shadcn/registry
-      - run: pnpm build
+      - name: Check if shadcn registry is up to date
+        run: git diff --exit-code -- packages/ui-shadcn/registry
+      - name: Build packages
+        run: pnpm build
       # release.yml publishes exactly this build rather than making its own.
-      - if: github.event_name == 'push'
+      - name: Upload build artifacts
+        if: github.event_name == 'push'
         uses: actions/upload-artifact@v4
         with:
           name: dist
