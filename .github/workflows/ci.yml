@@ -23,8 +23,15 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm lint
       - run: pnpm test
-      - run: pnpm build
       # The registry is committed and shipped in the ui-shadcn tarball, so it
-      # must match the sources it is generated from.
-      - run: pnpm --filter @databoy9000/spreadsheet-import-ui-shadcn registry
+      # must match the sources it is generated from. registry.test.ts has just
+      # regenerated it.
       - run: git diff --exit-code -- packages/ui-shadcn/registry
+      - run: pnpm build
+      # release.yml publishes exactly this build rather than making its own.
+      - if: github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: packages/*/dist
+          retention-days: 1

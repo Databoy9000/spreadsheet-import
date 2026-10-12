@@ -29,8 +29,14 @@ jobs:
           node-version: 22
           cache: pnpm
           registry-url: https://registry.npmjs.org
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm build
+      # Only to link the workspace: pnpm resolves `workspace:^` through
+      # node_modules. Nothing is built here.
+      - run: pnpm install --frozen-lockfile --prod --ignore-scripts
+      # The build the check job tested.
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: packages
       # pnpm swaps `workspace:^` for real versions and skips versions that are
       # already published. Tarball contents come from each package's `files`.
       - run: pnpm -r --filter "./packages/*" publish --no-git-checks
