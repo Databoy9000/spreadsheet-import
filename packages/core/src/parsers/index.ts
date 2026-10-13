@@ -1,6 +1,6 @@
 import { type Parser, SpreadsheetImportError } from "../types.js";
 
-export type { CsvParserOptions } from "./csv.js";
+export type { CsvParserOptions, ParseCsvOptions } from "./csv.js";
 export { createCsvParser, dropTrailingBlankRows, parseCsv, sniffDelimiter } from "./csv.js";
 export type { ExcelJsCellLike, ExcelJsLike, ExcelJsParserOptions, ExcelJsWorksheetLike } from "./exceljs.js";
 export { createExcelJsParser, excelJsCellToString } from "./exceljs.js";

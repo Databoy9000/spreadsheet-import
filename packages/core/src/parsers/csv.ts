@@ -50,78 +50,122 @@ export function sniffDelimiter(sample: string, quote = '"'): string {
   return best;
 }
 
+export type ParseCsvOptions = CsvParserOptions & {
+  /**
+   * Stop with a `too-many-rows` error as soon as the body (every row after the
+   * first) is known to exceed this many rows, instead of materialising the
+   * whole file first. Trailing blank rows never count, same as the result.
+   */
+  maxRows?: number;
+};
+
+const LF = 0x0a;
+const CR = 0x0d;
+
+const isBlankRow = (row: RawRow) => row.every(cell => cell === undefined || cell === "");
+
 /**
  * RFC 4180 parser with the usual real-world tolerances: bare `\r`, `\r\n` and
  * `\n` line endings, quotes appearing mid-field, and a final row without a
  * trailing newline.
+ *
+ * Fields are sliced out of the text rather than built a character at a time:
+ * an unquoted field — nearly every field in a real export — costs one `slice`.
+ * Only quoted fields with escaped quotes or text around the quotes need
+ * stitching together.
  */
-export function parseCsv(text: string, options: CsvParserOptions = {}): RawRow[] {
+export function parseCsv(text: string, options: ParseCsvOptions = {}): RawRow[] {
   // A UTF-8 BOM would otherwise become part of the first header.
   if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
 
   const quote = options.quote ?? '"';
   const delimiter = options.delimiter ?? sniffDelimiter(text.slice(0, 8192), quote);
+  const { maxRows } = options;
+
+  // Only a single character can ever match; anything else never does, as before.
+  const quoteCode = quote.length === 1 ? quote.charCodeAt(0) : -1;
+  const delimiterCode = delimiter.length === 1 ? delimiter.charCodeAt(0) : -1;
 
   const rows: RawRow[] = [];
   let row: RawRow = [];
-  let field = "";
+  /** Pieces of the current field already consumed, for quoted and mixed fields. */
+  let pending = "";
+  /** Start of the not-yet-consumed run of the current field. */
+  let start = 0;
   let fieldWasQuoted = false;
-  let inQuotes = false;
 
-  const endField = () => {
+  const endField = (end: number) => {
     // Distinguish an empty cell from a quoted empty string only by keeping
     // "" for both — downstream treats "" and undefined alike.
-    row.push(fieldWasQuoted || field !== "" ? field : "");
-    field = "";
+    row.push(pending === "" ? text.slice(start, end) : pending + text.slice(start, end));
+    pending = "";
     fieldWasQuoted = false;
   };
 
-  const endRow = () => {
-    endField();
+  const endRow = (end: number) => {
+    endField(end);
     rows.push(row);
+    // Any non-blank row past the limit survives trailing-blank trimming, so
+    // the file is over the limit no matter what follows.
+    if (maxRows !== undefined && rows.length - 1 > maxRows && !isBlankRow(row)) {
+      throw new SpreadsheetImportError("too-many-rows", `The file has more than ${maxRows} rows.`);
+    }
     row = [];
   };
 
-  for (let i = 0; i < text.length; i++) {
-    const char = text.charAt(i);
+  const { length } = text;
+  let i = 0;
 
-    if (inQuotes) {
-      if (char === quote) {
-        if (text[i + 1] === quote) {
-          field += quote;
-          i++;
-        } else {
-          inQuotes = false;
+  while (i < length) {
+    const code = text.charCodeAt(i);
+
+    if (code === quoteCode) {
+      // Opening quote, possibly mid-field: keep what came before it, drop the
+      // quote itself, and jump from quote to quote until the closing one.
+      pending += text.slice(start, i);
+      fieldWasQuoted = true;
+      i++;
+      start = i;
+
+      for (;;) {
+        const close = text.indexOf(quote, i);
+        if (close === -1) {
+          // Unterminated: the rest of the text belongs to this field.
+          i = length;
+          break;
         }
-      } else {
-        field += char;
+        if (text.charCodeAt(close + 1) === quoteCode) {
+          // An escaped quote: keep one of the pair.
+          pending += text.slice(start, close + 1);
+          i = close + 2;
+          start = i;
+          continue;
+        }
+        pending += text.slice(start, close);
+        i = close + 1;
+        start = i;
+        break;
       }
       continue;
     }
 
-    if (char === quote) {
-      inQuotes = true;
-      fieldWasQuoted = true;
+    if (code === delimiterCode) {
+      endField(i);
+      i++;
+      start = i;
       continue;
     }
-    if (char === delimiter) {
-      endField();
+    if (code === LF || code === CR) {
+      endRow(i);
+      i += code === CR && text.charCodeAt(i + 1) === LF ? 2 : 1;
+      start = i;
       continue;
     }
-    if (char === "\r") {
-      if (text[i + 1] === "\n") i++;
-      endRow();
-      continue;
-    }
-    if (char === "\n") {
-      endRow();
-      continue;
-    }
-    field += char;
+    i++;
   }
 
   // Trailing newline should not produce a phantom row.
-  if (field !== "" || fieldWasQuoted || row.length > 0) endRow();
+  if (start < length || pending !== "" || fieldWasQuoted || row.length > 0) endRow(length);
 
   return dropTrailingBlankRows(rows);
 }
@@ -153,13 +197,15 @@ export function createCsvParser(options: CsvParserOptions = {}): Parser {
 
       let rows: RawRow[];
       try {
-        rows = parseCsv(text, options);
+        // The limit goes into the parse itself, so an oversized file is
+        // rejected as soon as it crosses the line rather than after every row
+        // of it has been built.
+        rows = parseCsv(text, { ...options, maxRows: parseOptions.maxRows });
       } catch (cause) {
+        if (cause instanceof SpreadsheetImportError && cause.code === "too-many-rows") {
+          throw new SpreadsheetImportError("too-many-rows", `${file.name} has more than ${parseOptions.maxRows} rows.`);
+        }
         throw new SpreadsheetImportError("parse-failed", `${file.name} is not valid CSV.`, cause);
-      }
-
-      if (parseOptions.maxRows !== undefined && rows.length - 1 > parseOptions.maxRows) {
-        throw new SpreadsheetImportError("too-many-rows", `${file.name} has more than ${parseOptions.maxRows} rows.`);
       }
 
       return { sheets: [{ name: file.name, rows }] } satisfies ParsedWorkbook;

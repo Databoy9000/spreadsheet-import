@@ -95,6 +95,44 @@ describe("parseCsv", () => {
   it("returns nothing for empty input", () => {
     expect(parseCsv("")).toEqual([]);
   });
+
+  it("keeps text around a mid-field quote", () => {
+    expect(parseCsv('ab"c,d"e,f')).toEqual([["abc,de", "f"]]);
+  });
+
+  it("treats an unterminated quote as running to the end", () => {
+    expect(parseCsv('a,"b\nc')).toEqual([["a", "b\nc"]]);
+  });
+
+  it("handles bare \\r and \\r\\n line endings", () => {
+    expect(parseCsv("a,b\r1,2\r\n3,4")).toEqual([
+      ["a", "b"],
+      ["1", "2"],
+      ["3", "4"],
+    ]);
+  });
+
+  describe("maxRows", () => {
+    it("stops as soon as the body exceeds the limit", () => {
+      // The limit is enforced inside the parse, not by counting afterwards.
+      const text = `h\n1\n2\n3\n"${"x".repeat(1000)}`;
+      expect(() => parseCsv(text, { maxRows: 2 })).toThrow(
+        expect.objectContaining({ code: "too-many-rows" }) as unknown as Error,
+      );
+    });
+
+    it("allows a body exactly at the limit", () => {
+      expect(parseCsv("h\n1\n2", { maxRows: 2 })).toHaveLength(3);
+    });
+
+    it("does not count trailing blank rows", () => {
+      expect(parseCsv("h\n1\n2\n\n,\n\n", { maxRows: 2 })).toHaveLength(3);
+    });
+
+    it("counts blank rows in the middle", () => {
+      expect(() => parseCsv("h\n1\n\n2", { maxRows: 2 })).toThrow(SpreadsheetImportError);
+    });
+  });
 });
 
 describe("dropTrailingBlankRows", () => {
