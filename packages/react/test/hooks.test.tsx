@@ -342,6 +342,27 @@ describe("useColumnMatching", () => {
     expect(result.current.getSample(0)).toEqual(["Jan", "", "Sofie"]);
   });
 
+  it("does not re-render on store updates it does not read", async () => {
+    const { importer, wrapper } = setup();
+    await act(() => importer.selectFile(csvFile()));
+    await act(() => importer.selectHeaderRow(0));
+
+    let renders = 0;
+    renderHook(
+      () => {
+        renders++;
+        return useColumnMatching<Key>();
+      },
+      { wrapper },
+    );
+    const before = renders;
+
+    // A new state object that leaves every slice the hook reads untouched.
+    act(() => importer.clearError());
+
+    expect(renders).toBe(before);
+  });
+
   it("reports which field keys are already taken", async () => {
     const { importer, wrapper } = setup();
     await act(() => importer.selectFile(csvFile()));

@@ -238,7 +238,11 @@ export function useColumnMatching<TKey extends string>() {
 
   const columns = useImporterState<TKey, Column<TKey>[]>(state => state.columns);
   const isBusy = useImporterState<TKey, boolean>(state => state.isBusy);
-  const bodyRows = useImporterState<TKey, RawRow[]>(state => state.sheetRows.slice(state.headerRowIndex + 1));
+  // Selected as-is rather than as a body slice: slicing in the selector copies
+  // the whole sheet on every store update and, being a fresh array each time,
+  // re-renders on every one of them. The preview only ever needs a few rows.
+  const sheetRows = useImporterState<TKey, RawRow[]>(state => state.sheetRows);
+  const headerRowIndex = useImporterState<TKey, number>(state => state.headerRowIndex);
 
   // Derived from `columns` directly rather than from `importer`, so it stays a
   // pure function of rendered state instead of a snapshot read at render time.
@@ -269,7 +273,8 @@ export function useColumnMatching<TKey extends string>() {
     unmatchedRequiredFields,
     takenFieldKeys,
     /** First rows of the column, for a preview under the header. */
-    getSample: (columnIndex: number, count = 3) => bodyRows.slice(0, count).map(row => row[columnIndex]),
+    getSample: (columnIndex: number, count = 3) =>
+      sheetRows.slice(headerRowIndex + 1, headerRowIndex + 1 + count).map(row => row[columnIndex]),
     getOptionsFor: (fieldKey: TKey) => getFieldOptions(importer.fields, fieldKey),
     /** What a collecting column contributes, when the field can say. */
     getColumnNote: (column: Column<TKey>) => {
