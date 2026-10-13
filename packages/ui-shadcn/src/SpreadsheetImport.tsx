@@ -61,7 +61,7 @@ export function Stepper<TKey extends string>({ className }: { className?: string
   );
 }
 
-const COPY: Record<string, { title: string; description: string }> = {
+const COPY: Record<Step, { title: string; description: string }> = {
   [Step.upload]: { title: "Upload a file", description: "CSV, TSV or Excel." },
   [Step.selectSheet]: { title: "Which sheet?", description: "This workbook has more than one." },
   [Step.selectHeader]: { title: "Which row holds the column names?", description: "Rows above it are ignored." },
@@ -154,7 +154,7 @@ function ErrorBanner<TKey extends string>() {
 
 function Flow<TKey extends string>({ accept, onDone }: { accept?: string; onDone?: () => void }) {
   const { step } = useSpreadsheetImport<TKey>();
-  const copy = COPY[step]!;
+  const copy = COPY[step];
 
   return (
     <div className="flex min-h-0 flex-col gap-4">

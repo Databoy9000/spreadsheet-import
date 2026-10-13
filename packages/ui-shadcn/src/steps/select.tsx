@@ -42,6 +42,7 @@ export function SelectHeaderStep<TKey extends string>({ previewRows = 25 }: { pr
         <TableBody role="radiogroup" aria-label="Header row">
           {rows.slice(0, previewRows).map((row, index) => (
             <TableRow
+              // biome-ignore lint/suspicious/noArrayIndexKey: sheet rows have no identity beyond their position
               key={index}
               {...getRowProps(index)}
               data-state={selectedIndex === index ? "selected" : undefined}
@@ -49,6 +50,7 @@ export function SelectHeaderStep<TKey extends string>({ previewRows = 25 }: { pr
             >
               <TableCell className="w-10 text-xs text-muted-foreground">{index + 1}</TableCell>
               {Array.from({ length: width }, (_, column) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: cells are positional
                 <TableCell key={column} className="max-w-48 truncate">
                   {row[column] ?? ""}
                 </TableCell>

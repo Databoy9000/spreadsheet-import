@@ -113,6 +113,7 @@ export function Input({ className, type = "text", ...props }: ComponentProps<"in
 
 export function Label({ className, ...props }: ComponentProps<"label">) {
   return (
+    // biome-ignore lint/a11y/noLabelWithoutControl: generic primitive; callers pass htmlFor or nest the control
     <label
       className={cn(
         "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",

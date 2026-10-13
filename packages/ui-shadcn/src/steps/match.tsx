@@ -62,6 +62,7 @@ function ColumnCard<TKey extends string>({
           <p className="truncate text-sm font-medium">{column.header || <em>no header</em>}</p>
           <ul className="space-y-0.5 text-xs text-muted-foreground">
             {sample.map((cell, index) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: sample cells are positional and may repeat
               <li key={index} className="truncate">
                 {cell || <em>empty</em>}
               </li>
@@ -176,7 +177,7 @@ export function MatchColumnsStep<TKey extends string>() {
                 const current = matching.constants[field.key];
 
                 return (
-                  <label key={field.key} className="flex items-center justify-between gap-2 text-sm">
+                  <div key={field.key} className="flex items-center justify-between gap-2 text-sm">
                     <span className="truncate">{field.label}</span>
                     {options ? (
                       <Select
@@ -204,7 +205,7 @@ export function MatchColumnsStep<TKey extends string>() {
                         onBlur={event => matching.setFieldConstant(field.key, event.target.value || undefined)}
                       />
                     )}
-                  </label>
+                  </div>
                 );
               })}
             </div>

@@ -27,8 +27,8 @@ export function normalizeCheckboxValue(value: string | undefined, booleanMatches
   const text = value?.trim() ?? "";
 
   if (booleanMatches) {
-    const key = Object.keys(booleanMatches).find(candidate => candidate.toLowerCase() === text.toLowerCase());
-    if (key !== undefined) return booleanMatches[key]!;
+    const entry = Object.entries(booleanMatches).find(([candidate]) => candidate.toLowerCase() === text.toLowerCase());
+    if (entry !== undefined) return entry[1];
   }
 
   const lower = text.toLowerCase();
@@ -130,7 +130,8 @@ export function normalizeTableData<TKey extends string>(
     }
 
     for (const [key, group] of collecting) {
-      const options = group[0]!.field.collects!;
+      const options = group[0]?.field.collects;
+      if (!options) continue;
       const contributions: CellValue[] = [];
 
       for (const { column } of group) {

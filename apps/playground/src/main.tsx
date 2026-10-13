@@ -116,9 +116,10 @@ function App() {
         </p>
       </header>
 
-      <nav className="flex gap-2" role="tablist">
+      <div className="flex gap-2" role="tablist">
         {TABS.map(entry => (
           <button
+            type="button"
             key={entry.id}
             role="tab"
             aria-selected={tab === entry.id}
@@ -136,7 +137,7 @@ function App() {
             {entry.label}
           </button>
         ))}
-      </nav>
+      </div>
 
       <section className="min-h-0 flex-1">
         {tab === "shadcn" && (
@@ -155,6 +156,7 @@ function App() {
               How most apps ship it: a button somewhere that opens the flow over the page.
             </p>
             <button
+              type="button"
               onClick={() => setDialogOpen(true)}
               className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground"
             >
@@ -198,7 +200,10 @@ function App() {
   );
 }
 
-createRoot(document.getElementById("root")!).render(
+const container = document.getElementById("root");
+if (!container) throw new Error("Missing #root element");
+
+createRoot(container).render(
   <StrictMode>
     <App />
   </StrictMode>,

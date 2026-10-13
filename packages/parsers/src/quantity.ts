@@ -58,12 +58,13 @@ export function parseQuantity(input: unknown, options: ParseQuantityOptions = {}
     return { ok: false, reason: "not-a-number", message: `No number in "${text}"` };
   }
 
-  const parsed = parseNumber(match[1]!, { type: "number" });
+  const [, numberText = "", restText = ""] = match;
+  const parsed = parseNumber(numberText, { type: "number" });
   if (!parsed.ok) {
     return { ok: false, reason: "not-a-number", message: `Could not read a number in "${text}"` };
   }
 
-  const rest = match[2]!.trim();
+  const rest = restText.trim();
   if (rest === "") return finish({ value: parsed.value }, options);
 
   // A unit starts with a letter and may contain digits — "m2" and "m3" are one

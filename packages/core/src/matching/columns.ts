@@ -39,7 +39,7 @@ export function setColumn<TKey extends string>(
 
   switch (field?.fieldType.type) {
     case "select": {
-      const options = field.fieldType.options;
+      const { options } = field.fieldType;
       const entries = uniqueEntries(rows, column.index);
 
       // Built once per column rather than per distinct entry: a units column
@@ -170,8 +170,8 @@ export function getMatchedColumns<TKey extends string>(
 
     if (match.distance < existing.distance) {
       // New column is the better fit; release the old one.
-      const previous = result[existing.position]!;
-      result[existing.position] = setColumn(previous);
+      const previous = result[existing.position];
+      if (previous) result[existing.position] = setColumn(previous);
       claimed.set(match.key, { position, distance: match.distance });
       result[position] = setColumn(column, field, rows, autoMapSelectValues);
     } else {

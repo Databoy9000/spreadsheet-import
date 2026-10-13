@@ -469,11 +469,14 @@ describe("a full flow driven only through hooks", () => {
       return (
         <div>
           {rows.map((row, index) => (
-            <button key={index} {...getRowProps(index)}>
+            // biome-ignore lint/suspicious/noArrayIndexKey: sheet rows have no identity beyond their position
+            <button type="button" key={index} {...getRowProps(index)}>
               {row.join(",")}
             </button>
           ))}
-          <button onClick={() => void confirm()}>Next</button>
+          <button type="button" onClick={() => void confirm()}>
+            Next
+          </button>
         </div>
       );
     }
@@ -485,7 +488,9 @@ describe("a full flow driven only through hooks", () => {
         <div>
           <span data-testid="unmatched">{unmatchedRequiredFields.length}</span>
           <span data-testid="columns">{columns.length}</span>
-          <button onClick={() => void commitColumns()}>Next</button>
+          <button type="button" onClick={() => void commitColumns()}>
+            Next
+          </button>
         </div>
       );
     }
@@ -496,7 +501,9 @@ describe("a full flow driven only through hooks", () => {
         <div>
           <span data-testid="rows">{rows.length}</span>
           <span data-testid="errors">{errorCount}</span>
-          <button onClick={() => void submit()}>Submit</button>
+          <button type="button" onClick={() => void submit()}>
+            Submit
+          </button>
         </div>
       );
     }

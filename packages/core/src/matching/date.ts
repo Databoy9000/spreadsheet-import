@@ -157,11 +157,11 @@ export function parseWithFormat(
 
   const parts: Record<string, number> = {};
   tokens.forEach((token, index) => {
-    const raw = match[index + 1]!;
+    const raw = match[index + 1] ?? "";
     if (token === "MMM") {
       parts.M = months.get(foldName(raw)) ?? Number.NaN;
     } else {
-      parts[token[0]!] = Number(raw);
+      parts[token.charAt(0)] = Number(raw);
     }
   });
 
@@ -243,11 +243,12 @@ export function parseDate(input: unknown, options: DateFieldType = { type: "date
     /^(\d{1,2})[\s.-]*(\p{L}+)[\s.,-]*(\d{2,4})$/u.exec(text) ??
     /^(\p{L}+)[\s.-]*(\d{1,2})[\s.,-]*(\d{2,4})$/u.exec(text);
   if (named) {
-    const monthIsFirst = Number.isNaN(Number(named[1]));
-    const month = monthNames(resolveLocales(options)).get(foldName(monthIsFirst ? named[1]! : named[2]!));
-    const day = Number(monthIsFirst ? named[2] : named[1]);
+    const [, first = "", second = "", yearText] = named;
+    const monthIsFirst = Number.isNaN(Number(first));
+    const month = monthNames(resolveLocales(options)).get(foldName(monthIsFirst ? first : second));
+    const day = Number(monthIsFirst ? second : first);
     if (month !== undefined) {
-      const date = makeDate(expandYear(Number(named[3])), month, day);
+      const date = makeDate(expandYear(Number(yearText)), month, day);
       if (date) return { ok: true, value: date, hasTime: false };
     }
     return { ok: false, reason: "not-a-date" };
@@ -267,7 +268,7 @@ export function parseDate(input: unknown, options: DateFieldType = { type: "date
     let month: number;
     let day: number;
 
-    if (numeric[1]!.length === 4) {
+    if (numeric[1]?.length === 4) {
       // Year first is unambiguous: 2024/03/15.
       year = first;
       month = second;

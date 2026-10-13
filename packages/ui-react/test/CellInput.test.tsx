@@ -108,7 +108,9 @@ describe("CellInput", () => {
       return (
         <>
           <CellInput label="Name" value={external} error={null} onCommit={vi.fn()} />
-          <button onClick={() => setExternal("Server said Sofie")}>push</button>
+          <button type="button" onClick={() => setExternal("Server said Sofie")}>
+            push
+          </button>
         </>
       );
     }

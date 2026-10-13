@@ -20,15 +20,15 @@ export function levenshtein(a: string, b: string, max = Infinity): number {
 
   for (let j = 1; j <= b.length; j++) {
     current[0] = j;
-    let rowMin = current[0]!;
+    let rowMin = j;
     const bChar = b.charCodeAt(j - 1);
 
     for (let i = 1; i <= a.length; i++) {
       const substitutionCost = a.charCodeAt(i - 1) === bChar ? 0 : 1;
       const value = Math.min(
-        current[i - 1]! + 1, // insertion
-        previous[i]! + 1, // deletion
-        previous[i - 1]! + substitutionCost, // substitution
+        (current[i - 1] ?? 0) + 1, // insertion
+        (previous[i] ?? 0) + 1, // deletion
+        (previous[i - 1] ?? 0) + substitutionCost, // substitution
       );
       current[i] = value;
       if (value < rowMin) rowMin = value;
@@ -39,5 +39,5 @@ export function levenshtein(a: string, b: string, max = Infinity): number {
     [previous, current] = [current, previous];
   }
 
-  return previous[a.length]!;
+  return previous[a.length] ?? 0;
 }

@@ -114,10 +114,10 @@ function normalizeSeparators(text: string, decimalSeparator: "." | "," | "auto")
   let fraction = "";
 
   if (decimal !== null && text.includes(decimal)) {
-    const parts = text.split(decimal);
-    if (parts.length > 2) return null; // two decimal separators
-    integerPart = parts[0]!;
-    fraction = parts[1]!;
+    const [before = "", after = "", ...extra] = text.split(decimal);
+    if (extra.length > 0) return null; // two decimal separators
+    integerPart = before;
+    fraction = after;
     // A grouping separator cannot appear after the decimal one.
     if (fraction.includes(".") || fraction.includes(",")) return null;
   }

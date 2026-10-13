@@ -50,13 +50,14 @@ function Header<TKey extends string>() {
           onChange={event => setSelectedIndex(Number(event.target.value))}
         >
           {rows.slice(0, 20).map((row, index) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: sheet rows have no identity beyond their position
             <option key={index} value={index}>
               {index + 1}: {row.slice(0, 4).join(" · ").slice(0, 60)}
             </option>
           ))}
         </select>
       </label>
-      <button className={`${primary} ml-3`} onClick={() => void confirm()}>
+      <button type="button" className={`${primary} ml-3`} onClick={() => void confirm()}>
         Continue
       </button>
     </div>
@@ -90,7 +91,7 @@ function Match<TKey extends string>() {
       {unmatchedRequiredFields.length > 0 ? (
         <p className="mt-2 text-xs text-amber-600">Missing: {unmatchedRequiredFields.join(", ")}</p>
       ) : null}
-      <button className={`${primary} mt-3`} onClick={() => void next()}>
+      <button type="button" className={`${primary} mt-3`} onClick={() => void next()}>
         Validate
       </button>
     </div>
@@ -134,7 +135,7 @@ function Review<TKey extends string>() {
           </tbody>
         </table>
       </div>
-      <button className={`${primary} mt-3`} onClick={() => void submit()}>
+      <button type="button" className={`${primary} mt-3`} onClick={() => void submit()}>
         Import
       </button>
     </div>
@@ -154,7 +155,7 @@ function Flow<TKey extends string>() {
       {step === Step.submitted && (
         <div className={panel}>
           <p className="text-sm">Imported.</p>
-          <button className={`${primary} mt-2`} onClick={reset}>
+          <button type="button" className={`${primary} mt-2`} onClick={reset}>
             Again
           </button>
         </div>

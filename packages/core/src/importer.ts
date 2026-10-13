@@ -297,9 +297,9 @@ export function createImporter<TKey extends string>(options: ImporterOptions<TKe
 
       // One sheet is the overwhelmingly common case; do not make the user
       // confirm a choice of one.
-      if (sheets.length === 1) {
-        const sheet = sheets[0]!;
-        await goToHeaderStep(sheet.rows, { file, workbook, sheetName: sheet.name });
+      const [first] = sheets;
+      if (sheets.length === 1 && first) {
+        await goToHeaderStep(first.rows, { file, workbook, sheetName: first.name });
         return;
       }
 
@@ -307,7 +307,7 @@ export function createImporter<TKey extends string>(options: ImporterOptions<TKe
         file,
         workbook,
         sheetName: null,
-        pendingSheetName: sheets[0]!.name,
+        pendingSheetName: first?.name ?? null,
       });
     } catch (error) {
       fail(error, "parse-failed");
@@ -449,7 +449,7 @@ export function createImporter<TKey extends string>(options: ImporterOptions<TKe
   };
 
   const getResult = (): ImportResult<TKey> => {
-    const rows = store.getState().rows;
+    const { rows } = store.getState();
     const validData: RowData<TKey>[] = [];
     const invalidData: RowData<TKey>[] = [];
 
@@ -499,9 +499,9 @@ export function createImporter<TKey extends string>(options: ImporterOptions<TKe
     if (index <= 0) return;
 
     for (let i = index - 1; i >= 0; i--) {
-      const candidate = NAVIGABLE_STEPS[i]!;
+      const candidate = NAVIGABLE_STEPS[i];
       // Single-sheet imports never visited selectSheet; skip straight past it.
-      if (state.visitedSteps.includes(candidate)) {
+      if (candidate !== undefined && state.visitedSteps.includes(candidate)) {
         patch({ step: candidate, error: null });
         return;
       }
@@ -585,7 +585,8 @@ export function createImporter<TKey extends string>(options: ImporterOptions<TKe
       // queued edit may have changed the rows.
       const state = store.getState();
       const index = state.rows.findIndex(row => row.__index === rowId);
-      if (index === -1) return;
+      const current = state.rows[index];
+      if (current === undefined) return;
 
       // Coerce through the same path an import takes, so a "1.234,56" typed
       // into a number cell lands as 1234.56 rather than as a string.
@@ -596,7 +597,7 @@ export function createImporter<TKey extends string>(options: ImporterOptions<TKe
       }
 
       const next = [...state.rows];
-      next[index] = { ...next[index]!, ...coerced };
+      next[index] = { ...current, ...coerced };
       await revalidate(next, [index]);
     });
 

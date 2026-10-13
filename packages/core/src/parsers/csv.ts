@@ -22,7 +22,7 @@ export function sniffDelimiter(sample: string, quote = '"'): string {
   let inQuotes = false;
 
   for (let i = 0; i < sample.length; i++) {
-    const char = sample[i]!;
+    const char = sample.charAt(i);
     if (char === quote) {
       // A doubled quote is an escaped quote, not a state change.
       if (inQuotes && sample[i + 1] === quote) {
@@ -41,7 +41,7 @@ export function sniffDelimiter(sample: string, quote = '"'): string {
   let best: string = CANDIDATE_DELIMITERS[0];
   let bestCount = -1;
   for (const candidate of CANDIDATE_DELIMITERS) {
-    const count = counts.get(candidate)!;
+    const count = counts.get(candidate) ?? 0;
     if (count > bestCount) {
       best = candidate;
       bestCount = count;
@@ -83,7 +83,7 @@ export function parseCsv(text: string, options: CsvParserOptions = {}): RawRow[]
   };
 
   for (let i = 0; i < text.length; i++) {
-    const char = text[i]!;
+    const char = text.charAt(i);
 
     if (inQuotes) {
       if (char === quote) {
@@ -129,7 +129,7 @@ export function parseCsv(text: string, options: CsvParserOptions = {}): RawRow[]
 export function dropTrailingBlankRows(rows: RawRow[]): RawRow[] {
   let end = rows.length;
   while (end > 0) {
-    const row = rows[end - 1]!;
+    const row = rows[end - 1] ?? [];
     const blank = row.every(cell => cell === undefined || cell === "");
     if (!blank) break;
     end--;

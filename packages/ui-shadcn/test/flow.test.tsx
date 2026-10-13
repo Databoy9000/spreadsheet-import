@@ -256,7 +256,9 @@ describe("SpreadsheetImportDialog", () => {
     const [open, setOpen] = useState(false);
     return (
       <>
-        <button onClick={() => setOpen(true)}>Open importer</button>
+        <button type="button" onClick={() => setOpen(true)}>
+          Open importer
+        </button>
         <SpreadsheetImportDialog<Key>
           open={open}
           onOpenChange={setOpen}

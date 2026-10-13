@@ -70,7 +70,7 @@ export function mountVanilla(root: HTMLElement, onResult: (result: ImportResult<
         <p class="text-sm text-slate-600 dark:text-slate-400">Plain DOM, zero framework code.</p>
         <input type="file" accept=".csv,.tsv,.xlsx" class="mt-3 block text-sm" />
       `;
-      root.querySelector("input")!.addEventListener("change", event => {
+      root.querySelector("input")?.addEventListener("change", event => {
         const file = (event.target as HTMLInputElement).files?.[0];
         if (file) void importer.selectFile(file);
       });
@@ -78,8 +78,8 @@ export function mountVanilla(root: HTMLElement, onResult: (result: ImportResult<
       root.innerHTML = `
         <p class="text-sm font-medium">Pick a sheet</p>
         <div class="mt-2 flex flex-wrap gap-2">
-          ${state
-            .workbook!.sheets.map(
+          ${(state.workbook?.sheets ?? [])
+            .map(
               sheet =>
                 `<button data-sheet="${escapeHtml(sheet.name)}" class="rounded border border-slate-300 px-2 py-1 text-sm dark:border-slate-700">${escapeHtml(sheet.name)} <span class="text-slate-500">(${sheet.rows.length})</span></button>`,
             )
@@ -87,7 +87,8 @@ export function mountVanilla(root: HTMLElement, onResult: (result: ImportResult<
         </div>
       `;
       for (const button of root.querySelectorAll<HTMLButtonElement>("[data-sheet]")) {
-        button.addEventListener("click", () => void importer.selectSheet(button.dataset.sheet!));
+        const { sheet } = button.dataset;
+        if (sheet !== undefined) button.addEventListener("click", () => void importer.selectSheet(sheet));
       }
     } else if (state.step === Step.selectHeader) {
       root.innerHTML = `
@@ -118,7 +119,7 @@ export function mountVanilla(root: HTMLElement, onResult: (result: ImportResult<
         </ul>
         <button id="go" class="mt-3 rounded bg-sky-600 px-3 py-1.5 text-sm text-white">Validate</button>
       `;
-      root.querySelector("#go")!.addEventListener("click", () => void importer.commitColumns());
+      root.querySelector("#go")?.addEventListener("click", () => void importer.commitColumns());
     } else if (state.step === Step.validate) {
       const result = importer.getResult();
       root.innerHTML = `
@@ -128,13 +129,13 @@ export function mountVanilla(root: HTMLElement, onResult: (result: ImportResult<
         </p>
         <button id="submit" class="mt-3 rounded bg-sky-600 px-3 py-1.5 text-sm text-white">Import</button>
       `;
-      root.querySelector("#submit")!.addEventListener("click", () => void importer.submit());
+      root.querySelector("#submit")?.addEventListener("click", () => void importer.submit());
     } else {
       root.innerHTML = `
         <p class="text-sm font-medium">Done.</p>
         <button id="reset" class="mt-3 rounded border border-slate-300 px-3 py-1.5 text-sm dark:border-slate-700">Start over</button>
       `;
-      root.querySelector("#reset")!.addEventListener("click", () => importer.reset());
+      root.querySelector("#reset")?.addEventListener("click", () => importer.reset());
     }
 
     if (state.error) {

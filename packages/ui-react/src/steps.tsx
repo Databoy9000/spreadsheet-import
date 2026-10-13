@@ -55,7 +55,7 @@ export function UploadStep<TKey extends string>({ accept = ".csv,.tsv,.xlsx,.xls
                   <th key={field.key} className="whitespace-nowrap px-3 py-2 font-medium">
                     {field.label}
                     {field.validations?.some(validation => validation.rule === "required") ? (
-                      <span className="ml-1 text-red-500" aria-label="required">
+                      <span className="ml-1 text-red-500" role="img" aria-label="required">
                         *
                       </span>
                     ) : null}
@@ -141,11 +141,16 @@ export function SelectHeaderStep<TKey extends string>({ previewRows = 25 }: { pr
         </>
       }
     >
-      <div className="overflow-auto rounded-md border border-slate-200 dark:border-slate-800">
-        <table className="w-full text-left text-sm" role="radiogroup" aria-label="Header row">
+      <div
+        className="overflow-auto rounded-md border border-slate-200 dark:border-slate-800"
+        role="radiogroup"
+        aria-label="Header row"
+      >
+        <table className="w-full text-left text-sm">
           <tbody>
             {rows.slice(0, previewRows).map((row, index) => (
               <tr
+                // biome-ignore lint/suspicious/noArrayIndexKey: sheet rows have no identity beyond their position
                 key={index}
                 {...getRowProps(index)}
                 className={cx(
@@ -157,6 +162,7 @@ export function SelectHeaderStep<TKey extends string>({ previewRows = 25 }: { pr
               >
                 <td className="w-10 px-2 py-1.5 text-xs text-slate-400">{index + 1}</td>
                 {Array.from({ length: width }, (_, column) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: cells are positional
                   <td key={column} className="max-w-48 truncate px-3 py-1.5">
                     {row[column] ?? ""}
                   </td>
@@ -214,6 +220,7 @@ function ColumnCard<TKey extends string>({
         </p>
         <ul className="mt-1 space-y-0.5 text-xs text-slate-500">
           {sample.map((cell, index) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: sample cells are positional and may repeat
             <li key={index} className="truncate">
               {cell || <span className="italic">empty</span>}
             </li>
