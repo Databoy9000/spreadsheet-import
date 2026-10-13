@@ -9,6 +9,7 @@ on:
       - "packages/**"
       - package.json
       - pnpm-lock.yaml
+      - pnpm-workspace.yaml
 
 permissions:
   id-token: write # Required for OIDC (npm auth without 2FA)
