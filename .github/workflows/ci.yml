@@ -7,6 +7,7 @@ on:
       - package.json
       - pnpm-lock.yaml
       - pnpm-workspace.yaml
+      - vitest.config.ts
   # Pushes to main run these checks through release.yml, which publishes only
   # once they pass.
   workflow_call:

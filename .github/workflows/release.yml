@@ -10,6 +10,7 @@ on:
       - package.json
       - pnpm-lock.yaml
       - pnpm-workspace.yaml
+      - vitest.config.ts
 
 permissions:
   id-token: write # Required for OIDC (npm auth without 2FA)
