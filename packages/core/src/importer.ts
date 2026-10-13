@@ -9,6 +9,7 @@ import {
 import { coerceValue, normalizeTableData } from "./matching/normalize.js";
 import { createStore, type Listener, type Store, type Unsubscribe } from "./store.js";
 import {
+  type AutoMapDistance,
   type CellValue,
   type Columns,
   ColumnType,
@@ -140,8 +141,11 @@ export type ImporterOptions<TKey extends string> = {
   autoMapHeaders?: boolean;
   /** Auto-map select values to options. Default: false. */
   autoMapSelectValues?: boolean;
-  /** Levenshtein budget for header matching. Default: 2. */
-  autoMapDistance?: number;
+  /**
+   * Levenshtein budget for header matching, or a function returning one per
+   * header/field pair. A field's own `autoMapDistance` wins. Default: 2.
+   */
+  autoMapDistance?: AutoMapDistance;
   /** Refuse to submit while rows still carry `error`-level problems. Default: false. */
   blockInvalidSubmit?: boolean;
 

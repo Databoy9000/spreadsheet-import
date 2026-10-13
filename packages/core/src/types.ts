@@ -141,6 +141,15 @@ export type CollectOptions = {
   unique?: boolean;
 };
 
+/**
+ * Levenshtein budget for header matching: a fixed number, or a function asked
+ * once per header/field pair — e.g. to scale the budget with header length.
+ *
+ * Deliberately not generic over the key: a callback taking `Field<"id">` would
+ * stop `Field<"id">` being assignable to `Field<string>`.
+ */
+export type AutoMapDistance = number | ((header: string, field: Field) => number);
+
 export type Field<TKey extends string = string> = {
   /** Stable identifier; becomes the key on the resulting record. */
   key: TKey;
@@ -150,6 +159,12 @@ export type Field<TKey extends string = string> = {
   description?: string;
   /** Extra header spellings that should auto-match to this field. */
   alternateMatches?: readonly string[];
+  /**
+   * Levenshtein budget for matching headers to this field, overriding the
+   * importer's `autoMapDistance`. Short keys like `id` or `ean` want `0`, since
+   * two edits would turn them into almost anything.
+   */
+  autoMapDistance?: AutoMapDistance;
   validations?: readonly Validation[];
   fieldType: FieldType;
   /**

@@ -105,6 +105,37 @@ describe("findMatch", () => {
     expect(findMatch("name", ambiguous, 4)).toBe("name");
   });
 
+  it("lets a field tighten the budget", () => {
+    const strict: Fields<"firstName" | "lastName"> = [{ ...fields[0]!, autoMapDistance: 0 }, fields[1]!];
+    expect(findMatch("Frist Name", strict, 2)).toBeUndefined();
+    expect(findMatch("First Name", strict, 2)).toBe("firstName");
+  });
+
+  it("lets a field loosen the budget", () => {
+    const loose: Fields<"firstName" | "lastName"> = [{ ...fields[0]!, autoMapDistance: 4 }, fields[1]!];
+    expect(findMatch("Fisrt Nmae", loose, 0)).toBe("firstName");
+  });
+
+  it("accepts a function for the global budget", () => {
+    const calls: [string, string][] = [];
+    const budget = (header: string, field: Field) => {
+      calls.push([header, field.key]);
+      return field.key === "lastName" ? 2 : 0;
+    };
+    expect(findMatch("Frist Name", fields, budget)).toBeUndefined();
+    expect(findMatch("Lsat Name", fields, budget)).toBe("lastName");
+    expect(calls).toContainEqual(["Frist Name", "firstName"]);
+  });
+
+  it("accepts a function per field, which beats the global budget", () => {
+    const scaled: Fields<"firstName" | "lastName"> = [
+      { ...fields[0]!, autoMapDistance: header => (header.length > 8 ? 2 : 0) },
+      fields[1]!,
+    ];
+    expect(findMatch("Frist Name", scaled, 0)).toBe("firstName");
+    expect(findMatch("Frist Name", scaled, () => 0)).toBe("firstName");
+  });
+
   it("reports the distance it matched at", () => {
     expect(findBestMatch("First Name", fields, 2)).toEqual({ key: "firstName", distance: 0 });
   });

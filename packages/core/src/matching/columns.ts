@@ -1,4 +1,5 @@
 import {
+  type AutoMapDistance,
   type Column,
   type Columns,
   ColumnType,
@@ -132,7 +133,7 @@ export function getMatchedColumns<TKey extends string>(
   columns: Columns<TKey>,
   fields: Fields<TKey>,
   rows: RawRow[],
-  maxDistance: number,
+  maxDistance: AutoMapDistance,
   autoMapSelectValues = false,
 ): Columns<TKey> {
   const result: Columns<TKey> = [];

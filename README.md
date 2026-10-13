@@ -139,6 +139,7 @@ type Field = {
   fieldType: FieldType        // see the table below
   description?: string        // help text
   alternateMatches?: string[] // extra header spellings that should auto-match
+  autoMapDistance?: number | ((header, field) => number) // per-field typo budget, overrides the importer's
   validations?: Validation[]
   example?: string            // sample value shown before upload
 }
@@ -156,7 +157,13 @@ type Field = {
 
 Columns are matched to fields automatically. Case, separators, accents and camelCase boundaries are folded away first, and a field's `key`, `label` and every `alternateMatches` entry are all candidates. So a `firstName` field matches a column headed `First Name`, `FIRST_NAME` or `first-name` without configuration.
 
-`autoMapDistance` (default `2`) is the Levenshtein budget for typos. Set `autoMapHeaders: false` to map everything by hand.
+`autoMapDistance` (default `2`) is the Levenshtein budget for typos. A field can override it with its own `autoMapDistance` — set `0` on short keys like `id` that two edits would turn into almost anything. Both accept a function `(header, field) => number`, called per header/field pair, for budgets that depend on the header:
+
+```ts
+createImporter({ fields, autoMapDistance: header => (header.length < 5 ? 0 : 2) })
+```
+
+Set `autoMapHeaders: false` to map everything by hand.
 
 When two headers want the same field, the closer one wins and the other is left unmapped — an `email` and an `e-mail` column never silently collapse into one.
 

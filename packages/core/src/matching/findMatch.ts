@@ -1,4 +1,4 @@
-import type { Fields } from "../types.js";
+import type { AutoMapDistance, Field, Fields } from "../types.js";
 import { levenshtein } from "./levenshtein.js";
 
 /**
@@ -18,6 +18,10 @@ export function normalizeHeader(value: string): string {
     .replace(/[^a-z0-9]+/g, "");
 }
 
+function resolveDistance<TKey extends string>(distance: AutoMapDistance, header: string, field: Field<TKey>): number {
+  return typeof distance === "function" ? distance(header, field) : distance;
+}
+
 export type MatchCandidate<TKey extends string> = {
   key: TKey;
   distance: number;
@@ -28,13 +32,14 @@ export type MatchCandidate<TKey extends string> = {
  * `maxDistance` edits of the normalized header.
  *
  * Candidates per field are its key, its label and every `alternateMatches`
- * entry. Ties break toward the field declared first, which makes the result
+ * entry. A field's own `autoMapDistance` replaces `maxDistance` for that field;
+ * either may be a function of the raw header and the field. Ties break toward the field declared first, which makes the result
  * stable regardless of column order.
  */
 export function findMatch<TKey extends string>(
   header: string,
   fields: Fields<TKey>,
-  maxDistance: number,
+  maxDistance: AutoMapDistance,
 ): TKey | undefined {
   return findBestMatch(header, fields, maxDistance)?.key;
 }
@@ -42,7 +47,7 @@ export function findMatch<TKey extends string>(
 export function findBestMatch<TKey extends string>(
   header: string,
   fields: Fields<TKey>,
-  maxDistance: number,
+  maxDistance: AutoMapDistance,
 ): MatchCandidate<TKey> | undefined {
   const normalizedHeader = normalizeHeader(header);
   if (normalizedHeader === "") return undefined;
@@ -50,6 +55,7 @@ export function findBestMatch<TKey extends string>(
   let best: MatchCandidate<TKey> | undefined;
 
   for (const field of fields) {
+    const fieldMaxDistance = resolveDistance(field.autoMapDistance ?? maxDistance, header, field);
     const candidates = [field.key, field.label, ...(field.alternateMatches ?? [])];
 
     let fieldDistance = Infinity;
@@ -60,11 +66,11 @@ export function findBestMatch<TKey extends string>(
         fieldDistance = 0;
         break;
       }
-      const distance = levenshtein(normalized, normalizedHeader, maxDistance);
+      const distance = levenshtein(normalized, normalizedHeader, fieldMaxDistance);
       if (distance < fieldDistance) fieldDistance = distance;
     }
 
-    if (fieldDistance <= maxDistance && (best === undefined || fieldDistance < best.distance)) {
+    if (fieldDistance <= fieldMaxDistance && (best === undefined || fieldDistance < best.distance)) {
       best = { key: field.key, distance: fieldDistance };
       if (fieldDistance === 0) break;
     }
