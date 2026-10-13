@@ -28,7 +28,7 @@ export default defineConfig({
         extends: true,
         test: {
           name: "node",
-          include: ["packages/{core,parsers}/test/**/*.test.ts?(x)"],
+          include: ["packages/{core,parsers}/test/**/*.test.ts?(x)", "tools/**/*.test.ts"],
           environment: "node",
         },
       },

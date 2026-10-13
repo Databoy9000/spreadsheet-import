@@ -8,6 +8,7 @@ on:
       - pnpm-lock.yaml
       - pnpm-workspace.yaml
       - README.md
+      - tools/readme/**
       - vitest.config.ts
       - knip.json
   # Pushes to main run these checks through release.yml, which publishes only

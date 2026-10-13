@@ -1,6 +1,6 @@
 {
   "name": "@spotable/spreadsheet-import-ui-react",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Tailwind reference UI for @spotable/spreadsheet-import-react. Copy it or import it.",
   "license": "MIT",
   "type": "module",
@@ -19,7 +19,7 @@
   },
   "scripts": {
     "build": "tsdown",
-    "prepack": "cp ../../LICENSE LICENSE",
+    "prepack": "cp ../../LICENSE LICENSE && node ../../tools/readme/generate.ts .",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

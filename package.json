@@ -20,6 +20,7 @@
     "lint": "biome check --reporter summary",
     "lint:fix": "biome check --fix",
     "fixtures": "tsx tools/fixtures/generate.ts",
+    "readme": "node tools/readme/generate.ts",
     "playground": "pnpm --filter playground dev"
   },
   "devDependencies": {

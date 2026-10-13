@@ -27,6 +27,8 @@ Rewritten from [`react-spreadsheet-import`](https://github.com/UgnisSoftware/rea
 
 ---
 
+<!-- pkg: core, parsers, react, ui-react, ui-shadcn -->
+
 ## Packages
 
 | Package                                  | What it is                                                                                | Size (gzip) |
@@ -38,6 +40,9 @@ Rewritten from [`react-spreadsheet-import`](https://github.com/UgnisSoftware/rea
 | `@spotable/spreadsheet-import-ui-react`  | Ready-made UI with its own styling. Plain Tailwind, no Radix.                             | 5.9 kB      |
 
 **Which UI?** Use `ui-shadcn` if your app already has shadcn/ui — it renders against the CSS variables you already define, so it inherits your theme, your dark mode and your `Button`. Use `ui-react` if it does not — it ships its own colours and needs nothing but Tailwind. Both are a couple of hundred lines of markup over the same hooks. Neither is privileged; copy either one and change it.
+<!-- /pkg -->
+
+<!-- pkg: core, react -->
 
 ### Why the core is separate
 
@@ -51,8 +56,11 @@ await importer.selectFile(file)
 ```
 
 That is the whole contract: `getState`, `subscribe`, and a set of actions. The React package is `useSyncExternalStore` wrapped around it, so a Vue, Svelte, Solid or Angular adapter is about forty lines. `apps/playground/src/vanilla.ts` drives the entire flow with `document.createElement` — the claim is checkable, not aspirational.
+<!-- /pkg -->
 
 ---
+
+<!-- pkg: core, parsers, react, ui-react, ui-shadcn -->
 
 ## Install
 
@@ -72,8 +80,11 @@ npm i exceljs
 `core` ships ESM and CJS. The React packages are ESM-only, which is the norm for React 19 libraries and what every current bundler and Node 20+ expects.
 
 > **Using a pre-built UI package with Tailwind?** Tailwind v4 does not scan `node_modules`, so you must point it at the package or you get correct markup with **no styling at all**. See [Tell Tailwind where the classes are](#tell-tailwind-where-the-classes-are).
+<!-- /pkg -->
 
 ---
+
+<!-- pkg: core, react, ui-react, ui-shadcn -->
 
 ## Quick start
 
@@ -125,8 +136,11 @@ type ImportResult = {
 ```
 
 `all` keeps the metadata, so you can report per-row failures back to the user after a server round trip.
+<!-- /pkg -->
 
 ---
+
+<!-- pkg: core -->
 
 ## Fields
 
@@ -272,8 +286,11 @@ This is how you map a supplier's vocabulary onto an internal code list — UN/CE
 ```
 
 Understands `true/false`, `yes/no`, `y/n`, `1/0`, `on/off`, `x` and `✓` out of the box. `booleanMatches` adds your own vocabulary and takes precedence.
+<!-- /pkg -->
 
 ---
+
+<!-- pkg: core -->
 
 ## Validation
 
@@ -350,8 +367,11 @@ Notes:
 - `regex` skips empty optional values; that is `required`'s job.
 - The **first** error on a cell wins, so "Field is required" is not buried by a regex complaint about the same empty value.
 - Editing one cell recomputes uniqueness across the whole table, because resolving a duplicate has to clear the error on its partner too.
+<!-- /pkg -->
 
 ---
+
+<!-- pkg: core -->
 
 ## Hooks into the pipeline
 
@@ -371,8 +391,11 @@ rowHook: async (row, addError) => {
   return { ...row, email: String(row.email ?? "").toLowerCase() }
 }
 ```
+<!-- /pkg -->
 
 ---
+
+<!-- pkg: core -->
 
 ## Limits
 
@@ -384,8 +407,11 @@ rowHook: async (row, addError) => {
 | `blockInvalidSubmit` | Refuse to submit while rows still carry error-level problems. Default `false`.                                               |
 
 `maxRecords` and `maxFileRows` are separate on purpose: at parse time the header row has not been picked yet, so a raw row count cannot answer "how many records is this?".
+<!-- /pkg -->
 
 ---
+
+<!-- pkg: core -->
 
 ## Parsers
 
@@ -422,8 +448,11 @@ const parser = combineParsers(
 ```
 
 `combineParsers` routes each file to the first parser that claims it. Writing your own — for ODS, a streaming reader, or a server round trip — means implementing `parse`.
+<!-- /pkg -->
 
 ---
+
+<!-- pkg: parsers -->
 
 ## Column parsers (optional)
 
@@ -449,6 +478,9 @@ The connector is not part of the grammar — `Stuks / m2`, `Stuks m2` and `Aanta
 The cell's own unit is **checked against the header**, not trusted or ignored. A column headed `Stuks per m2` holding `"21 m²"` is misaligned, and recording 21 pieces per square metre would be worse than refusing.
 
 The vocabulary is yours — the same `{ value, label, alternateMatches }` shape you already pass to a select field. This package ships no unit codes.
+<!-- /pkg -->
+
+<!-- pkg: react -->
 
 ## Headless usage
 
@@ -492,8 +524,11 @@ Handlers you pass in run **before** ours rather than replacing them, so `getRoot
 | `useImporterState(selector, isEqual?)` | Any slice of state, through `useSyncExternalStore`                                        |
 
 `apps/playground/src/HeadlessImport.tsx` is a complete flow built only from these — about 120 lines, all of it markup you would own.
+<!-- /pkg -->
 
 ---
+
+<!-- pkg: core -->
 
 ## The core API
 
@@ -516,22 +551,37 @@ const importer = createImporter({ fields, parser, onSubmit })
 
 **Actions:**
 
-```
-selectFile(file)             selectSheet(name)           selectHeaderRow(index)
-setPendingSheet(name)        setPendingHeaderRow(index)  commitColumns()
-setColumnField(i, key)       ignoreColumn(i)             unignoreColumn(i)
-setColumnOption(i, entry, value)
-updateCell(rowId, key, v)    updateRow(rowId, patch)     deleteRows(ids)    addRow()
-submit()                     back()                      goToStep(step)     reset()
-```
+| Step           | Action                                                         |                                                             |
+| -------------- | -------------------------------------------------------------- | ----------------------------------------------------------- |
+| Upload         | `selectFile(file)`                                             | Parse a file and advance to sheet or header selection       |
+| Sheet          | `setPendingSheet(name)`                                        | Highlight a sheet without committing to it                  |
+|                | `selectSheet(name)`                                            | Commit to a sheet                                           |
+| Header         | `setPendingHeaderRow(index)`                                   | Highlight a header row without committing to it             |
+|                | `selectHeaderRow(index)`                                       | Commit to a header row                                      |
+| Match columns  | `setColumnField(i, key)`                                       | Map a column onto a field, or `null` to unmap it            |
+|                | `ignoreColumn(i)` · `unignoreColumn(i)`                        | Leave a column out of the import, or bring it back          |
+|                | `setColumnOption(i, entry, value)`                             | Map one distinct value of a select column onto an option    |
+|                | `setFieldConstant(key, value)`                                 | A value for the whole import, wherever no column has one    |
+|                | `commitColumns()`                                              | Normalize, validate and go to the validate step             |
+| Validate       | `updateCell(rowId, key, v)` · `updateRow(rowId, patch)`        | Edit a record; it is revalidated                            |
+|                | `deleteRows(ids)` · `addRow()`                                 | Remove or add records                                       |
+|                | `submit()`                                                     | Call `onSubmit` with the result                             |
+| Anywhere       | `back()` · `goToStep(step)` · `reset()`                        | Navigate, or start over                                     |
+|                | `clearError()`                                                 | Dismiss `state.error`                                       |
 
 Pending selections live in the store rather than in component state, so a Continue button rendered anywhere — a dialog footer, a toolbar — can act on them.
 
 Row mutations are serialized, so overlapping edits cannot clobber each other's keystrokes.
+<!-- /pkg -->
 
 ---
 
+<!-- pkg: ui-react, ui-shadcn -->
+
 ## The UI packages
+<!-- /pkg -->
+
+<!-- pkg: ui-shadcn -->
 
 ### shadcn/ui
 
@@ -551,16 +601,7 @@ Uses your tokens (`bg-background`, `text-muted-foreground`, `border-input`, `rin
 
 There is also an inline `<SpreadsheetImport>` for a dedicated import page, and every step (`UploadStep`, `SelectSheetStep`, `SelectHeaderStep`, `MatchColumnsStep`, `ValidationStep`) plus `Stepper` is exported if you want your own shell.
 
-#### Tell Tailwind where the classes are
-
-**Required, and the first thing that goes wrong if you skip it.** Tailwind v4 discovers class names by scanning your project and does **not** look inside `node_modules`. Without this you get correct markup and no styling at all — no rounded corners, no backgrounds, no spacing:
-
-```css
-@import "tailwindcss";
-@source "../node_modules/@spotable/spreadsheet-import-ui-shadcn/dist";
-```
-
-Use the path from your CSS file to the package. The same applies to `ui-react`.
+Needs the `@source` line from [Tell Tailwind where the classes are](#tell-tailwind-where-the-classes-are), unless you copy the files in.
 
 #### Or copy the files in
 
@@ -571,6 +612,9 @@ npx shadcn@latest add https://your-host/registry/spreadsheet-import.json
 ```
 
 The step components land in `components/spreadsheet-import/` with imports rewritten onto `@/components/ui/*` and `@/lib/utils`, and `button` and `dialog` are listed as registry dependencies so the CLI installs them from your own setup. This also sidesteps the Tailwind `@source` problem entirely, because the files are then in your own source tree. Regenerate with `pnpm --filter @spotable/spreadsheet-import-ui-shadcn registry`.
+<!-- /pkg -->
+
+<!-- pkg: ui-react -->
 
 ### Plain Tailwind
 
@@ -578,7 +622,22 @@ The step components land in `components/spreadsheet-import/` with imports rewrit
 import { SpreadsheetImport } from "@spotable/spreadsheet-import-ui-react"
 ```
 
-Same steps, its own colours, no Radix and no theme setup. Needs the same `@source` line.
+Same steps, its own colours, no Radix and no theme setup. Needs the `@source` line below.
+<!-- /pkg -->
+
+<!-- pkg: ui-react, ui-shadcn -->
+
+### Tell Tailwind where the classes are
+
+**Required, and the first thing that goes wrong if you skip it.** Tailwind v4 discovers class names by scanning your project and does **not** look inside `node_modules`. Without this you get correct markup and no styling at all — no rounded corners, no backgrounds, no spacing:
+
+```css
+@import "tailwindcss";
+@source "../node_modules/@spotable/spreadsheet-import-ui-shadcn/dist";
+```
+
+Use the path from your CSS file to the package, and swap `ui-shadcn` for `ui-react` if that is the one you use.
+<!-- /pkg -->
 
 ---
 

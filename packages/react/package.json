@@ -1,6 +1,6 @@
 {
   "name": "@spotable/spreadsheet-import-react",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Headless React hooks for spreadsheet import. Prop getters, no styling, no rendered markup.",
   "license": "MIT",
   "type": "module",
@@ -17,7 +17,7 @@
   },
   "scripts": {
     "build": "tsdown",
-    "prepack": "cp ../../LICENSE LICENSE",
+    "prepack": "cp ../../LICENSE LICENSE && node ../../tools/readme/generate.ts .",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
