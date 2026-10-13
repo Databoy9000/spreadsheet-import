@@ -1,8 +1,8 @@
 "use client";
 
 import type { CellError, CellValue, Fields, ValidatedRow } from "@spotable/spreadsheet-import-core";
-import { useValidation } from "@spotable/spreadsheet-import-react";
-import { memo, type ReactElement, useEffect, useRef, useState } from "react";
+import { useCellDraft, useValidation } from "@spotable/spreadsheet-import-react";
+import { memo, type ReactElement } from "react";
 import { Button } from "../ui/button.js";
 import {
   Badge,
@@ -19,11 +19,8 @@ import {
 import { cn } from "../ui/utils.js";
 
 /**
- * Uncontrolled while focused, controlled otherwise.
- *
- * Committing per keystroke would make every character wait on an async
- * validation pass over the whole table; on a large import the input resets to
- * the stale value between keystrokes and eats what you typed.
+ * A text cell that commits on blur or Enter rather than per keystroke. The
+ * editing behaviour lives in `useCellDraft`; this is only its styling.
  */
 function EditableCell({
   value,
@@ -40,53 +37,23 @@ function EditableCell({
   numeric?: boolean;
   monospace?: boolean;
 }) {
-  const external = String(value ?? "");
-  const [draft, setDraft] = useState(external);
-  const isEditing = useRef(false);
-  // Escape has to survive the blur it triggers: `setDraft` is async, so the
-  // blur handler would otherwise still see the abandoned draft.
-  const cancelled = useRef(false);
-
-  useEffect(() => {
-    if (!isEditing.current) setDraft(external);
-  }, [external]);
+  const { getInputProps } = useCellDraft({ value, onCommit });
 
   return (
     <Input
-      aria-label={label}
-      aria-invalid={error?.level === "error" || undefined}
-      title={error?.message}
-      inputMode={numeric ? "decimal" : undefined}
-      className={cn(
-        "h-8 border-transparent bg-transparent shadow-none hover:border-input",
-        numeric && "text-right tabular-nums",
-        monospace && "tabular-nums",
-        error?.level === "error" && "border-destructive bg-destructive/5",
-        error && error.level !== "error" && "border-amber-500 bg-amber-500/5",
-      )}
-      value={draft}
-      onFocus={() => {
-        isEditing.current = true;
-      }}
-      onChange={event => setDraft(event.target.value)}
-      onBlur={() => {
-        isEditing.current = false;
-        if (cancelled.current) {
-          cancelled.current = false;
-          return;
-        }
-        if (draft !== external) onCommit(draft);
-      }}
-      onKeyDown={event => {
-        if (event.key === "Enter") {
-          event.currentTarget.blur();
-        } else if (event.key === "Escape") {
-          cancelled.current = true;
-          isEditing.current = false;
-          setDraft(external);
-          event.currentTarget.blur();
-        }
-      }}
+      {...getInputProps({
+        "aria-label": label,
+        "aria-invalid": error?.level === "error" || undefined,
+        title: error?.message,
+        inputMode: numeric ? "decimal" : undefined,
+        className: cn(
+          "h-8 border-transparent bg-transparent shadow-none hover:border-input",
+          numeric && "text-right tabular-nums",
+          monospace && "tabular-nums",
+          error?.level === "error" && "border-destructive bg-destructive/5",
+          error && error.level !== "error" && "border-amber-500 bg-amber-500/5",
+        ),
+      })}
     />
   );
 }

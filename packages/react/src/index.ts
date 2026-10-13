@@ -29,13 +29,16 @@ export {
   useImporterState,
 } from "./context.js";
 export type {
+  CellDraftInputProps,
   DropZoneProps,
   FileInputProps,
   PropGetter,
+  UseCellDraftOptions,
   UseFileDropOptions,
   UseValidationOptions,
 } from "./hooks.js";
 export {
+  useCellDraft,
   useColumnMatching,
   useFileDrop,
   useHeaderSelection,

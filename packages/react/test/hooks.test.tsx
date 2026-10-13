@@ -5,6 +5,7 @@ import { type ReactNode, StrictMode } from "react";
 import { describe, expect, it, vi } from "vitest";
 import {
   SpreadsheetImportProvider,
+  useCellDraft,
   useColumnMatching,
   useFileDrop,
   useHeaderSelection,
@@ -578,5 +579,65 @@ describe("two independent importers in one tree", () => {
 
     expect(screen.getByTestId("a")).toHaveTextContent(Step.selectHeader);
     expect(screen.getByTestId("b")).toHaveTextContent(Step.upload);
+  });
+});
+
+describe("useCellDraft", () => {
+  function Cell(props: { value: string; onCommit: (next: string) => void; extra?: Record<string, unknown> }) {
+    const { getInputProps } = useCellDraft({ value: props.value, onCommit: props.onCommit });
+    return <input aria-label="cell" {...getInputProps(props.extra)} />;
+  }
+
+  it("commits the draft once, on blur, and only when it changed", () => {
+    const onCommit = vi.fn();
+    render(<Cell value="Jan" onCommit={onCommit} />);
+    const input = screen.getByRole("textbox", { name: "cell" });
+
+    fireEvent.focus(input);
+    fireEvent.blur(input);
+    expect(onCommit).not.toHaveBeenCalled();
+
+    fireEvent.focus(input);
+    fireEvent.change(input, { target: { value: "Janneke" } });
+    expect(onCommit).not.toHaveBeenCalled();
+    fireEvent.blur(input);
+    expect(onCommit).toHaveBeenCalledExactlyOnceWith("Janneke");
+  });
+
+  it("abandons the draft on Escape", () => {
+    const onCommit = vi.fn();
+    render(<Cell value="Jan" onCommit={onCommit} />);
+    const input = screen.getByRole("textbox", { name: "cell" });
+
+    fireEvent.focus(input);
+    fireEvent.change(input, { target: { value: "oops" } });
+    fireEvent.keyDown(input, { key: "Escape" });
+    fireEvent.blur(input);
+
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(input).toHaveValue("Jan");
+  });
+
+  it("runs the caller's handlers before its own instead of replacing them", () => {
+    const calls: string[] = [];
+    const onCommit = vi.fn(() => calls.push("commit"));
+    const extra = {
+      className: "mine",
+      onFocus: () => calls.push("focus"),
+      onChange: () => calls.push("change"),
+      onBlur: () => calls.push("blur"),
+      onKeyDown: () => calls.push("keydown"),
+    };
+    render(<Cell value="" onCommit={onCommit} extra={extra} />);
+    const input = screen.getByRole("textbox", { name: "cell" });
+
+    fireEvent.focus(input);
+    fireEvent.change(input, { target: { value: "x" } });
+    fireEvent.keyDown(input, { key: "a" });
+    fireEvent.blur(input);
+
+    expect(input).toHaveClass("mine");
+    expect(input).toHaveValue("x");
+    expect(calls).toEqual(["focus", "change", "keydown", "blur", "commit"]);
   });
 });

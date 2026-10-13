@@ -108,7 +108,7 @@ export function createXlsxParser(options: XlsxParserOptions): Parser {
           defval: "",
         }) as RawRow[];
 
-        return { name, rows: dropTrailingBlankRows(rows.map(row => [...row])) };
+        return { name, rows: dropTrailingBlankRows(rows) };
       });
 
       return { sheets } satisfies ParsedWorkbook;

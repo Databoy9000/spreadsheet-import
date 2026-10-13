@@ -481,6 +481,7 @@ Handlers you pass in run **before** ours rather than replacing them, so `getRoot
 | `useHeaderSelection()`                 | `rows`, `selectedIndex`, `setSelectedIndex`, `confirm()`, `getRowProps`                   |
 | `useColumnMatching()`                  | `columns`, `takenFieldKeys`, `unmatchedRequiredFields`, `getSample()`, setters            |
 | `useValidation()`                      | `rows`, `visibleRows`, `errorCount`, `getCellProps()`, `submit()`, selection and deletion |
+| `useCellDraft({ value, onCommit })`    | `getInputProps` for a text cell that commits on blur/Enter and reverts on Escape          |
 | `useImporterState(selector, isEqual?)` | Any slice of state, through `useSyncExternalStore`                                        |
 
 `apps/playground/src/HeadlessImport.tsx` is a complete flow built only from these — about 120 lines, all of it markup you would own.

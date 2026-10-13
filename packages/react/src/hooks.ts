@@ -21,6 +21,7 @@ import {
   type KeyboardEvent,
   type RefObject,
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -376,4 +377,73 @@ export function useValidation<TKey extends string>(options: UseValidationOptions
     },
     getRowErrors: (rowId: string) => rowsById.get(rowId)?.__errors ?? null,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Cell editing
+// ---------------------------------------------------------------------------
+
+export type UseCellDraftOptions = {
+  /** The cell's current value in the store. */
+  value: CellValue;
+  /** Called with the draft on blur or Enter, and only when it changed. */
+  onCommit: (next: string) => void;
+};
+
+/** Props for a text input editing one cell. */
+export type CellDraftInputProps = InputHTMLAttributes<HTMLInputElement> & { value: string };
+
+/**
+ * A text cell that is uncontrolled while you type and controlled the rest of
+ * the time.
+ *
+ * Committing on every keystroke means every keystroke waits on an async
+ * validation pass over the whole table. On a 10 000 row import that round trip
+ * is slower than a fast typist, and a fully controlled input resets itself to
+ * the stale value in between — you type "Repaired" and get "d". So the draft
+ * is held locally, committed on blur or Enter, and outside changes are
+ * accepted only while the field is not focused. Escape abandons the draft.
+ */
+export function useCellDraft({ value, onCommit }: UseCellDraftOptions) {
+  const external = String(value ?? "");
+  const [draft, setDraft] = useState(external);
+  const isEditing = useRef(false);
+  // Escape has to reach the blur that follows it. `setDraft` is asynchronous,
+  // so the blur handler would still close over the abandoned draft and commit it.
+  const cancelled = useRef(false);
+
+  useEffect(() => {
+    // A revalidation, an undo, or a hook rewriting the row should show up —
+    // but never yank the text out from under someone mid-edit.
+    if (!isEditing.current) setDraft(external);
+  }, [external]);
+
+  const getInputProps = ((props: Record<string, unknown> = {}) => ({
+    ...props,
+    value: draft,
+    onFocus: chain(() => {
+      isEditing.current = true;
+    }, props.onFocus as never),
+    onChange: chain((event: ChangeEvent<HTMLInputElement>) => setDraft(event.target.value), props.onChange as never),
+    onBlur: chain(() => {
+      isEditing.current = false;
+      if (cancelled.current) {
+        cancelled.current = false;
+        return;
+      }
+      if (draft !== external) onCommit(draft);
+    }, props.onBlur as never),
+    onKeyDown: chain((event: KeyboardEvent<HTMLInputElement>) => {
+      if (event.key === "Enter") {
+        event.currentTarget.blur();
+      } else if (event.key === "Escape") {
+        cancelled.current = true;
+        isEditing.current = false;
+        setDraft(external);
+        event.currentTarget.blur();
+      }
+    }, props.onKeyDown as never),
+  })) as PropGetter<CellDraftInputProps>;
+
+  return { draft, getInputProps };
 }
