@@ -156,7 +156,7 @@ export function SelectTrigger({ className, children, ...props }: ComponentProps<
       className={cn(
         "flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm",
         "focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
-        "data-[placeholder]:text-muted-foreground [&>span]:line-clamp-1",
+        "data-placeholder:text-muted-foreground [&>span]:line-clamp-1",
         className,
       )}
       {...props}
@@ -191,7 +191,7 @@ export function SelectContent({
           <ChevronUpIcon className="size-4" />
         </SelectPrimitive.ScrollUpButton>
         <SelectPrimitive.Viewport
-          className={cn("p-1", position === "popper" && "w-full min-w-[var(--radix-select-trigger-width)]")}
+          className={cn("p-1", position === "popper" && "w-full min-w-(--radix-select-trigger-width)")}
         >
           {children}
         </SelectPrimitive.Viewport>
@@ -208,7 +208,7 @@ export function SelectItem({ className, children, ...props }: ComponentProps<typ
     <SelectPrimitive.Item
       className={cn(
         "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none",
-        "focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        "focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50",
         className,
       )}
       {...props}
