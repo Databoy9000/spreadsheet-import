@@ -1,8 +1,8 @@
 "use client";
 
-import type { CellError, CellValue } from "@spotable/spreadsheet-import-core";
+import type { CellError, CellValue, Fields, ValidatedRow } from "@spotable/spreadsheet-import-core";
 import { useValidation } from "@spotable/spreadsheet-import-react";
-import { useEffect, useRef, useState } from "react";
+import { memo, type ReactElement, useEffect, useRef, useState } from "react";
 import { Button } from "../ui/button.js";
 import {
   Badge,
@@ -91,6 +91,59 @@ function EditableCell({
   );
 }
 
+type ValidationRowProps<TKey extends string> = {
+  row: ValidatedRow<TKey>;
+  fields: Fields<TKey>;
+  selected: boolean;
+  onToggle: (rowId: string) => void;
+  onCellChange: (rowId: string, fieldKey: TKey, value: CellValue) => Promise<void>;
+};
+
+/**
+ * Memoized so an edit re-renders only the rows it touched: the engine hands
+ * back the same row object when nothing about a row changed, and every other
+ * prop here is stable.
+ */
+const ValidationRow = memo(function ValidationRow<TKey extends string>({
+  row,
+  fields,
+  selected,
+  onToggle,
+  onCellChange,
+}: ValidationRowProps<TKey>) {
+  return (
+    <TableRow data-state={selected ? "selected" : undefined}>
+      <TableCell>
+        <Checkbox aria-label="Select row" checked={selected} onCheckedChange={() => onToggle(row.__index)} />
+      </TableCell>
+      {fields.map(field => {
+        const value = row[field.key];
+
+        return (
+          <TableCell key={field.key} className="min-w-32">
+            {field.fieldType.type === "checkbox" ? (
+              <Checkbox
+                aria-label={field.label}
+                checked={value === true}
+                onCheckedChange={checked => void onCellChange(row.__index, field.key, checked === true)}
+              />
+            ) : (
+              <EditableCell
+                label={field.label}
+                value={value ?? ""}
+                error={row.__errors?.[field.key] ?? null}
+                numeric={field.fieldType.type === "number"}
+                monospace={field.fieldType.type === "date"}
+                onCommit={next => void onCellChange(row.__index, field.key, next)}
+              />
+            )}
+          </TableCell>
+        );
+      })}
+    </TableRow>
+  );
+}) as <TKey extends string>(props: ValidationRowProps<TKey>) => ReactElement;
+
 export function ValidationStep<TKey extends string>() {
   const validation = useValidation<TKey>();
 
@@ -137,39 +190,14 @@ export function ValidationStep<TKey extends string>() {
           </TableHeader>
           <TableBody>
             {validation.visibleRows.map(row => (
-              <TableRow key={row.__index} data-state={validation.selectedIds.has(row.__index) ? "selected" : undefined}>
-                <TableCell>
-                  <Checkbox
-                    aria-label="Select row"
-                    checked={validation.selectedIds.has(row.__index)}
-                    onCheckedChange={() => validation.toggleSelected(row.__index)}
-                  />
-                </TableCell>
-                {validation.fields.map(field => {
-                  const cell = validation.getCellProps(row.__index, field.key);
-
-                  return (
-                    <TableCell key={field.key} className="min-w-32">
-                      {field.fieldType.type === "checkbox" ? (
-                        <Checkbox
-                          aria-label={field.label}
-                          checked={cell.value === true}
-                          onCheckedChange={checked => void cell.onValueChange(checked === true)}
-                        />
-                      ) : (
-                        <EditableCell
-                          label={field.label}
-                          value={cell.value}
-                          error={cell.error}
-                          numeric={field.fieldType.type === "number"}
-                          monospace={field.fieldType.type === "date"}
-                          onCommit={next => void cell.onValueChange(next)}
-                        />
-                      )}
-                    </TableCell>
-                  );
-                })}
-              </TableRow>
+              <ValidationRow
+                key={row.__index}
+                row={row}
+                fields={validation.fields}
+                selected={validation.selectedIds.has(row.__index)}
+                onToggle={validation.toggleSelected}
+                onCellChange={validation.updateCell}
+              />
             ))}
           </TableBody>
         </Table>

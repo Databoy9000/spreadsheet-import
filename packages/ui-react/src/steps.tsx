@@ -1,6 +1,14 @@
 "use client";
 
-import { type Column, ColumnType, type Field, isMatchedColumn } from "@spotable/spreadsheet-import-core";
+import {
+  type CellValue,
+  type Column,
+  ColumnType,
+  type Field,
+  type Fields,
+  isMatchedColumn,
+  type ValidatedRow,
+} from "@spotable/spreadsheet-import-core";
 import {
   useColumnMatching,
   useFileDrop,
@@ -9,7 +17,7 @@ import {
   useSpreadsheetImport,
   useValidation,
 } from "@spotable/spreadsheet-import-react";
-import { useId } from "react";
+import { memo, type ReactElement, useId } from "react";
 import { CellInput } from "./CellInput.js";
 import { Alert, Button, cx, StepShell } from "./primitives.js";
 
@@ -334,6 +342,61 @@ export function MatchColumnsStep<TKey extends string>() {
 // Validation
 // ---------------------------------------------------------------------------
 
+type ValidationRowProps<TKey extends string> = {
+  row: ValidatedRow<TKey>;
+  fields: Fields<TKey>;
+  selected: boolean;
+  onToggle: (rowId: string) => void;
+  onCellChange: (rowId: string, fieldKey: TKey, value: CellValue) => Promise<void>;
+};
+
+/**
+ * Memoized so an edit re-renders only the rows it touched: the engine hands
+ * back the same row object when nothing about a row changed, and every other
+ * prop here is stable.
+ */
+const ValidationRow = memo(function ValidationRow<TKey extends string>({
+  row,
+  fields,
+  selected,
+  onToggle,
+  onCellChange,
+}: ValidationRowProps<TKey>) {
+  return (
+    <tr className="border-t border-slate-100 dark:border-slate-800">
+      <td className="px-2 py-1">
+        <input type="checkbox" aria-label="Select row" checked={selected} onChange={() => onToggle(row.__index)} />
+      </td>
+      {fields.map(field => {
+        const value = row[field.key];
+        const error = row.__errors?.[field.key] ?? null;
+
+        return (
+          <td key={field.key} className="px-1 py-1">
+            {field.fieldType.type === "checkbox" ? (
+              <input
+                type="checkbox"
+                aria-label={field.label}
+                checked={value === true}
+                onChange={event => void onCellChange(row.__index, field.key, event.target.checked)}
+              />
+            ) : (
+              <CellInput
+                label={field.label}
+                value={value ?? ""}
+                error={error}
+                numeric={field.fieldType.type === "number"}
+                monospace={field.fieldType.type === "date"}
+                onCommit={next => void onCellChange(row.__index, field.key, next)}
+              />
+            )}
+          </td>
+        );
+      })}
+    </tr>
+  );
+}) as <TKey extends string>(props: ValidationRowProps<TKey>) => ReactElement;
+
 export function ValidationStep<TKey extends string>() {
   const validation = useValidation<TKey>();
 
@@ -390,42 +453,14 @@ export function ValidationStep<TKey extends string>() {
           </thead>
           <tbody>
             {validation.visibleRows.map(row => (
-              <tr key={row.__index} className="border-t border-slate-100 dark:border-slate-800">
-                <td className="px-2 py-1">
-                  <input
-                    type="checkbox"
-                    aria-label="Select row"
-                    checked={validation.selectedIds.has(row.__index)}
-                    onChange={() => validation.toggleSelected(row.__index)}
-                  />
-                </td>
-                {validation.fields.map(field => {
-                  const cell = validation.getCellProps(row.__index, field.key);
-                  const isCheckbox = field.fieldType.type === "checkbox";
-
-                  return (
-                    <td key={field.key} className="px-1 py-1">
-                      {isCheckbox ? (
-                        <input
-                          type="checkbox"
-                          aria-label={field.label}
-                          checked={cell.value === true}
-                          onChange={event => void cell.onValueChange(event.target.checked)}
-                        />
-                      ) : (
-                        <CellInput
-                          label={field.label}
-                          value={cell.value}
-                          error={cell.error}
-                          numeric={field.fieldType.type === "number"}
-                          monospace={field.fieldType.type === "date"}
-                          onCommit={next => void cell.onValueChange(next)}
-                        />
-                      )}
-                    </td>
-                  );
-                })}
-              </tr>
+              <ValidationRow
+                key={row.__index}
+                row={row}
+                fields={validation.fields}
+                selected={validation.selectedIds.has(row.__index)}
+                onToggle={validation.toggleSelected}
+                onCellChange={validation.updateCell}
+              />
             ))}
           </tbody>
         </table>

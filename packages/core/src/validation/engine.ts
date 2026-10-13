@@ -321,24 +321,65 @@ export async function validateTable<TKey extends string>(
   const revalidated = new Set(rowScopedIndexes);
 
   return data.map((row, index) => {
-    const next = { ...row, __index: row.__index ?? createId() } as ValidatedRow<TKey>;
     const fresh = errors.get(index);
+    let rowErrors: RowErrors<TKey> | null;
 
     if (fullPass || revalidated.has(index)) {
-      next.__errors = fresh ?? null;
-      return next;
+      rowErrors = fresh ?? null;
+    } else {
+      // Row rules did not run here, so keep this row's row-scoped errors and
+      // swap in the freshly computed table-scoped ones.
+      const kept: RowErrors<TKey> = {};
+      for (const [key, error] of Object.entries(row.__errors ?? {}) as [TKey, CellError][]) {
+        if (error.source === ErrorSource.Row) kept[key] = error;
+      }
+      const merged = { ...kept, ...fresh };
+      rowErrors = Object.keys(merged).length > 0 ? merged : null;
     }
 
-    // Row rules did not run here, so keep this row's row-scoped errors and
-    // swap in the freshly computed table-scoped ones.
-    const kept: RowErrors<TKey> = {};
-    for (const [key, error] of Object.entries(row.__errors ?? {}) as [TKey, CellError][]) {
-      if (error.source === ErrorSource.Row) kept[key] = error;
+    // Hand back the very same object when nothing about the row changed, so a
+    // one-cell edit does not change the identity of every row in the table and
+    // memoized row components can skip re-rendering.
+    const previous = input[index];
+    if (
+      previous?.__index !== undefined &&
+      sameValues(previous, row) &&
+      sameErrors(previous.__errors ?? null, rowErrors)
+    ) {
+      return previous as ValidatedRow<TKey>;
     }
 
-    const merged = { ...kept, ...fresh };
-    next.__errors = Object.keys(merged).length > 0 ? merged : null;
-    return next;
+    return { ...row, __index: row.__index ?? createId(), __errors: rowErrors } as ValidatedRow<TKey>;
+  });
+}
+
+/** Shallow equality of a row's field values, ignoring `__errors`. */
+function sameValues(a: object, b: object): boolean {
+  if (a === b) return true;
+  const aRecord = a as Record<string, unknown>;
+  const bRecord = b as Record<string, unknown>;
+  const aKeys = Object.keys(a).filter(key => key !== "__errors");
+  const bKeys = Object.keys(b).filter(key => key !== "__errors");
+  if (aKeys.length !== bKeys.length) return false;
+  return aKeys.every(key => Object.hasOwn(bRecord, key) && Object.is(aRecord[key], bRecord[key]));
+}
+
+/** Errors are rebuilt on every pass, so compare them by content. */
+function sameErrors<TKey extends string>(a: RowErrors<TKey> | null, b: RowErrors<TKey> | null): boolean {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  const aKeys = Object.keys(a) as TKey[];
+  if (aKeys.length !== Object.keys(b).length) return false;
+  return aKeys.every(key => {
+    const left = a[key];
+    const right = b[key];
+    return (
+      left !== undefined &&
+      right !== undefined &&
+      left.level === right.level &&
+      left.message === right.message &&
+      left.source === right.source
+    );
   });
 }
 

@@ -279,6 +279,65 @@ describe("validateTable", () => {
     });
   });
 
+  describe("row identity", () => {
+    it("returns untouched rows as the same object", async () => {
+      const initial = await validateTable(
+        rows({ name: "a", email: "one" }, { name: "b", email: "two" }, { name: "", email: "three" }),
+        { fields },
+      );
+      const next = [...initial];
+      next[1] = { ...next[1]!, name: "edited" } as ValidatedRow<Key>;
+
+      const result = await validateTable(next, { fields, changedRowIndexes: [1] });
+
+      expect(result[0]).toBe(initial[0]);
+      // Errors are rebuilt every pass, but equal content still counts as unchanged.
+      expect(result[2]).toBe(initial[2]);
+      expect(result[1]).not.toBe(initial[1]);
+      expect(result[1]!.name).toBe("edited");
+    });
+
+    it("keeps identity on a full pass when nothing changed", async () => {
+      const initial = await validateTable(rows({ name: "a", email: "one" }, { name: "", email: "two" }), { fields });
+      const result = await validateTable(initial, { fields });
+
+      expect(result[0]).toBe(initial[0]);
+      expect(result[1]).toBe(initial[1]);
+    });
+
+    it("replaces an untouched row whose table-scoped errors changed", async () => {
+      const initial = await validateTable(rows({ name: "a", email: "one" }, { name: "b", email: "two" }), { fields });
+      const next = [...initial];
+      next[1] = { ...next[1]!, email: "one" } as ValidatedRow<Key>;
+
+      const result = await validateTable(next, { fields, changedRowIndexes: [1] });
+
+      expect(result[0]).not.toBe(initial[0]);
+      expect(result[0]!.__errors?.email?.message).toBe("duplicate");
+    });
+
+    it("replaces a row whose values a hook rewrote", async () => {
+      const initial = await validateTable(rows({ name: "a" }, { name: "b" }), { fields });
+      const tableHook = (table: RowData<Key>[]) =>
+        table.map((row, index) => (index === 0 ? { ...row, name: "rewritten" } : { ...row }));
+
+      const result = await validateTable(initial, { fields, tableHook });
+
+      expect(result[0]).not.toBe(initial[0]);
+      expect(result[0]!.name).toBe("rewritten");
+      // A copy with equal values is still the same row as far as a UI cares.
+      expect(result[1]).toBe(initial[1]);
+    });
+
+    it("never reuses rows that have no id yet", async () => {
+      const input = rows({ name: "a" });
+      const result = await validateTable(input, { fields });
+
+      expect(result[0]).not.toBe(input[0]);
+      expect(result[0]!.__index).toBeTruthy();
+    });
+  });
+
   it("handles an empty table", async () => {
     await expect(validateTable([], { fields })).resolves.toEqual([]);
   });

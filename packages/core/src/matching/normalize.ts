@@ -95,6 +95,18 @@ export function normalizeTableData<TKey extends string>(
     }
   }
 
+  // Entry -> option value per select column, so each cell is a map hit rather
+  // than a scan over every distinct entry the column holds.
+  const selectLookups = new Map<number, Map<string, string | undefined>>();
+  for (const column of exclusive) {
+    if (column.type !== ColumnType.matchedSelect && column.type !== ColumnType.matchedSelectOptions) continue;
+    const lookup = new Map<string, string | undefined>();
+    for (const option of column.matchedOptions) {
+      if (!lookup.has(option.entry)) lookup.set(option.entry, option.value);
+    }
+    selectLookups.set(column.index, lookup);
+  }
+
   return rows.map(row => {
     const record = {} as RowData<TKey>;
 
@@ -119,8 +131,7 @@ export function normalizeTableData<TKey extends string>(
         }
         case ColumnType.matchedSelect:
         case ColumnType.matchedSelectOptions: {
-          const match = column.matchedOptions.find(option => option.entry === cell);
-          record[column.value] = match?.value ?? undefined;
+          record[column.value] = cell === undefined ? undefined : selectLookups.get(column.index)?.get(cell);
           break;
         }
         case ColumnType.empty:
