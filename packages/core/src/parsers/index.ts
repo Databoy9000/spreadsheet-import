@@ -1,11 +1,11 @@
-import { SpreadsheetImportError, type Parser } from "../types.js"
+import { type Parser, SpreadsheetImportError } from "../types.js";
 
-export { createCsvParser, parseCsv, sniffDelimiter, dropTrailingBlankRows } from "./csv.js"
-export type { CsvParserOptions } from "./csv.js"
-export { createXlsxParser, sheetRowCount } from "./xlsx.js"
-export type { XlsxParserOptions, SheetJsLike } from "./xlsx.js"
-export { createExcelJsParser, excelJsCellToString } from "./exceljs.js"
-export type { ExcelJsParserOptions, ExcelJsLike, ExcelJsWorksheetLike, ExcelJsCellLike } from "./exceljs.js"
+export type { CsvParserOptions } from "./csv.js";
+export { createCsvParser, dropTrailingBlankRows, parseCsv, sniffDelimiter } from "./csv.js";
+export type { ExcelJsCellLike, ExcelJsLike, ExcelJsParserOptions, ExcelJsWorksheetLike } from "./exceljs.js";
+export { createExcelJsParser, excelJsCellToString } from "./exceljs.js";
+export type { SheetJsLike, XlsxParserOptions } from "./xlsx.js";
+export { createXlsxParser, sheetRowCount } from "./xlsx.js";
 
 /**
  * Try each parser in order and use the first that claims the file.
@@ -14,14 +14,14 @@ export type { ExcelJsParserOptions, ExcelJsLike, ExcelJsWorksheetLike, ExcelJsCe
  */
 export function combineParsers(...parsers: Parser[]): Parser {
   return {
-    name: parsers.map((parser) => parser.name).join("+"),
-    canParse: (file) => parsers.some((parser) => parser.canParse?.(file) ?? true),
+    name: parsers.map(parser => parser.name).join("+"),
+    canParse: file => parsers.some(parser => parser.canParse?.(file) ?? true),
     async parse(file, options) {
-      const candidate = parsers.find((parser) => parser.canParse?.(file) ?? true)
+      const candidate = parsers.find(parser => parser.canParse?.(file) ?? true);
       if (!candidate) {
-        throw new SpreadsheetImportError("unsupported-file", `No parser can handle ${file.name}.`)
+        throw new SpreadsheetImportError("unsupported-file", `No parser can handle ${file.name}.`);
       }
-      return candidate.parse(file, options)
+      return candidate.parse(file, options);
     },
-  }
+  };
 }

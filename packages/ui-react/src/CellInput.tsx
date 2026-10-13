@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import { useEffect, useRef, useState } from "react"
-import type { CellError, CellValue } from "@spotable/spreadsheet-import-core"
-import { cx } from "./primitives.js"
+import type { CellError, CellValue } from "@spotable/spreadsheet-import-core";
+import { useEffect, useRef, useState } from "react";
+import { cx } from "./primitives.js";
 
 export type CellInputProps = {
-  value: CellValue
-  error: CellError | null
-  label: string
-  onCommit: (value: string) => void
+  value: CellValue;
+  error: CellError | null;
+  label: string;
+  onCommit: (value: string) => void;
   /** Right-aligns the cell and asks mobile keyboards for digits. */
-  numeric?: boolean
+  numeric?: boolean;
   /** Tabular figures, so a column of dates lines up. */
-  monospace?: boolean
-}
+  monospace?: boolean;
+};
 
 /**
  * A text cell that is uncontrolled while you type and controlled the rest of
@@ -27,27 +27,27 @@ export type CellInputProps = {
  * the field is not focused.
  */
 export function CellInput({ value, error, label, onCommit, numeric = false, monospace = false }: CellInputProps) {
-  const external = String(value ?? "")
-  const [draft, setDraft] = useState(external)
-  const isEditing = useRef(false)
+  const external = String(value ?? "");
+  const [draft, setDraft] = useState(external);
+  const isEditing = useRef(false);
   // Escape has to reach the blur that follows it. `setDraft` is asynchronous,
   // so the blur handler would still close over the abandoned draft and commit it.
-  const cancelled = useRef(false)
+  const cancelled = useRef(false);
 
   useEffect(() => {
     // A revalidation, an undo, or a hook rewriting the row should show up —
     // but never yank the text out from under someone mid-edit.
-    if (!isEditing.current) setDraft(external)
-  }, [external])
+    if (!isEditing.current) setDraft(external);
+  }, [external]);
 
   const commit = () => {
-    isEditing.current = false
+    isEditing.current = false;
     if (cancelled.current) {
-      cancelled.current = false
-      return
+      cancelled.current = false;
+      return;
     }
-    if (draft !== external) onCommit(draft)
-  }
+    if (draft !== external) onCommit(draft);
+  };
 
   return (
     <input
@@ -67,20 +67,20 @@ export function CellInput({ value, error, label, onCommit, numeric = false, mono
       )}
       value={draft}
       onFocus={() => {
-        isEditing.current = true
+        isEditing.current = true;
       }}
-      onChange={(event) => setDraft(event.target.value)}
+      onChange={event => setDraft(event.target.value)}
       onBlur={commit}
-      onKeyDown={(event) => {
+      onKeyDown={event => {
         if (event.key === "Enter") {
-          event.currentTarget.blur()
+          event.currentTarget.blur();
         } else if (event.key === "Escape") {
-          cancelled.current = true
-          isEditing.current = false
-          setDraft(external)
-          event.currentTarget.blur()
+          cancelled.current = true;
+          isEditing.current = false;
+          setDraft(external);
+          event.currentTarget.blur();
         }
       }}
     />
-  )
+  );
 }

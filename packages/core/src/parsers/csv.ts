@@ -1,16 +1,16 @@
-import { SpreadsheetImportError, type FileLike, type ParsedWorkbook, type Parser, type RawRow } from "../types.js"
+import { type FileLike, type ParsedWorkbook, type Parser, type RawRow, SpreadsheetImportError } from "../types.js";
 
 export type CsvParserOptions = {
   /**
    * Field separator. Defaults to sniffing `,` `;` `\t` and `|` from the first
    * non-quoted line — European exports use `;` far more often than `,`.
    */
-  delimiter?: string
+  delimiter?: string;
   /** Quote character. Default: `"`. */
-  quote?: string
-}
+  quote?: string;
+};
 
-const CANDIDATE_DELIMITERS = [",", ";", "\t", "|"] as const
+const CANDIDATE_DELIMITERS = [",", ";", "\t", "|"] as const;
 
 /**
  * Pick the delimiter that yields the most fields on the first line, ignoring
@@ -18,36 +18,36 @@ const CANDIDATE_DELIMITERS = [",", ";", "\t", "|"] as const
  * comma file never gets read as pipe-separated.
  */
 export function sniffDelimiter(sample: string, quote = '"'): string {
-  const counts = new Map<string, number>(CANDIDATE_DELIMITERS.map((d) => [d, 0]))
-  let inQuotes = false
+  const counts = new Map<string, number>(CANDIDATE_DELIMITERS.map(d => [d, 0]));
+  let inQuotes = false;
 
   for (let i = 0; i < sample.length; i++) {
-    const char = sample[i]!
+    const char = sample[i]!;
     if (char === quote) {
       // A doubled quote is an escaped quote, not a state change.
       if (inQuotes && sample[i + 1] === quote) {
-        i++
-        continue
+        i++;
+        continue;
       }
-      inQuotes = !inQuotes
-      continue
+      inQuotes = !inQuotes;
+      continue;
     }
-    if (inQuotes) continue
-    if (char === "\n") break
-    const current = counts.get(char)
-    if (current !== undefined) counts.set(char, current + 1)
+    if (inQuotes) continue;
+    if (char === "\n") break;
+    const current = counts.get(char);
+    if (current !== undefined) counts.set(char, current + 1);
   }
 
-  let best: string = CANDIDATE_DELIMITERS[0]
-  let bestCount = -1
+  let best: string = CANDIDATE_DELIMITERS[0];
+  let bestCount = -1;
   for (const candidate of CANDIDATE_DELIMITERS) {
-    const count = counts.get(candidate)!
+    const count = counts.get(candidate)!;
     if (count > bestCount) {
-      best = candidate
-      bestCount = count
+      best = candidate;
+      bestCount = count;
     }
   }
-  return best
+  return best;
 }
 
 /**
@@ -57,84 +57,84 @@ export function sniffDelimiter(sample: string, quote = '"'): string {
  */
 export function parseCsv(text: string, options: CsvParserOptions = {}): RawRow[] {
   // A UTF-8 BOM would otherwise become part of the first header.
-  if (text.charCodeAt(0) === 0xfeff) text = text.slice(1)
+  if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
 
-  const quote = options.quote ?? '"'
-  const delimiter = options.delimiter ?? sniffDelimiter(text.slice(0, 8192), quote)
+  const quote = options.quote ?? '"';
+  const delimiter = options.delimiter ?? sniffDelimiter(text.slice(0, 8192), quote);
 
-  const rows: RawRow[] = []
-  let row: RawRow = []
-  let field = ""
-  let fieldWasQuoted = false
-  let inQuotes = false
+  const rows: RawRow[] = [];
+  let row: RawRow = [];
+  let field = "";
+  let fieldWasQuoted = false;
+  let inQuotes = false;
 
   const endField = () => {
     // Distinguish an empty cell from a quoted empty string only by keeping
     // "" for both — downstream treats "" and undefined alike.
-    row.push(fieldWasQuoted || field !== "" ? field : "")
-    field = ""
-    fieldWasQuoted = false
-  }
+    row.push(fieldWasQuoted || field !== "" ? field : "");
+    field = "";
+    fieldWasQuoted = false;
+  };
 
   const endRow = () => {
-    endField()
-    rows.push(row)
-    row = []
-  }
+    endField();
+    rows.push(row);
+    row = [];
+  };
 
   for (let i = 0; i < text.length; i++) {
-    const char = text[i]!
+    const char = text[i]!;
 
     if (inQuotes) {
       if (char === quote) {
         if (text[i + 1] === quote) {
-          field += quote
-          i++
+          field += quote;
+          i++;
         } else {
-          inQuotes = false
+          inQuotes = false;
         }
       } else {
-        field += char
+        field += char;
       }
-      continue
+      continue;
     }
 
     if (char === quote) {
-      inQuotes = true
-      fieldWasQuoted = true
-      continue
+      inQuotes = true;
+      fieldWasQuoted = true;
+      continue;
     }
     if (char === delimiter) {
-      endField()
-      continue
+      endField();
+      continue;
     }
     if (char === "\r") {
-      if (text[i + 1] === "\n") i++
-      endRow()
-      continue
+      if (text[i + 1] === "\n") i++;
+      endRow();
+      continue;
     }
     if (char === "\n") {
-      endRow()
-      continue
+      endRow();
+      continue;
     }
-    field += char
+    field += char;
   }
 
   // Trailing newline should not produce a phantom row.
-  if (field !== "" || fieldWasQuoted || row.length > 0) endRow()
+  if (field !== "" || fieldWasQuoted || row.length > 0) endRow();
 
-  return dropTrailingBlankRows(rows)
+  return dropTrailingBlankRows(rows);
 }
 
 export function dropTrailingBlankRows(rows: RawRow[]): RawRow[] {
-  let end = rows.length
+  let end = rows.length;
   while (end > 0) {
-    const row = rows[end - 1]!
-    const blank = row.every((cell) => cell === undefined || cell === "")
-    if (!blank) break
-    end--
+    const row = rows[end - 1]!;
+    const blank = row.every(cell => cell === undefined || cell === "");
+    if (!blank) break;
+    end--;
   }
-  return end === rows.length ? rows : rows.slice(0, end)
+  return end === rows.length ? rows : rows.slice(0, end);
 }
 
 /** Zero-dependency CSV/TSV parser. Suitable as the sole parser for CSV-only apps. */
@@ -144,28 +144,25 @@ export function createCsvParser(options: CsvParserOptions = {}): Parser {
     canParse: (file: FileLike) =>
       /\.(csv|tsv|txt)$/i.test(file.name) || file.type === "text/csv" || file.type === "text/tab-separated-values",
     async parse(file, parseOptions) {
-      let text: string
+      let text: string;
       try {
-        text = file.text ? await file.text() : new TextDecoder().decode(await file.arrayBuffer())
+        text = file.text ? await file.text() : new TextDecoder().decode(await file.arrayBuffer());
       } catch (cause) {
-        throw new SpreadsheetImportError("parse-failed", `Could not read ${file.name}.`, cause)
+        throw new SpreadsheetImportError("parse-failed", `Could not read ${file.name}.`, cause);
       }
 
-      let rows: RawRow[]
+      let rows: RawRow[];
       try {
-        rows = parseCsv(text, options)
+        rows = parseCsv(text, options);
       } catch (cause) {
-        throw new SpreadsheetImportError("parse-failed", `${file.name} is not valid CSV.`, cause)
+        throw new SpreadsheetImportError("parse-failed", `${file.name} is not valid CSV.`, cause);
       }
 
       if (parseOptions.maxRows !== undefined && rows.length - 1 > parseOptions.maxRows) {
-        throw new SpreadsheetImportError(
-          "too-many-rows",
-          `${file.name} has more than ${parseOptions.maxRows} rows.`,
-        )
+        throw new SpreadsheetImportError("too-many-rows", `${file.name} has more than ${parseOptions.maxRows} rows.`);
       }
 
-      return { sheets: [{ name: file.name, rows }] } satisfies ParsedWorkbook
+      return { sheets: [{ name: file.name, rows }] } satisfies ParsedWorkbook;
     },
-  }
+  };
 }

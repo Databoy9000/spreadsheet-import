@@ -1,7 +1,6 @@
-"use client"
+"use client";
 
-import { useId } from "react"
-import { ColumnType, isMatchedColumn, type Column, type Field } from "@spotable/spreadsheet-import-core"
+import { type Column, ColumnType, type Field, isMatchedColumn } from "@spotable/spreadsheet-import-core";
 import {
   useColumnMatching,
   useFileDrop,
@@ -9,17 +8,18 @@ import {
   useSheetSelection,
   useSpreadsheetImport,
   useValidation,
-} from "@spotable/spreadsheet-import-react"
-import { CellInput } from "./CellInput.js"
-import { Alert, Button, StepShell, cx } from "./primitives.js"
+} from "@spotable/spreadsheet-import-react";
+import { useId } from "react";
+import { CellInput } from "./CellInput.js";
+import { Alert, Button, cx, StepShell } from "./primitives.js";
 
 // ---------------------------------------------------------------------------
 // Upload
 // ---------------------------------------------------------------------------
 
 export function UploadStep<TKey extends string>({ accept = ".csv,.tsv,.xlsx,.xls,.ods" }: { accept?: string }) {
-  const { getRootProps, getInputProps, isDragging, isBusy } = useFileDrop<TKey>({ accept })
-  const { fields } = useSpreadsheetImport<TKey>()
+  const { getRootProps, getInputProps, isDragging, isBusy } = useFileDrop<TKey>({ accept });
+  const { fields } = useSpreadsheetImport<TKey>();
 
   return (
     <StepShell
@@ -51,10 +51,10 @@ export function UploadStep<TKey extends string>({ accept = ".csv,.tsv,.xlsx,.xls
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500 dark:bg-slate-900">
               <tr>
-                {fields.map((field) => (
+                {fields.map(field => (
                   <th key={field.key} className="whitespace-nowrap px-3 py-2 font-medium">
                     {field.label}
-                    {field.validations?.some((validation) => validation.rule === "required") ? (
+                    {field.validations?.some(validation => validation.rule === "required") ? (
                       <span className="ml-1 text-red-500" aria-label="required">
                         *
                       </span>
@@ -65,7 +65,7 @@ export function UploadStep<TKey extends string>({ accept = ".csv,.tsv,.xlsx,.xls
             </thead>
             <tbody>
               <tr className="border-t border-slate-200 dark:border-slate-800">
-                {fields.map((field) => (
+                {fields.map(field => (
                   <td key={field.key} className="whitespace-nowrap px-3 py-2 text-slate-500">
                     {field.example ?? "—"}
                   </td>
@@ -76,7 +76,7 @@ export function UploadStep<TKey extends string>({ accept = ".csv,.tsv,.xlsx,.xls
         </div>
       </section>
     </StepShell>
-  )
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -84,7 +84,7 @@ export function UploadStep<TKey extends string>({ accept = ".csv,.tsv,.xlsx,.xls
 // ---------------------------------------------------------------------------
 
 export function SelectSheetStep<TKey extends string>() {
-  const { sheets, selected, confirm, back, getSheetProps } = useSheetSelection<TKey>()
+  const { sheets, selected, confirm, back, getSheetProps } = useSheetSelection<TKey>();
 
   return (
     <StepShell
@@ -100,7 +100,7 @@ export function SelectSheetStep<TKey extends string>() {
       }
     >
       <div role="radiogroup" aria-label="Sheets" className="grid gap-2">
-        {sheets.map((sheet) => (
+        {sheets.map(sheet => (
           <button
             key={sheet.name}
             {...getSheetProps(sheet.name)}
@@ -117,7 +117,7 @@ export function SelectSheetStep<TKey extends string>() {
         ))}
       </div>
     </StepShell>
-  )
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -125,8 +125,8 @@ export function SelectSheetStep<TKey extends string>() {
 // ---------------------------------------------------------------------------
 
 export function SelectHeaderStep<TKey extends string>({ previewRows = 25 }: { previewRows?: number }) {
-  const { rows, selectedIndex, confirm, back, getRowProps, isBusy } = useHeaderSelection<TKey>()
-  const width = Math.max(0, ...rows.slice(0, previewRows).map((row) => row.length))
+  const { rows, selectedIndex, confirm, back, getRowProps, isBusy } = useHeaderSelection<TKey>();
+  const width = Math.max(0, ...rows.slice(0, previewRows).map(row => row.length));
 
   return (
     <StepShell
@@ -167,7 +167,7 @@ export function SelectHeaderStep<TKey extends string>({ previewRows = 25 }: { pr
         </table>
       </div>
     </StepShell>
-  )
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -185,19 +185,19 @@ function ColumnCard<TKey extends string>({
   onOption,
   optionsFor,
 }: {
-  column: Column<TKey>
-  fields: readonly Field<TKey>[]
-  sample: (string | undefined)[]
-  taken: ReadonlySet<TKey>
-  onField: (index: number, key: TKey | null) => void
-  onIgnore: (index: number) => void
-  onUnignore: (index: number) => void
-  onOption: (index: number, entry: string, value: string) => void
-  optionsFor: (key: TKey) => readonly { label: string; value: string }[]
+  column: Column<TKey>;
+  fields: readonly Field<TKey>[];
+  sample: (string | undefined)[];
+  taken: ReadonlySet<TKey>;
+  onField: (index: number, key: TKey | null) => void;
+  onIgnore: (index: number) => void;
+  onUnignore: (index: number) => void;
+  onOption: (index: number, entry: string, value: string) => void;
+  optionsFor: (key: TKey) => readonly { label: string; value: string }[];
 }) {
-  const selectId = useId()
-  const ignored = column.type === ColumnType.ignored
-  const value = isMatchedColumn(column) ? column.value : ""
+  const selectId = useId();
+  const ignored = column.type === ColumnType.ignored;
+  const value = isMatchedColumn(column) ? column.value : "";
 
   return (
     <div
@@ -209,7 +209,9 @@ function ColumnCard<TKey extends string>({
       )}
     >
       <div className="min-w-0">
-        <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-50">{column.header || "(no header)"}</p>
+        <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-50">
+          {column.header || "(no header)"}
+        </p>
         <ul className="mt-1 space-y-0.5 text-xs text-slate-500">
           {sample.map((cell, index) => (
             <li key={index} className="truncate">
@@ -228,10 +230,10 @@ function ColumnCard<TKey extends string>({
           className="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900"
           value={value}
           disabled={ignored}
-          onChange={(event) => onField(column.index, (event.target.value || null) as TKey | null)}
+          onChange={event => onField(column.index, (event.target.value || null) as TKey | null)}
         >
           <option value="">— not imported —</option>
-          {fields.map((field) => (
+          {fields.map(field => (
             <option key={field.key} value={field.key} disabled={taken.has(field.key) && field.key !== value}>
               {field.label}
               {taken.has(field.key) && field.key !== value ? " (already mapped)" : ""}
@@ -242,7 +244,7 @@ function ColumnCard<TKey extends string>({
         {"matchedOptions" in column ? (
           <div className="space-y-1 rounded-md bg-slate-50 p-2 dark:bg-slate-900">
             <p className="text-xs font-medium text-slate-600 dark:text-slate-400">Match the values</p>
-            {column.matchedOptions.map((option) => (
+            {column.matchedOptions.map(option => (
               <div key={option.entry} className="flex items-center gap-2">
                 <span className="w-1/2 truncate text-xs">{option.entry}</span>
                 <select
@@ -252,10 +254,10 @@ function ColumnCard<TKey extends string>({
                     option.value ? "border-slate-300 dark:border-slate-700" : "border-amber-400",
                   )}
                   value={option.value ?? ""}
-                  onChange={(event) => onOption(column.index, option.entry, event.target.value)}
+                  onChange={event => onOption(column.index, option.entry, event.target.value)}
                 >
                   <option value="">— pick —</option>
-                  {optionsFor(column.value).map((choice) => (
+                  {optionsFor(column.value).map(choice => (
                     <option key={choice.value} value={choice.value}>
                       {choice.label}
                     </option>
@@ -275,11 +277,11 @@ function ColumnCard<TKey extends string>({
         </Button>
       </div>
     </div>
-  )
+  );
 }
 
 export function MatchColumnsStep<TKey extends string>() {
-  const matching = useColumnMatching<TKey>()
+  const matching = useColumnMatching<TKey>();
 
   return (
     <StepShell
@@ -302,7 +304,7 @@ export function MatchColumnsStep<TKey extends string>() {
       ) : null}
 
       <div className="grid gap-2">
-        {matching.columns.map((column) => (
+        {matching.columns.map(column => (
           <ColumnCard
             key={column.index}
             column={column}
@@ -318,7 +320,7 @@ export function MatchColumnsStep<TKey extends string>() {
         ))}
       </div>
     </StepShell>
-  )
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -326,7 +328,7 @@ export function MatchColumnsStep<TKey extends string>() {
 // ---------------------------------------------------------------------------
 
 export function ValidationStep<TKey extends string>() {
-  const validation = useValidation<TKey>()
+  const validation = useValidation<TKey>();
 
   return (
     <StepShell
@@ -362,7 +364,7 @@ export function ValidationStep<TKey extends string>() {
         <input
           type="checkbox"
           checked={validation.showErrorsOnly}
-          onChange={(event) => validation.setShowErrorsOnly(event.target.checked)}
+          onChange={event => validation.setShowErrorsOnly(event.target.checked)}
         />
         Only show rows with problems
       </label>
@@ -372,7 +374,7 @@ export function ValidationStep<TKey extends string>() {
           <thead className="sticky top-0 bg-slate-50 text-xs uppercase tracking-wide text-slate-500 dark:bg-slate-900">
             <tr>
               <th className="w-10 px-2 py-2" />
-              {validation.fields.map((field) => (
+              {validation.fields.map(field => (
                 <th key={field.key} className="whitespace-nowrap px-3 py-2 font-medium">
                   {field.label}
                 </th>
@@ -380,7 +382,7 @@ export function ValidationStep<TKey extends string>() {
             </tr>
           </thead>
           <tbody>
-            {validation.visibleRows.map((row) => (
+            {validation.visibleRows.map(row => (
               <tr key={row.__index} className="border-t border-slate-100 dark:border-slate-800">
                 <td className="px-2 py-1">
                   <input
@@ -390,9 +392,9 @@ export function ValidationStep<TKey extends string>() {
                     onChange={() => validation.toggleSelected(row.__index)}
                   />
                 </td>
-                {validation.fields.map((field) => {
-                  const cell = validation.getCellProps(row.__index, field.key)
-                  const isCheckbox = field.fieldType.type === "checkbox"
+                {validation.fields.map(field => {
+                  const cell = validation.getCellProps(row.__index, field.key);
+                  const isCheckbox = field.fieldType.type === "checkbox";
 
                   return (
                     <td key={field.key} className="px-1 py-1">
@@ -401,7 +403,7 @@ export function ValidationStep<TKey extends string>() {
                           type="checkbox"
                           aria-label={field.label}
                           checked={cell.value === true}
-                          onChange={(event) => void cell.onValueChange(event.target.checked)}
+                          onChange={event => void cell.onValueChange(event.target.checked)}
                         />
                       ) : (
                         <CellInput
@@ -410,11 +412,11 @@ export function ValidationStep<TKey extends string>() {
                           error={cell.error}
                           numeric={field.fieldType.type === "number"}
                           monospace={field.fieldType.type === "date"}
-                          onCommit={(next) => void cell.onValueChange(next)}
+                          onCommit={next => void cell.onValueChange(next)}
                         />
                       )}
                     </td>
-                  )
+                  );
                 })}
               </tr>
             ))}
@@ -422,5 +424,5 @@ export function ValidationStep<TKey extends string>() {
         </table>
       </div>
     </StepShell>
-  )
+  );
 }

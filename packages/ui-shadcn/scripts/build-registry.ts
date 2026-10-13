@@ -9,20 +9,20 @@
  *
  * Run: pnpm --filter @spotable/spreadsheet-import-ui-shadcn registry
  */
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
-import { dirname, join } from "node:path"
-import { fileURLToPath } from "node:url"
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const here = dirname(fileURLToPath(import.meta.url))
-const SRC = join(here, "../src")
-const OUT = join(here, "../registry")
+const here = dirname(fileURLToPath(import.meta.url));
+const SRC = join(here, "../src");
+const OUT = join(here, "../registry");
 
 type RegistryFile = {
-  path: string
-  content: string
-  type: "registry:component" | "registry:ui" | "registry:lib"
-  target?: string
-}
+  path: string;
+  content: string;
+  type: "registry:component" | "registry:ui" | "registry:lib";
+  target?: string;
+};
 
 /**
  * Rewrite this package's relative imports onto the aliases a shadcn project
@@ -40,10 +40,10 @@ function rewriteImports(source: string): string {
     .replace(/from "\.\.\/ui\/utils\.js"/g, 'from "@/lib/utils"')
     .replace(/from "\.\/ui\/utils\.js"/g, 'from "@/lib/utils"')
     .replace(/from "\.\/steps\/([\w-]+)\.js"/g, 'from "@/components/spreadsheet-import/$1"')
-    .replace(/from "\.\/([\w-]+)\.js"/g, 'from "@/components/spreadsheet-import/$1"')
+    .replace(/from "\.\/([\w-]+)\.js"/g, 'from "@/components/spreadsheet-import/$1"');
 }
 
-const read = (relative: string) => rewriteImports(readFileSync(join(SRC, relative), "utf8"))
+const read = (relative: string) => rewriteImports(readFileSync(join(SRC, relative), "utf8"));
 
 const files: RegistryFile[] = [
   {
@@ -79,7 +79,7 @@ const files: RegistryFile[] = [
     content: read("ui/primitives.tsx"),
     type: "registry:ui",
   },
-]
+];
 
 const item = {
   $schema: "https://ui.shadcn.com/schema/registry-item.json",
@@ -101,17 +101,17 @@ const item = {
   // Pulled from the user's own registry so we never overwrite their versions.
   registryDependencies: ["button", "dialog"],
   files,
-}
+};
 
 const registry = {
   $schema: "https://ui.shadcn.com/schema/registry.json",
   name: "spreadsheet-import",
   homepage: "https://github.com/Databoy9000/spreadsheet-import",
   items: [item],
-}
+};
 
-mkdirSync(OUT, { recursive: true })
-writeFileSync(join(OUT, "spreadsheet-import.json"), `${JSON.stringify(item, null, 2)}\n`)
-writeFileSync(join(OUT, "registry.json"), `${JSON.stringify(registry, null, 2)}\n`)
+mkdirSync(OUT, { recursive: true });
+writeFileSync(join(OUT, "spreadsheet-import.json"), `${JSON.stringify(item, null, 2)}\n`);
+writeFileSync(join(OUT, "registry.json"), `${JSON.stringify(registry, null, 2)}\n`);
 
-console.log(`Wrote ${files.length} files into the registry at ${OUT}`)
+console.log(`Wrote ${files.length} files into the registry at ${OUT}`);

@@ -1,31 +1,31 @@
-"use client"
+"use client";
 
 import {
-  useCallback,
-  useMemo,
-  useRef,
-  useState,
+  type CellValue,
+  type Column,
+  ColumnType,
+  type FileLike,
+  findUnmatchedRequiredFields,
+  getFieldOptions,
+  type ImportState,
+  isMatchedColumn,
+  isRowValid,
+  type RawRow,
+  type Step,
+} from "@spotable/spreadsheet-import-core";
+import {
   type ChangeEvent,
   type DragEvent,
   type HTMLAttributes,
   type InputHTMLAttributes,
   type KeyboardEvent,
   type RefObject,
-} from "react"
-import {
-  ColumnType,
-  findUnmatchedRequiredFields,
-  getFieldOptions,
-  isMatchedColumn,
-  isRowValid,
-  type Step,
-  type CellValue,
-  type Column,
-  type FileLike,
-  type ImportState,
-  type RawRow,
-} from "@spotable/spreadsheet-import-core"
-import { useImporter, useImporterActions, useImporterState } from "./context.js"
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { useImporter, useImporterActions, useImporterState } from "./context.js";
 
 /**
  * The prop-getter pattern, as in Downshift and react-hook-form: a hook returns
@@ -35,21 +35,21 @@ import { useImporter, useImporterActions, useImporterState } from "./context.js"
  * Anything you pass in is merged into the result, and your event handlers run
  * before ours rather than being overwritten.
  */
-export type PropGetter<TProps> = <TExtra extends object>(props?: TExtra) => TProps & TExtra
+export type PropGetter<TProps> = <TExtra extends object>(props?: TExtra) => TProps & TExtra;
 
 /** Props for the drop target. Spread onto a div, a section, whatever fits. */
 export type DropZoneProps = HTMLAttributes<HTMLElement> & {
-  role: "button"
-  tabIndex: number
-  "data-dragging"?: true
-  "data-disabled"?: true
-}
+  role: "button";
+  tabIndex: number;
+  "data-dragging"?: true;
+  "data-disabled"?: true;
+};
 
 /** Props for the hidden file input. */
 export type FileInputProps = InputHTMLAttributes<HTMLInputElement> & {
-  ref: RefObject<HTMLInputElement | null>
-  type: "file"
-}
+  ref: RefObject<HTMLInputElement | null>;
+  type: "file";
+};
 
 /** Merge a caller's handler with ours so spreading never silently drops theirs. */
 function chain<TArgs extends unknown[]>(
@@ -57,9 +57,9 @@ function chain<TArgs extends unknown[]>(
   theirs?: (...args: TArgs) => void,
 ): (...args: TArgs) => void {
   return (...args: TArgs) => {
-    theirs?.(...args)
-    ours(...args)
-  }
+    theirs?.(...args);
+    ours(...args);
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -67,13 +67,13 @@ function chain<TArgs extends unknown[]>(
 // ---------------------------------------------------------------------------
 
 export function useSpreadsheetImport<TKey extends string>() {
-  const importer = useImporter<TKey>()
-  const actions = useImporterActions<TKey>()
-  const step = useImporterState<TKey, Step>((state) => state.step)
-  const isBusy = useImporterState<TKey, boolean>((state) => state.isBusy)
-  const error = useImporterState<TKey, ImportState<TKey>["error"]>((state) => state.error)
+  const importer = useImporter<TKey>();
+  const actions = useImporterActions<TKey>();
+  const step = useImporterState<TKey, Step>(state => state.step);
+  const isBusy = useImporterState<TKey, boolean>(state => state.isBusy);
+  const error = useImporterState<TKey, ImportState<TKey>["error"]>(state => state.error);
 
-  return { importer, step, isBusy, error, fields: importer.fields, ...actions }
+  return { importer, step, isBusy, error, fields: importer.fields, ...actions };
 }
 
 // ---------------------------------------------------------------------------
@@ -82,28 +82,28 @@ export function useSpreadsheetImport<TKey extends string>() {
 
 export type UseFileDropOptions = {
   /** `accept` for the file input, e.g. ".csv,.xlsx". */
-  accept?: string
-  disabled?: boolean
-}
+  accept?: string;
+  disabled?: boolean;
+};
 
 export function useFileDrop<TKey extends string>(options: UseFileDropOptions = {}) {
-  const { selectFile } = useImporterActions<TKey>()
-  const isBusy = useImporterState<TKey, boolean>((state) => state.isBusy)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const [isDragging, setIsDragging] = useState(false)
+  const { selectFile } = useImporterActions<TKey>();
+  const isBusy = useImporterState<TKey, boolean>(state => state.isBusy);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
   // Drag events fire on every child element; count enters and leaves so the
   // highlight does not flicker as the pointer crosses inner nodes.
-  const dragDepth = useRef(0)
+  const dragDepth = useRef(0);
 
-  const disabled = options.disabled || isBusy
+  const disabled = options.disabled || isBusy;
 
   const handleFiles = useCallback(
     (files: FileList | null) => {
-      const file = files?.[0]
-      if (file) void selectFile(file as unknown as FileLike)
+      const file = files?.[0];
+      if (file) void selectFile(file as unknown as FileLike);
     },
     [selectFile],
-  )
+  );
 
   const getRootProps = useCallback(
     (props: Record<string, unknown> = {}) => ({
@@ -111,33 +111,33 @@ export function useFileDrop<TKey extends string>(options: UseFileDropOptions = {
       "data-dragging": isDragging || undefined,
       "data-disabled": disabled || undefined,
       onDragEnter: chain((event: DragEvent) => {
-        event.preventDefault()
-        dragDepth.current += 1
-        if (!disabled) setIsDragging(true)
+        event.preventDefault();
+        dragDepth.current += 1;
+        if (!disabled) setIsDragging(true);
       }, props.onDragEnter as never),
       onDragOver: chain((event: DragEvent) => event.preventDefault(), props.onDragOver as never),
       onDragLeave: chain((event: DragEvent) => {
-        event.preventDefault()
-        dragDepth.current -= 1
+        event.preventDefault();
+        dragDepth.current -= 1;
         if (dragDepth.current <= 0) {
-          dragDepth.current = 0
-          setIsDragging(false)
+          dragDepth.current = 0;
+          setIsDragging(false);
         }
       }, props.onDragLeave as never),
       onDrop: chain((event: DragEvent) => {
-        event.preventDefault()
-        dragDepth.current = 0
-        setIsDragging(false)
-        if (!disabled) handleFiles(event.dataTransfer?.files ?? null)
+        event.preventDefault();
+        dragDepth.current = 0;
+        setIsDragging(false);
+        if (!disabled) handleFiles(event.dataTransfer?.files ?? null);
       }, props.onDrop as never),
       onClick: chain(() => {
-        if (!disabled) inputRef.current?.click()
+        if (!disabled) inputRef.current?.click();
       }, props.onClick as never),
       onKeyDown: chain((event: KeyboardEvent) => {
         // A div acting as a button has to answer to Enter and Space itself.
         if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault()
-          if (!disabled) inputRef.current?.click()
+          event.preventDefault();
+          if (!disabled) inputRef.current?.click();
         }
       }, props.onKeyDown as never),
       role: "button",
@@ -145,7 +145,7 @@ export function useFileDrop<TKey extends string>(options: UseFileDropOptions = {
       "aria-disabled": disabled || undefined,
     }),
     [disabled, handleFiles, isDragging],
-  ) as PropGetter<DropZoneProps>
+  ) as PropGetter<DropZoneProps>;
 
   const getInputProps = useCallback(
     (props: Record<string, unknown> = {}) => ({
@@ -156,15 +156,15 @@ export function useFileDrop<TKey extends string>(options: UseFileDropOptions = {
       disabled,
       style: { display: "none", ...(props.style as object) },
       onChange: chain((event: ChangeEvent<HTMLInputElement>) => {
-        handleFiles(event.target.files)
+        handleFiles(event.target.files);
         // Reset so picking the same file twice still fires a change event.
-        event.target.value = ""
+        event.target.value = "";
       }, props.onChange as never),
     }),
     [disabled, handleFiles, options.accept],
-  ) as PropGetter<FileInputProps>
+  ) as PropGetter<FileInputProps>;
 
-  return { getRootProps, getInputProps, isDragging, isBusy, inputRef, open: () => inputRef.current?.click() }
+  return { getRootProps, getInputProps, isDragging, isBusy, inputRef, open: () => inputRef.current?.click() };
 }
 
 // ---------------------------------------------------------------------------
@@ -172,16 +172,16 @@ export function useFileDrop<TKey extends string>(options: UseFileDropOptions = {
 // ---------------------------------------------------------------------------
 
 export function useSheetSelection<TKey extends string>() {
-  const { selectSheet, setPendingSheet, back } = useImporterActions<TKey>()
+  const { selectSheet, setPendingSheet, back } = useImporterActions<TKey>();
   const sheets = useImporterState<TKey, { name: string; rowCount: number }[]>(
-    (state) => state.workbook?.sheets.map((sheet) => ({ name: sheet.name, rowCount: sheet.rows.length })) ?? [],
+    state => state.workbook?.sheets.map(sheet => ({ name: sheet.name, rowCount: sheet.rows.length })) ?? [],
     (a, b) => a.length === b.length && a.every((sheet, i) => sheet.name === b[i]?.name),
-  )
+  );
   // Kept in the store, not in local state, so a Continue button rendered
   // outside this step can commit the highlighted sheet.
-  const selected = useImporterState<TKey, string | null>((state) => state.pendingSheetName)
+  const selected = useImporterState<TKey, string | null>(state => state.pendingSheetName);
 
-  const active = selected ?? sheets[0]?.name ?? null
+  const active = selected ?? sheets[0]?.name ?? null;
 
   return {
     sheets,
@@ -195,7 +195,7 @@ export function useSheetSelection<TKey extends string>() {
       onClick: () => setPendingSheet(name),
       "data-selected": active === name || undefined,
     }),
-  }
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -203,12 +203,12 @@ export function useSheetSelection<TKey extends string>() {
 // ---------------------------------------------------------------------------
 
 export function useHeaderSelection<TKey extends string>() {
-  const { selectHeaderRow, setPendingHeaderRow, back } = useImporterActions<TKey>()
-  const rows = useImporterState<TKey, RawRow[]>((state) => state.sheetRows)
-  const isBusy = useImporterState<TKey, boolean>((state) => state.isBusy)
+  const { selectHeaderRow, setPendingHeaderRow, back } = useImporterActions<TKey>();
+  const rows = useImporterState<TKey, RawRow[]>(state => state.sheetRows);
+  const isBusy = useImporterState<TKey, boolean>(state => state.isBusy);
   // Same reason as the sheet step: the highlighted row belongs to the flow,
   // not to whichever component happens to render the list.
-  const selectedIndex = useImporterState<TKey, number>((state) => state.headerRowIndex)
+  const selectedIndex = useImporterState<TKey, number>(state => state.headerRowIndex);
 
   return {
     rows,
@@ -223,7 +223,7 @@ export function useHeaderSelection<TKey extends string>() {
       "data-selected": selectedIndex === index || undefined,
       onClick: () => setPendingHeaderRow(index),
     }),
-  }
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -231,21 +231,21 @@ export function useHeaderSelection<TKey extends string>() {
 // ---------------------------------------------------------------------------
 
 export function useColumnMatching<TKey extends string>() {
-  const importer = useImporter<TKey>()
+  const importer = useImporter<TKey>();
   const { setColumnField, ignoreColumn, unignoreColumn, setColumnOption, setFieldConstant, commitColumns, back } =
-    useImporterActions<TKey>()
-  const constants = useImporterState<TKey, Partial<Record<TKey, CellValue>>>((state) => state.constants)
+    useImporterActions<TKey>();
+  const constants = useImporterState<TKey, Partial<Record<TKey, CellValue>>>(state => state.constants);
 
-  const columns = useImporterState<TKey, Column<TKey>[]>((state) => state.columns)
-  const isBusy = useImporterState<TKey, boolean>((state) => state.isBusy)
-  const bodyRows = useImporterState<TKey, RawRow[]>((state) => state.sheetRows.slice(state.headerRowIndex + 1))
+  const columns = useImporterState<TKey, Column<TKey>[]>(state => state.columns);
+  const isBusy = useImporterState<TKey, boolean>(state => state.isBusy);
+  const bodyRows = useImporterState<TKey, RawRow[]>(state => state.sheetRows.slice(state.headerRowIndex + 1));
 
   // Derived from `columns` directly rather than from `importer`, so it stays a
   // pure function of rendered state instead of a snapshot read at render time.
   const unmatchedRequiredFields = useMemo(
     () => findUnmatchedRequiredFields(importer.fields, columns),
     [importer.fields, columns],
-  )
+  );
 
   /**
    * Field keys already taken, so a UI can grey them out instead of surprising
@@ -253,14 +253,14 @@ export function useColumnMatching<TKey extends string>() {
    * one is what they are for.
    */
   const takenFieldKeys = useMemo(() => {
-    const collects = new Set(importer.fields.filter((field) => field.collects).map((field) => field.key))
+    const collects = new Set(importer.fields.filter(field => field.collects).map(field => field.key));
     return new Set(
       columns
         .filter(isMatchedColumn)
-        .map((column) => column.value)
-        .filter((key) => !collects.has(key)),
-    )
-  }, [columns, importer.fields])
+        .map(column => column.value)
+        .filter(key => !collects.has(key)),
+    );
+  }, [columns, importer.fields]);
 
   return {
     columns,
@@ -269,18 +269,17 @@ export function useColumnMatching<TKey extends string>() {
     unmatchedRequiredFields,
     takenFieldKeys,
     /** First rows of the column, for a preview under the header. */
-    getSample: (columnIndex: number, count = 3) =>
-      bodyRows.slice(0, count).map((row) => row[columnIndex]),
+    getSample: (columnIndex: number, count = 3) => bodyRows.slice(0, count).map(row => row[columnIndex]),
     getOptionsFor: (fieldKey: TKey) => getFieldOptions(importer.fields, fieldKey),
     /** What a collecting column contributes, when the field can say. */
     getColumnNote: (column: Column<TKey>) => {
-      if (!isMatchedColumn(column)) return undefined
-      const field = importer.fields.find((candidate) => candidate.key === column.value)
-      return field?.collects?.describe?.(column.header)
+      if (!isMatchedColumn(column)) return undefined;
+      const field = importer.fields.find(candidate => candidate.key === column.value);
+      return field?.collects?.describe?.(column.header);
     },
     /** Fields no column supplies, so a UI can offer one value for the import. */
     unmappedFields: importer.fields.filter(
-      (field) => !columns.some((column) => isMatchedColumn(column) && column.value === field.key),
+      field => !columns.some(column => isMatchedColumn(column) && column.value === field.key),
     ),
     constants,
     setFieldConstant,
@@ -291,7 +290,7 @@ export function useColumnMatching<TKey extends string>() {
     continue: commitColumns,
     back,
     ColumnType,
-  }
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -300,40 +299,40 @@ export function useColumnMatching<TKey extends string>() {
 
 export type UseValidationOptions = {
   /** Start with only rows that still have errors. Default: false. */
-  filterErrorsOnly?: boolean
-}
+  filterErrorsOnly?: boolean;
+};
 
 export function useValidation<TKey extends string>(options: UseValidationOptions = {}) {
-  const importer = useImporter<TKey>()
-  const { updateCell, updateRow, deleteRows, addRow, submit, back } = useImporterActions<TKey>()
+  const importer = useImporter<TKey>();
+  const { updateCell, updateRow, deleteRows, addRow, submit, back } = useImporterActions<TKey>();
 
-  const rows = useImporterState<TKey, ImportState<TKey>["rows"]>((state) => state.rows)
-  const isBusy = useImporterState<TKey, boolean>((state) => state.isBusy)
+  const rows = useImporterState<TKey, ImportState<TKey>["rows"]>(state => state.rows);
+  const isBusy = useImporterState<TKey, boolean>(state => state.isBusy);
 
-  const [showErrorsOnly, setShowErrorsOnly] = useState(options.filterErrorsOnly ?? false)
-  const [selectedIds, setSelectedIds] = useState<ReadonlySet<string>>(() => new Set())
+  const [showErrorsOnly, setShowErrorsOnly] = useState(options.filterErrorsOnly ?? false);
+  const [selectedIds, setSelectedIds] = useState<ReadonlySet<string>>(() => new Set());
 
   const visibleRows = useMemo(
-    () => (showErrorsOnly ? rows.filter((row) => row.__errors !== null) : rows),
+    () => (showErrorsOnly ? rows.filter(row => row.__errors !== null) : rows),
     [rows, showErrorsOnly],
-  )
+  );
 
-  const errorCount = useMemo(() => rows.filter((row) => !isRowValid(row)).length, [rows])
+  const errorCount = useMemo(() => rows.filter(row => !isRowValid(row)).length, [rows]);
 
   const toggleSelected = useCallback((rowId: string) => {
-    setSelectedIds((current) => {
-      const next = new Set(current)
-      if (next.has(rowId)) next.delete(rowId)
-      else next.add(rowId)
-      return next
-    })
-  }, [])
+    setSelectedIds(current => {
+      const next = new Set(current);
+      if (next.has(rowId)) next.delete(rowId);
+      else next.add(rowId);
+      return next;
+    });
+  }, []);
 
   const deleteSelected = useCallback(async () => {
-    if (selectedIds.size === 0) return
-    await deleteRows([...selectedIds])
-    setSelectedIds(new Set())
-  }, [deleteRows, selectedIds])
+    if (selectedIds.size === 0) return;
+    await deleteRows([...selectedIds]);
+    setSelectedIds(new Set());
+  }, [deleteRows, selectedIds]);
 
   return {
     rows,
@@ -356,16 +355,16 @@ export function useValidation<TKey extends string>(options: UseValidationOptions
     back,
     /** Everything a cell editor needs: current value, its error, and a setter. */
     getCellProps: (rowId: string, fieldKey: TKey) => {
-      const row = rows.find((candidate) => candidate.__index === rowId)
-      const error = row?.__errors?.[fieldKey] ?? null
+      const row = rows.find(candidate => candidate.__index === rowId);
+      const error = row?.__errors?.[fieldKey] ?? null;
       return {
         value: (row?.[fieldKey] ?? "") as Exclude<CellValue, undefined>,
         error,
         "aria-invalid": error?.level === "error" || undefined,
         "data-level": error?.level,
         onValueChange: (next: CellValue) => updateCell(rowId, fieldKey, next),
-      }
+      };
     },
-    getRowErrors: (rowId: string) => rows.find((row) => row.__index === rowId)?.__errors ?? null,
-  }
+    getRowErrors: (rowId: string) => rows.find(row => row.__index === rowId)?.__errors ?? null,
+  };
 }

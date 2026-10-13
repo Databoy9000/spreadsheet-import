@@ -1,0 +1,167 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true,
+    "defaultBranch": "dev"
+  },
+  "files": {
+    "ignoreUnknown": false,
+    "includes": [
+      "**/*.{js,mjs,cjs,jsx,ts,tsx,json,md,mdx,html,css}",
+      "!.next",
+      "!dist",
+      "!build",
+      "!migrations"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "formatWithErrors": false,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineEnding": "lf",
+    "lineWidth": 120,
+    "bracketSameLine": false,
+    "bracketSpacing": true,
+    "expand": "auto"
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended",
+      "a11y": {
+        "noStaticElementInteractions": "off",
+        "useFocusableInteractive": "off",
+        "useKeyWithClickEvents": "off",
+        "useMediaCaption": "off"
+      },
+      "correctness": {
+        "noUnusedVariables": "error",
+        "useExhaustiveDependencies": {
+          "level": "error",
+          "options": {
+            "hooks": [
+              {
+                "name": "useDebounceCallback",
+                "stableResult": true
+              }
+            ],
+            "reportMissingDependenciesArray": true
+          }
+        }
+      },
+      "performance": {
+        "noImgElement": "off"
+      },
+      "suspicious": {
+        "noExplicitAny": "error",
+        "noConsole": {
+          "level": "error",
+          "options": {
+            "allow": [
+              "error",
+              "warn",
+              "info"
+            ]
+          }
+        },
+        "noTsIgnore": "error"
+      },
+      "style": {
+        "noNonNullAssertion": "error",
+        "noProcessEnv": "error",
+        "useDestructuring": "error"
+      }
+    },
+    "domains": {
+      "react": "recommended",
+      "next": "recommended"
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "jsxQuoteStyle": "double",
+      "quoteProperties": "asNeeded",
+      "trailingCommas": "all",
+      "semicolons": "always",
+      "arrowParentheses": "asNeeded",
+      "bracketSameLine": false,
+      "quoteStyle": "double",
+      "bracketSpacing": true
+    }
+  },
+  "json": {
+    "formatter": {
+      "expand": "always"
+    }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
+  "overrides": [
+    {
+      "includes": [
+        "**/tests/**/*.ts",
+        "**/seeds/**/*.ts",
+        "**/preview-db.ts",
+        "scripts/**/*.ts"
+      ],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsole": "off",
+            "noExplicitAny": "off"
+          },
+          "style": {
+            "noNonNullAssertion": "off",
+            "useDestructuring": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "drizzle.config.ts",
+        "scripts/**/*.ts",
+        "**/seeds/**/*.ts",
+        "**/preview-db.ts",
+        "src/lib/env/*.ts",
+        "tests/**/*.ts",
+        "tests/setup.ts",
+        "e2e.config.ts"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noProcessEnv": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "src/components/ui/**/*.{ts,tsx}"
+      ],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "useSemanticElements": "off"
+          }
+        }
+      }
+    }
+  ],
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "preset": "recommended",
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  }
+}

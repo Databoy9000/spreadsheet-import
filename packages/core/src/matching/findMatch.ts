@@ -1,5 +1,5 @@
-import type { Fields } from "../types.js"
-import { levenshtein } from "./levenshtein.js"
+import type { Fields } from "../types.js";
+import { levenshtein } from "./levenshtein.js";
 
 /**
  * Fold a header or field name down to its comparable core: case, separators,
@@ -15,13 +15,13 @@ export function normalizeHeader(value: string): string {
     .replace(/[̀-ͯ]/g, "") // strip combining accents
     .replace(/([a-z0-9])([A-Z])/g, "$1 $2") // camelCase -> camel Case
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "")
+    .replace(/[^a-z0-9]+/g, "");
 }
 
 export type MatchCandidate<TKey extends string> = {
-  key: TKey
-  distance: number
-}
+  key: TKey;
+  distance: number;
+};
 
 /**
  * Best field for a header, or undefined when nothing lands within
@@ -36,7 +36,7 @@ export function findMatch<TKey extends string>(
   fields: Fields<TKey>,
   maxDistance: number,
 ): TKey | undefined {
-  return findBestMatch(header, fields, maxDistance)?.key
+  return findBestMatch(header, fields, maxDistance)?.key;
 }
 
 export function findBestMatch<TKey extends string>(
@@ -44,31 +44,31 @@ export function findBestMatch<TKey extends string>(
   fields: Fields<TKey>,
   maxDistance: number,
 ): MatchCandidate<TKey> | undefined {
-  const normalizedHeader = normalizeHeader(header)
-  if (normalizedHeader === "") return undefined
+  const normalizedHeader = normalizeHeader(header);
+  if (normalizedHeader === "") return undefined;
 
-  let best: MatchCandidate<TKey> | undefined
+  let best: MatchCandidate<TKey> | undefined;
 
   for (const field of fields) {
-    const candidates = [field.key, field.label, ...(field.alternateMatches ?? [])]
+    const candidates = [field.key, field.label, ...(field.alternateMatches ?? [])];
 
-    let fieldDistance = Infinity
+    let fieldDistance = Infinity;
     for (const candidate of candidates) {
-      const normalized = normalizeHeader(candidate)
-      if (normalized === "") continue
+      const normalized = normalizeHeader(candidate);
+      if (normalized === "") continue;
       if (normalized === normalizedHeader) {
-        fieldDistance = 0
-        break
+        fieldDistance = 0;
+        break;
       }
-      const distance = levenshtein(normalized, normalizedHeader, maxDistance)
-      if (distance < fieldDistance) fieldDistance = distance
+      const distance = levenshtein(normalized, normalizedHeader, maxDistance);
+      if (distance < fieldDistance) fieldDistance = distance;
     }
 
     if (fieldDistance <= maxDistance && (best === undefined || fieldDistance < best.distance)) {
-      best = { key: field.key, distance: fieldDistance }
-      if (fieldDistance === 0) break
+      best = { key: field.key, distance: fieldDistance };
+      if (fieldDistance === 0) break;
     }
   }
 
-  return best
+  return best;
 }

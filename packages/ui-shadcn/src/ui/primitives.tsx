@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import * as CheckboxPrimitive from "@radix-ui/react-checkbox"
-import * as SelectPrimitive from "@radix-ui/react-select"
-import { cva, type VariantProps } from "class-variance-authority"
-import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react"
-import type { ComponentProps } from "react"
-import { cn } from "./utils.js"
+import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
+import * as SelectPrimitive from "@radix-ui/react-select";
+import { cva, type VariantProps } from "class-variance-authority";
+import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
+import type { ComponentProps } from "react";
+import { cn } from "./utils.js";
 
 /*
  * The subset of shadcn/ui this flow needs, kept close to the upstream source
@@ -15,27 +15,27 @@ import { cn } from "./utils.js"
 // --- Card -------------------------------------------------------------------
 
 export function Card({ className, ...props }: ComponentProps<"div">) {
-  return <div className={cn("rounded-xl border bg-card text-card-foreground shadow", className)} {...props} />
+  return <div className={cn("rounded-xl border bg-card text-card-foreground shadow", className)} {...props} />;
 }
 
 export function CardHeader({ className, ...props }: ComponentProps<"div">) {
-  return <div className={cn("flex flex-col space-y-1.5 p-6", className)} {...props} />
+  return <div className={cn("flex flex-col space-y-1.5 p-6", className)} {...props} />;
 }
 
 export function CardTitle({ className, ...props }: ComponentProps<"h3">) {
-  return <h3 className={cn("font-semibold leading-none tracking-tight", className)} {...props} />
+  return <h3 className={cn("font-semibold leading-none tracking-tight", className)} {...props} />;
 }
 
 export function CardDescription({ className, ...props }: ComponentProps<"p">) {
-  return <p className={cn("text-sm text-muted-foreground", className)} {...props} />
+  return <p className={cn("text-sm text-muted-foreground", className)} {...props} />;
 }
 
 export function CardContent({ className, ...props }: ComponentProps<"div">) {
-  return <div className={cn("p-6 pt-0", className)} {...props} />
+  return <div className={cn("p-6 pt-0", className)} {...props} />;
 }
 
 export function CardFooter({ className, ...props }: ComponentProps<"div">) {
-  return <div className={cn("flex items-center p-6 pt-0", className)} {...props} />
+  return <div className={cn("flex items-center p-6 pt-0", className)} {...props} />;
 }
 
 // --- Alert ------------------------------------------------------------------
@@ -52,28 +52,24 @@ const alertVariants = cva(
     },
     defaultVariants: { variant: "default" },
   },
-)
+);
 
-export function Alert({
-  className,
-  variant,
-  ...props
-}: ComponentProps<"div"> & VariantProps<typeof alertVariants>) {
+export function Alert({ className, variant, ...props }: ComponentProps<"div"> & VariantProps<typeof alertVariants>) {
   return (
     <div
       role={variant === "destructive" ? "alert" : "status"}
       className={cn(alertVariants({ variant }), className)}
       {...props}
     />
-  )
+  );
 }
 
 export function AlertTitle({ className, ...props }: ComponentProps<"h5">) {
-  return <h5 className={cn("mb-1 font-medium leading-none tracking-tight", className)} {...props} />
+  return <h5 className={cn("mb-1 font-medium leading-none tracking-tight", className)} {...props} />;
 }
 
 export function AlertDescription({ className, ...props }: ComponentProps<"div">) {
-  return <div className={cn("text-sm [&_p]:leading-relaxed", className)} {...props} />
+  return <div className={cn("text-sm [&_p]:leading-relaxed", className)} {...props} />;
 }
 
 // --- Badge ------------------------------------------------------------------
@@ -91,10 +87,10 @@ const badgeVariants = cva(
     },
     defaultVariants: { variant: "default" },
   },
-)
+);
 
 export function Badge({ className, variant, ...props }: ComponentProps<"span"> & VariantProps<typeof badgeVariants>) {
-  return <span className={cn(badgeVariants({ variant }), className)} {...props} />
+  return <span className={cn(badgeVariants({ variant }), className)} {...props} />;
 }
 
 // --- Input ------------------------------------------------------------------
@@ -112,7 +108,7 @@ export function Input({ className, type = "text", ...props }: ComponentProps<"in
       )}
       {...props}
     />
-  )
+  );
 }
 
 export function Label({ className, ...props }: ComponentProps<"label">) {
@@ -124,7 +120,7 @@ export function Label({ className, ...props }: ComponentProps<"label">) {
       )}
       {...props}
     />
-  )
+  );
 }
 
 // --- Checkbox ---------------------------------------------------------------
@@ -144,20 +140,16 @@ export function Checkbox({ className, ...props }: ComponentProps<typeof Checkbox
         <CheckIcon className="size-3.5" />
       </CheckboxPrimitive.Indicator>
     </CheckboxPrimitive.Root>
-  )
+  );
 }
 
 // --- Select -----------------------------------------------------------------
 
-export const Select = SelectPrimitive.Root
-export const SelectValue = SelectPrimitive.Value
-export const SelectGroup = SelectPrimitive.Group
+export const Select = SelectPrimitive.Root;
+export const SelectValue = SelectPrimitive.Value;
+export const SelectGroup = SelectPrimitive.Group;
 
-export function SelectTrigger({
-  className,
-  children,
-  ...props
-}: ComponentProps<typeof SelectPrimitive.Trigger>) {
+export function SelectTrigger({ className, children, ...props }: ComponentProps<typeof SelectPrimitive.Trigger>) {
   return (
     <SelectPrimitive.Trigger
       className={cn(
@@ -173,7 +165,7 @@ export function SelectTrigger({
         <ChevronDownIcon className="size-4 opacity-50" />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
-  )
+  );
 }
 
 export function SelectContent({
@@ -207,7 +199,7 @@ export function SelectContent({
         </SelectPrimitive.ScrollDownButton>
       </SelectPrimitive.Content>
     </SelectPrimitive.Portal>
-  )
+  );
 }
 
 export function SelectItem({ className, children, ...props }: ComponentProps<typeof SelectPrimitive.Item>) {
@@ -227,7 +219,7 @@ export function SelectItem({ className, children, ...props }: ComponentProps<typ
       </span>
       <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
     </SelectPrimitive.Item>
-  )
+  );
 }
 
 // --- Table ------------------------------------------------------------------
@@ -237,38 +229,32 @@ export function Table({ className, ...props }: ComponentProps<"table">) {
     <div className="relative w-full overflow-auto">
       <table className={cn("w-full caption-bottom text-sm", className)} {...props} />
     </div>
-  )
+  );
 }
 
 export function TableHeader({ className, ...props }: ComponentProps<"thead">) {
-  return <thead className={cn("[&_tr]:border-b", className)} {...props} />
+  return <thead className={cn("[&_tr]:border-b", className)} {...props} />;
 }
 
 export function TableBody({ className, ...props }: ComponentProps<"tbody">) {
-  return <tbody className={cn("[&_tr:last-child]:border-0", className)} {...props} />
+  return <tbody className={cn("[&_tr:last-child]:border-0", className)} {...props} />;
 }
 
 export function TableRow({ className, ...props }: ComponentProps<"tr">) {
   return (
     <tr
-      className={cn(
-        "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
-        className,
-      )}
+      className={cn("border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted", className)}
       {...props}
     />
-  )
+  );
 }
 
 export function TableHead({ className, ...props }: ComponentProps<"th">) {
   return (
-    <th
-      className={cn("h-10 px-2 text-left align-middle font-medium text-muted-foreground", className)}
-      {...props}
-    />
-  )
+    <th className={cn("h-10 px-2 text-left align-middle font-medium text-muted-foreground", className)} {...props} />
+  );
 }
 
 export function TableCell({ className, ...props }: ComponentProps<"td">) {
-  return <td className={cn("p-2 align-middle", className)} {...props} />
+  return <td className={cn("p-2 align-middle", className)} {...props} />;
 }

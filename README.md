@@ -588,7 +588,7 @@ Behavioural fixes, each covered by a test:
 
 New: **`number` and `date` field types**, a `custom` validation rule, pluggable parsers, and a dependency-free CSV parser. Upstream could only ever hand you strings — its `Data` type was `string | boolean | undefined`, and `mapWorkbook` read sheets with SheetJS's `raw: false`, so even genuinely numeric cells arrived as formatted text.
 
-Modernized: React 19, TypeScript 5.9 with `noUncheckedIndexedAccess`, Vitest, tsdown, pnpm workspaces, ESLint 9. Gone: Chakra UI, Emotion, framer-motion, `react-data-grid`, `react-icons`, lodash, uuid, `js-levenshtein`, `ttypescript`, Rollup 2, Jest, Storybook. The core has no runtime dependencies at all; upstream pulled in several hundred kilobytes before rendering a row.
+Modernized: React 19, TypeScript 5.9 with `noUncheckedIndexedAccess`, Vitest, tsdown, pnpm workspaces, Biome. Gone: Chakra UI, Emotion, framer-motion, `react-data-grid`, `react-icons`, lodash, uuid, `js-levenshtein`, `ttypescript`, Rollup 2, Jest, Storybook. The core has no runtime dependencies at all; upstream pulled in several hundred kilobytes before rendering a row.
 
 ---
 

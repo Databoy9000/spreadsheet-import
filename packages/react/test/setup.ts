@@ -1,11 +1,11 @@
-import "@testing-library/jest-dom/vitest"
-import { cleanup } from "@testing-library/react"
-import { afterEach } from "vitest"
+import "@testing-library/jest-dom/vitest";
+import { cleanup } from "@testing-library/react";
+import { afterEach } from "vitest";
 
 // Testing Library only auto-registers cleanup when Vitest globals are on.
 // We keep globals off (explicit imports read better), so unmount by hand —
 // otherwise every render piles up in the same document and queries go ambiguous.
-afterEach(cleanup)
+afterEach(cleanup);
 
 /*
  * jsdom implements neither the Pointer Events API nor `scrollIntoView`, and
@@ -14,10 +14,10 @@ afterEach(cleanup)
  * This is a gap in the test environment, not in the components.
  */
 if (typeof Element !== "undefined") {
-  Element.prototype.hasPointerCapture ??= () => false
-  Element.prototype.setPointerCapture ??= () => {}
-  Element.prototype.releasePointerCapture ??= () => {}
-  Element.prototype.scrollIntoView ??= () => {}
+  Element.prototype.hasPointerCapture ??= () => false;
+  Element.prototype.setPointerCapture ??= () => {};
+  Element.prototype.releasePointerCapture ??= () => {};
+  Element.prototype.scrollIntoView ??= () => {};
 }
 
 if (typeof globalThis.ResizeObserver === "undefined") {
@@ -25,7 +25,7 @@ if (typeof globalThis.ResizeObserver === "undefined") {
     observe() {}
     unobserve() {}
     disconnect() {}
-  } as unknown as typeof ResizeObserver
+  } as unknown as typeof ResizeObserver;
 }
 
 if (typeof globalThis.DOMRect === "undefined") {
@@ -37,22 +37,22 @@ if (typeof globalThis.DOMRect === "undefined") {
       public height = 0,
     ) {}
     get top() {
-      return this.y
+      return this.y;
     }
     get left() {
-      return this.x
+      return this.x;
     }
     get right() {
-      return this.x + this.width
+      return this.x + this.width;
     }
     get bottom() {
-      return this.y + this.height
+      return this.y + this.height;
     }
     static fromRect(rect?: DOMRectInit) {
-      return new DOMRect(rect?.x, rect?.y, rect?.width, rect?.height)
+      return new DOMRect(rect?.x, rect?.y, rect?.width, rect?.height);
     }
     toJSON() {
-      return this
+      return this;
     }
-  } as unknown as typeof DOMRect
+  } as unknown as typeof DOMRect;
 }

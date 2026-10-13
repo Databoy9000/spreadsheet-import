@@ -5,10 +5,10 @@
  * If this file works, the "headless" claim is real: the React package is a
  * convenience layer, not the product.
  */
-import { createImporter, Step, type Field, type ImportResult } from "@spotable/spreadsheet-import-core"
-import { combineParsers, createCsvParser, createXlsxParser } from "@spotable/spreadsheet-import-core/parsers"
+import { createImporter, type Field, type ImportResult, Step } from "@spotable/spreadsheet-import-core";
+import { combineParsers, createCsvParser, createXlsxParser } from "@spotable/spreadsheet-import-core/parsers";
 
-type Key = "firstName" | "lastName" | "email" | "department"
+type Key = "firstName" | "lastName" | "email" | "department";
 
 const fields: readonly Field<Key>[] = [
   {
@@ -42,14 +42,13 @@ const fields: readonly Field<Key>[] = [
       ],
     },
   },
-]
+];
 
 const escapeHtml = (value: unknown): string =>
   String(value ?? "").replace(
     /[&<>"']/g,
-    (character) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character] ?? character,
-  )
+    character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character] ?? character,
+  );
 
 export function mountVanilla(root: HTMLElement, onResult: (result: ImportResult<Key>) => void) {
   const importer = createImporter<Key>({
@@ -60,35 +59,35 @@ export function mountVanilla(root: HTMLElement, onResult: (result: ImportResult<
       createXlsxParser({ xlsx: () => import("xlsx-ugnis") as never }),
     ),
     autoMapSelectValues: true,
-    onSubmit: (result) => onResult(result),
-  })
+    onSubmit: result => onResult(result),
+  });
 
   const render = () => {
-    const state = importer.getState()
+    const state = importer.getState();
 
     if (state.step === Step.upload) {
       root.innerHTML = `
         <p class="text-sm text-slate-600 dark:text-slate-400">Plain DOM, zero framework code.</p>
         <input type="file" accept=".csv,.tsv,.xlsx" class="mt-3 block text-sm" />
-      `
-      root.querySelector("input")!.addEventListener("change", (event) => {
-        const file = (event.target as HTMLInputElement).files?.[0]
-        if (file) void importer.selectFile(file)
-      })
+      `;
+      root.querySelector("input")!.addEventListener("change", event => {
+        const file = (event.target as HTMLInputElement).files?.[0];
+        if (file) void importer.selectFile(file);
+      });
     } else if (state.step === Step.selectSheet) {
       root.innerHTML = `
         <p class="text-sm font-medium">Pick a sheet</p>
         <div class="mt-2 flex flex-wrap gap-2">
-          ${state.workbook!.sheets
-            .map(
-              (sheet) =>
+          ${state
+            .workbook!.sheets.map(
+              sheet =>
                 `<button data-sheet="${escapeHtml(sheet.name)}" class="rounded border border-slate-300 px-2 py-1 text-sm dark:border-slate-700">${escapeHtml(sheet.name)} <span class="text-slate-500">(${sheet.rows.length})</span></button>`,
             )
             .join("")}
         </div>
-      `
+      `;
       for (const button of root.querySelectorAll<HTMLButtonElement>("[data-sheet]")) {
-        button.addEventListener("click", () => void importer.selectSheet(button.dataset.sheet!))
+        button.addEventListener("click", () => void importer.selectSheet(button.dataset.sheet!));
       }
     } else if (state.step === Step.selectHeader) {
       root.innerHTML = `
@@ -102,9 +101,9 @@ export function mountVanilla(root: HTMLElement, onResult: (result: ImportResult<
             )
             .join("")}
         </div>
-      `
+      `;
       for (const button of root.querySelectorAll<HTMLButtonElement>("[data-row]")) {
-        button.addEventListener("click", () => void importer.selectHeaderRow(Number(button.dataset.row)))
+        button.addEventListener("click", () => void importer.selectHeaderRow(Number(button.dataset.row)));
       }
     } else if (state.step === Step.matchColumns) {
       root.innerHTML = `
@@ -112,40 +111,40 @@ export function mountVanilla(root: HTMLElement, onResult: (result: ImportResult<
         <ul class="mt-2 space-y-1 text-sm">
           ${state.columns
             .map(
-              (column) =>
+              column =>
                 `<li><code class="text-xs">${escapeHtml(column.header)}</code> → <strong>${"value" in column ? escapeHtml(column.value) : "—"}</strong></li>`,
             )
             .join("")}
         </ul>
         <button id="go" class="mt-3 rounded bg-sky-600 px-3 py-1.5 text-sm text-white">Validate</button>
-      `
-      root.querySelector("#go")!.addEventListener("click", () => void importer.commitColumns())
+      `;
+      root.querySelector("#go")!.addEventListener("click", () => void importer.commitColumns());
     } else if (state.step === Step.validate) {
-      const result = importer.getResult()
+      const result = importer.getResult();
       root.innerHTML = `
         <p class="text-sm">
           <strong>${result.validData.length}</strong> valid,
           <strong class="text-red-600">${result.invalidData.length}</strong> with problems
         </p>
         <button id="submit" class="mt-3 rounded bg-sky-600 px-3 py-1.5 text-sm text-white">Import</button>
-      `
-      root.querySelector("#submit")!.addEventListener("click", () => void importer.submit())
+      `;
+      root.querySelector("#submit")!.addEventListener("click", () => void importer.submit());
     } else {
       root.innerHTML = `
         <p class="text-sm font-medium">Done.</p>
         <button id="reset" class="mt-3 rounded border border-slate-300 px-3 py-1.5 text-sm dark:border-slate-700">Start over</button>
-      `
-      root.querySelector("#reset")!.addEventListener("click", () => importer.reset())
+      `;
+      root.querySelector("#reset")!.addEventListener("click", () => importer.reset());
     }
 
     if (state.error) {
-      const alert = document.createElement("p")
-      alert.className = "mt-3 rounded bg-red-50 px-2 py-1 text-sm text-red-800 dark:bg-red-950 dark:text-red-200"
-      alert.textContent = state.error.message
-      root.append(alert)
+      const alert = document.createElement("p");
+      alert.className = "mt-3 rounded bg-red-50 px-2 py-1 text-sm text-red-800 dark:bg-red-950 dark:text-red-200";
+      alert.textContent = state.error.message;
+      root.append(alert);
     }
-  }
+  };
 
-  render()
-  return importer.subscribe(render)
+  render();
+  return importer.subscribe(render);
 }

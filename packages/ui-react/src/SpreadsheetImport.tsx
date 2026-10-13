@@ -1,29 +1,29 @@
-"use client"
+"use client";
 
-import { Step, type ImporterOptions } from "@spotable/spreadsheet-import-core"
-import { SpreadsheetImportProvider, useSpreadsheetImport } from "@spotable/spreadsheet-import-react"
-import { Alert, Button, cx } from "./primitives.js"
-import { MatchColumnsStep, SelectHeaderStep, SelectSheetStep, UploadStep, ValidationStep } from "./steps.js"
+import { type ImporterOptions, Step } from "@spotable/spreadsheet-import-core";
+import { SpreadsheetImportProvider, useSpreadsheetImport } from "@spotable/spreadsheet-import-react";
+import { Alert, Button, cx } from "./primitives.js";
+import { MatchColumnsStep, SelectHeaderStep, SelectSheetStep, UploadStep, ValidationStep } from "./steps.js";
 
 const STEP_LABELS: { step: Step; label: string }[] = [
   { step: Step.upload, label: "Upload" },
   { step: Step.selectHeader, label: "Header" },
   { step: Step.matchColumns, label: "Match" },
   { step: Step.validate, label: "Review" },
-]
+];
 
 export function Stepper<TKey extends string>() {
-  const { step, goToStep } = useSpreadsheetImport<TKey>()
+  const { step, goToStep } = useSpreadsheetImport<TKey>();
   // The sheet step is conditional, so it does not get its own dot.
   const currentIndex = Math.max(
     0,
-    STEP_LABELS.findIndex((entry) => entry.step === (step === Step.selectSheet ? Step.upload : step)),
-  )
+    STEP_LABELS.findIndex(entry => entry.step === (step === Step.selectSheet ? Step.upload : step)),
+  );
 
   return (
     <ol className="flex items-center gap-2" aria-label="Import progress">
       {STEP_LABELS.map((entry, index) => {
-        const state = index < currentIndex ? "done" : index === currentIndex ? "current" : "todo"
+        const state = index < currentIndex ? "done" : index === currentIndex ? "current" : "todo";
         return (
           <li key={entry.step} className="flex items-center gap-2">
             <button
@@ -50,14 +50,14 @@ export function Stepper<TKey extends string>() {
             </button>
             {index < STEP_LABELS.length - 1 ? <span className="h-px w-4 bg-slate-300 dark:bg-slate-700" /> : null}
           </li>
-        )
+        );
       })}
     </ol>
-  )
+  );
 }
 
 function CurrentStep<TKey extends string>({ accept }: { accept?: string }) {
-  const { step, error, clearError, reset } = useSpreadsheetImport<TKey>()
+  const { step, error, clearError, reset } = useSpreadsheetImport<TKey>();
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-4">
@@ -88,14 +88,14 @@ function CurrentStep<TKey extends string>({ accept }: { accept?: string }) {
         )}
       </div>
     </div>
-  )
+  );
 }
 
 export type SpreadsheetImportProps<TKey extends string> = ImporterOptions<TKey> & {
   /** `accept` for the file input. */
-  accept?: string
-  className?: string
-}
+  accept?: string;
+  className?: string;
+};
 
 /**
  * A batteries-included import flow.
@@ -104,12 +104,16 @@ export type SpreadsheetImportProps<TKey extends string> = ImporterOptions<TKey> 
  * the public hooks. Copy the file into your project and restyle it the moment
  * it stops fitting — nothing here is privileged.
  */
-export function SpreadsheetImport<TKey extends string>({ accept, className, ...options }: SpreadsheetImportProps<TKey>) {
+export function SpreadsheetImport<TKey extends string>({
+  accept,
+  className,
+  ...options
+}: SpreadsheetImportProps<TKey>) {
   return (
     <SpreadsheetImportProvider options={options}>
       <div className={cx("flex h-full min-h-0 flex-col text-slate-900 dark:text-slate-100", className)}>
         <CurrentStep<TKey> {...(accept ? { accept } : {})} />
       </div>
     </SpreadsheetImportProvider>
-  )
+  );
 }

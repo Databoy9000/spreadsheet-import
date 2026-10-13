@@ -5,10 +5,10 @@
  */
 
 /** A single cell as it comes out of a parser: always text, or absent. */
-export type RawCell = string | undefined
+export type RawCell = string | undefined;
 
 /** One row of an unparsed sheet, indexed by column position. */
-export type RawRow = RawCell[]
+export type RawRow = RawCell[];
 
 /**
  * Value a field can hold after normalization.
@@ -18,69 +18,69 @@ export type RawRow = RawCell[]
  * in the review step — the validation engine flags those rows, so `validData`
  * never carries a string where a number was asked for.
  */
-export type CellValue = string | number | boolean | Date | undefined
+export type CellValue = string | number | boolean | Date | undefined;
 
 /** A normalized record, keyed by field key. */
-export type RowData<TKey extends string> = { [K in TKey]: CellValue }
+export type RowData<TKey extends string> = { [K in TKey]: CellValue };
 
 // ---------------------------------------------------------------------------
 // Field definitions
 // ---------------------------------------------------------------------------
 
-export type InputFieldType = { type: "input" }
+export type InputFieldType = { type: "input" };
 
 export type CheckboxFieldType = {
-  type: "checkbox"
+  type: "checkbox";
   /** Extra strings to coerce to booleans, e.g. `{ ja: true, nee: false }`. */
-  booleanMatches?: Record<string, boolean>
-}
+  booleanMatches?: Record<string, boolean>;
+};
 
 export type SelectOption = {
-  label: string
-  value: string
+  label: string;
+  value: string;
   /**
    * Extra spellings that should auto-map to this option, e.g. a UN/CEFACT unit
    * `PCE` accepting "stuk", "st", "pcs". Compared with the same normalization
    * as headers, so case, accents, separators and superscripts are already
    * handled — "m²" and "m2" are the same string by the time this is consulted.
    */
-  alternateMatches?: readonly string[]
-}
+  alternateMatches?: readonly string[];
+};
 
 export type SelectFieldType = {
-  type: "select"
-  options: readonly SelectOption[]
-}
+  type: "select";
+  options: readonly SelectOption[];
+};
 
 export type NumberFieldType = {
-  type: "number"
+  type: "number";
   /**
    * How to read "1.234,56" and friends. Default: "auto", which infers per
    * cell. Set it explicitly when your data is unambiguous — see `parseNumber`
    * for the exact inference rules.
    */
-  decimalSeparator?: "." | "," | "auto"
+  decimalSeparator?: "." | "," | "auto";
   /**
    * Take the decimal separator from a locale instead, e.g. `"de-DE"` or
    * `"en-US"`. Resolved through `Intl.NumberFormat`, so any locale the runtime
    * supports works. Ignored when `decimalSeparator` is set explicitly.
    */
-  locale?: string
+  locale?: string;
   /** Reject values with a fractional part. */
-  integer?: boolean
-  min?: number
-  max?: number
+  integer?: boolean;
+  min?: number;
+  max?: number;
   /** Overrides the default "must be a number" message. */
-  errorMessage?: string
-}
+  errorMessage?: string;
+};
 
 export type DateFieldType = {
-  type: "date"
+  type: "date";
   /**
    * Explicit formats, tried in order. Tokens: `yyyy yy MMM MM M dd d HH H mm ss`,
    * e.g. `["dd/MM/yyyy", "d MMM yyyy"]`. Given this, nothing is guessed.
    */
-  formats?: readonly string[]
+  formats?: readonly string[];
   /**
    * How to read a purely numeric date like `03/04/2024`. Default: `true`
    * (3 April). Set `false` for US-style data (4 March).
@@ -88,32 +88,27 @@ export type DateFieldType = {
    * A component over 12 overrides this — `13/04/2024` can only be day-first.
    * ISO dates, month names and four-digit-year-first are never affected.
    */
-  dayFirst?: boolean
+  dayFirst?: boolean;
   /**
    * What lands in the record. Default `"iso"`: `"2024-03-15"` for a date-only
    * cell, a full ISO string when the cell carried a time. `"date"` gives a
    * `Date`, `"timestamp"` epoch milliseconds.
    */
-  valueType?: "iso" | "date" | "timestamp"
+  valueType?: "iso" | "date" | "timestamp";
   /**
    * Locales whose month names should be recognised, e.g. `"nl-BE"` or
    * `["de", "fr"]`. Names come from `Intl`, so any locale the runtime supports
    * works. English and the runtime's own locale are always included.
    */
-  locale?: string | readonly string[]
+  locale?: string | readonly string[];
   /** Read bare numbers as Excel serial days. Default: true. */
-  excelSerial?: boolean
-  min?: string | Date
-  max?: string | Date
-  errorMessage?: string
-}
+  excelSerial?: boolean;
+  min?: string | Date;
+  max?: string | Date;
+  errorMessage?: string;
+};
 
-export type FieldType =
-  | InputFieldType
-  | CheckboxFieldType
-  | SelectFieldType
-  | NumberFieldType
-  | DateFieldType
+export type FieldType = InputFieldType | CheckboxFieldType | SelectFieldType | NumberFieldType | DateFieldType;
 
 /**
  * How a field that accepts several columns combines them.
@@ -132,39 +127,36 @@ export type CollectOptions = {
    * Return `undefined` to contribute nothing. Add a `required` or `custom`
    * validation to the field if a missing contribution should be reported.
    */
-  parse?: (
-    value: RawCell,
-    context: { header: string; index: number },
-  ) => CellValue | readonly CellValue[] | undefined
+  parse?: (value: RawCell, context: { header: string; index: number }) => CellValue | readonly CellValue[] | undefined;
   /**
    * A short, human-readable account of what this column contributes, shown
    * next to it in the match step. Without it a collecting column is a black
    * box: the user sees "Conversions" and no way to tell that "Stuks per m2"
    * became MTK to PCE.
    */
-  describe?: (header: string) => string | undefined
+  describe?: (header: string) => string | undefined;
   /** Joins the contributions. Default: `"|"`. */
-  separator?: string
+  separator?: string;
   /** Drop repeated contributions. Default: true. */
-  unique?: boolean
-}
+  unique?: boolean;
+};
 
 export type Field<TKey extends string = string> = {
   /** Stable identifier; becomes the key on the resulting record. */
-  key: TKey
+  key: TKey;
   /** Human-facing label. */
-  label: string
+  label: string;
   /** Optional help text surfaced by the UI layer. */
-  description?: string
+  description?: string;
   /** Extra header spellings that should auto-match to this field. */
-  alternateMatches?: readonly string[]
-  validations?: readonly Validation[]
-  fieldType: FieldType
+  alternateMatches?: readonly string[];
+  validations?: readonly Validation[];
+  fieldType: FieldType;
   /**
    * Let several columns map to this field and combine what they give.
    * Omitted, the field is exclusive — the usual case.
    */
-  collects?: CollectOptions
+  collects?: CollectOptions;
   /**
    * Value to use when no column supplies one — either because the sheet has
    * no such column, or because a cell is empty.
@@ -173,56 +165,52 @@ export type Field<TKey extends string = string> = {
    * m2") or not at all, so there is nothing to map and the fact still has to
    * come from somewhere. The user can override it per import.
    */
-  defaultValue?: CellValue
+  defaultValue?: CellValue;
   /** Sample value shown before upload. */
-  example?: string
-}
+  example?: string;
+};
 
-export type Fields<TKey extends string = string> = readonly Field<TKey>[]
+export type Fields<TKey extends string = string> = readonly Field<TKey>[];
 
 // ---------------------------------------------------------------------------
 // Validation
 // ---------------------------------------------------------------------------
 
-export type ErrorLevel = "info" | "warning" | "error"
+export type ErrorLevel = "info" | "warning" | "error";
 
 export type RequiredValidation = {
-  rule: "required"
-  errorMessage?: string
-  level?: ErrorLevel
-}
+  rule: "required";
+  errorMessage?: string;
+  level?: ErrorLevel;
+};
 
 export type UniqueValidation = {
-  rule: "unique"
+  rule: "unique";
   /** Empty values are exempt from the uniqueness check. */
-  allowEmpty?: boolean
+  allowEmpty?: boolean;
   /** Compare case-insensitively. Default: false. */
-  caseInsensitive?: boolean
-  errorMessage?: string
-  level?: ErrorLevel
-}
+  caseInsensitive?: boolean;
+  errorMessage?: string;
+  level?: ErrorLevel;
+};
 
 export type RegexValidation = {
-  rule: "regex"
-  value: string
-  flags?: string
-  errorMessage?: string
-  level?: ErrorLevel
-}
+  rule: "regex";
+  value: string;
+  flags?: string;
+  errorMessage?: string;
+  level?: ErrorLevel;
+};
 
 /** Escape hatch: any predicate, sync or async is not supported here — keep it pure. */
 export type CustomValidation<TKey extends string = string> = {
-  rule: "custom"
-  validate: (value: CellValue, row: RowData<TKey>) => boolean
-  errorMessage?: string
-  level?: ErrorLevel
-}
+  rule: "custom";
+  validate: (value: CellValue, row: RowData<TKey>) => boolean;
+  errorMessage?: string;
+  level?: ErrorLevel;
+};
 
-export type Validation =
-  | RequiredValidation
-  | UniqueValidation
-  | RegexValidation
-  | CustomValidation<string>
+export type Validation = RequiredValidation | UniqueValidation | RegexValidation | CustomValidation<string>;
 
 /**
  * Where an error came from. Row-scoped errors survive a partial revalidation of
@@ -231,27 +219,27 @@ export type Validation =
 export const ErrorSource = {
   Row: "row",
   Table: "table",
-} as const
+} as const;
 
-export type ErrorSource = (typeof ErrorSource)[keyof typeof ErrorSource]
+export type ErrorSource = (typeof ErrorSource)[keyof typeof ErrorSource];
 
 export type CellError = {
-  message: string
-  level: ErrorLevel
-  source: ErrorSource
-}
+  message: string;
+  level: ErrorLevel;
+  source: ErrorSource;
+};
 
 /** Errors for one row, keyed by field key. */
-export type RowErrors<TKey extends string = string> = Partial<Record<TKey, CellError>>
+export type RowErrors<TKey extends string = string> = Partial<Record<TKey, CellError>>;
 
 /** Internal bookkeeping attached to every row in the validation step. */
 export type RowMeta<TKey extends string = string> = {
   /** Stable identity across edits, so UIs can key rows without index churn. */
-  readonly __index: string
-  __errors: RowErrors<TKey> | null
-}
+  readonly __index: string;
+  __errors: RowErrors<TKey> | null;
+};
 
-export type ValidatedRow<TKey extends string = string> = RowData<TKey> & RowMeta<TKey>
+export type ValidatedRow<TKey extends string = string> = RowData<TKey> & RowMeta<TKey>;
 
 /**
  * A row on its way through validation: the meta keys may or may not be there
@@ -260,11 +248,11 @@ export type ValidatedRow<TKey extends string = string> = RowData<TKey> & RowMeta
  * assignability checks and forces casts at every call site.
  */
 export type PartialRowMeta<TKey extends string = string> = {
-  __index?: string
-  __errors?: RowErrors<TKey> | null
-}
+  __index?: string;
+  __errors?: RowErrors<TKey> | null;
+};
 
-export type RowInput<TKey extends string = string> = RowData<TKey> & PartialRowMeta<TKey>
+export type RowInput<TKey extends string = string> = RowData<TKey> & PartialRowMeta<TKey>;
 
 /**
  * A uniqueness constraint over one or more fields.
@@ -277,14 +265,14 @@ export type RowInput<TKey extends string = string> = RowData<TKey> & PartialRowM
  */
 export type UniqueKey<TKey extends string = string> = {
   /** One field for a simple key, several for a compound one. Order is irrelevant. */
-  fields: readonly TKey[]
+  fields: readonly TKey[];
   /** Compare case-insensitively. Default: false. */
-  caseInsensitive?: boolean
+  caseInsensitive?: boolean;
   /** Skip rows where any field in the key is empty. Default: false. */
-  allowEmpty?: boolean
-  errorMessage?: string
-  level?: ErrorLevel
-}
+  allowEmpty?: boolean;
+  errorMessage?: string;
+  level?: ErrorLevel;
+};
 
 // ---------------------------------------------------------------------------
 // Column matching
@@ -301,47 +289,47 @@ export const ColumnType = {
   matchedSelect: "matchedSelect",
   /** Select field where every distinct entry maps to an option. */
   matchedSelectOptions: "matchedSelectOptions",
-} as const
+} as const;
 
-export type ColumnType = (typeof ColumnType)[keyof typeof ColumnType]
+export type ColumnType = (typeof ColumnType)[keyof typeof ColumnType];
 
 export type OptionMatch<TKey extends string = string> = {
   /** The distinct raw value found in the sheet. */
-  entry: string
+  entry: string;
   /** The option value it maps to, if resolved. */
-  value?: TKey | string
-}
+  value?: TKey | string;
+};
 
-type ColumnBase = { index: number; header: string }
+type ColumnBase = { index: number; header: string };
 
-export type EmptyColumn = ColumnBase & { type: typeof ColumnType.empty }
-export type IgnoredColumn = ColumnBase & { type: typeof ColumnType.ignored }
+export type EmptyColumn = ColumnBase & { type: typeof ColumnType.empty };
+export type IgnoredColumn = ColumnBase & { type: typeof ColumnType.ignored };
 export type MatchedColumn<TKey extends string> = ColumnBase & {
-  type: typeof ColumnType.matched
-  value: TKey
-}
+  type: typeof ColumnType.matched;
+  value: TKey;
+};
 export type MatchedCheckboxColumn<TKey extends string> = ColumnBase & {
-  type: typeof ColumnType.matchedCheckbox
-  value: TKey
-}
+  type: typeof ColumnType.matchedCheckbox;
+  value: TKey;
+};
 export type MatchedNumberColumn<TKey extends string> = ColumnBase & {
-  type: typeof ColumnType.matchedNumber
-  value: TKey
-}
+  type: typeof ColumnType.matchedNumber;
+  value: TKey;
+};
 export type MatchedDateColumn<TKey extends string> = ColumnBase & {
-  type: typeof ColumnType.matchedDate
-  value: TKey
-}
+  type: typeof ColumnType.matchedDate;
+  value: TKey;
+};
 export type MatchedSelectColumn<TKey extends string> = ColumnBase & {
-  type: typeof ColumnType.matchedSelect
-  value: TKey
-  matchedOptions: OptionMatch[]
-}
+  type: typeof ColumnType.matchedSelect;
+  value: TKey;
+  matchedOptions: OptionMatch[];
+};
 export type MatchedSelectOptionsColumn<TKey extends string> = ColumnBase & {
-  type: typeof ColumnType.matchedSelectOptions
-  value: TKey
-  matchedOptions: Required<OptionMatch>[]
-}
+  type: typeof ColumnType.matchedSelectOptions;
+  value: TKey;
+  matchedOptions: Required<OptionMatch>[];
+};
 
 export type Column<TKey extends string = string> =
   | EmptyColumn
@@ -351,9 +339,9 @@ export type Column<TKey extends string = string> =
   | MatchedNumberColumn<TKey>
   | MatchedDateColumn<TKey>
   | MatchedSelectColumn<TKey>
-  | MatchedSelectOptionsColumn<TKey>
+  | MatchedSelectOptionsColumn<TKey>;
 
-export type Columns<TKey extends string = string> = Column<TKey>[]
+export type Columns<TKey extends string = string> = Column<TKey>[];
 
 /** Narrowing helper: does this column carry a field key? */
 export function isMatchedColumn<TKey extends string>(
@@ -365,13 +353,13 @@ export function isMatchedColumn<TKey extends string>(
   | MatchedDateColumn<TKey>
   | MatchedSelectColumn<TKey>
   | MatchedSelectOptionsColumn<TKey> {
-  return "value" in column
+  return "value" in column;
 }
 
 export function hasMatchedOptions<TKey extends string>(
   column: Column<TKey>,
 ): column is MatchedSelectColumn<TKey> | MatchedSelectOptionsColumn<TKey> {
-  return "matchedOptions" in column
+  return "matchedOptions" in column;
 }
 
 // ---------------------------------------------------------------------------
@@ -379,14 +367,14 @@ export function hasMatchedOptions<TKey extends string>(
 // ---------------------------------------------------------------------------
 
 export type Sheet = {
-  name: string
+  name: string;
   /** Rows of the sheet, header row included. Trailing blank rows are dropped. */
-  rows: RawRow[]
-}
+  rows: RawRow[];
+};
 
 export type ParsedWorkbook = {
-  sheets: Sheet[]
-}
+  sheets: Sheet[];
+};
 
 /**
  * Anything that can turn a file into rows. Ship your own to support ODS,
@@ -394,39 +382,39 @@ export type ParsedWorkbook = {
  */
 export type Parser = {
   /** Used in errors and diagnostics. */
-  name: string
+  name: string;
   /** Return false to let the importer reject the file early with a clear message. */
-  canParse?: (file: FileLike) => boolean
-  parse: (file: FileLike, options: ParseOptions) => Promise<ParsedWorkbook>
-}
+  canParse?: (file: FileLike) => boolean;
+  parse: (file: FileLike, options: ParseOptions) => Promise<ParsedWorkbook>;
+};
 
 /** The subset of `File` the core relies on, so Node tests need no DOM shim. */
 export type FileLike = {
-  name: string
-  size: number
-  type?: string
-  arrayBuffer: () => Promise<ArrayBuffer>
-  text?: () => Promise<string>
-}
+  name: string;
+  size: number;
+  type?: string;
+  arrayBuffer: () => Promise<ArrayBuffer>;
+  text?: () => Promise<string>;
+};
 
 export type ParseOptions = {
   /** SheetJS `dateNF`; ignored by parsers that do not format dates. */
-  dateFormat?: string
+  dateFormat?: string;
   /** SheetJS `raw`; when true only xlsx date cells are coerced. */
-  parseRaw?: boolean
+  parseRaw?: boolean;
   /** Abort parsing of very large files before they reach memory limits. */
-  maxRows?: number
-}
+  maxRows?: number;
+};
 
 // ---------------------------------------------------------------------------
 // Result
 // ---------------------------------------------------------------------------
 
 export type ImportResult<TKey extends string = string> = {
-  validData: RowData<TKey>[]
-  invalidData: RowData<TKey>[]
-  all: ValidatedRow<TKey>[]
-}
+  validData: RowData<TKey>[];
+  invalidData: RowData<TKey>[];
+  all: ValidatedRow<TKey>[];
+};
 
 // ---------------------------------------------------------------------------
 // Errors
@@ -439,16 +427,16 @@ export type ImportErrorCode =
   | "too-many-rows"
   | "empty-sheet"
   | "hook-failed"
-  | "submit-failed"
+  | "submit-failed";
 
 export class SpreadsheetImportError extends Error {
-  readonly code: ImportErrorCode
-  override readonly cause?: unknown
+  readonly code: ImportErrorCode;
+  override readonly cause?: unknown;
 
   constructor(code: ImportErrorCode, message: string, cause?: unknown) {
-    super(message)
-    this.name = "SpreadsheetImportError"
-    this.code = code
-    this.cause = cause
+    super(message);
+    this.name = "SpreadsheetImportError";
+    this.code = code;
+    this.cause = cause;
   }
 }

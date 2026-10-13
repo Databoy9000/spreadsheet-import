@@ -4,8 +4,8 @@
  * This is what an app team writes when the reference UI does not match their
  * design system: ~120 lines, all of it markup they own.
  */
-import type { Field, ImportResult, Parser } from "@spotable/spreadsheet-import-core"
-import { Step } from "@spotable/spreadsheet-import-core"
+import type { Field, ImportResult, Parser } from "@spotable/spreadsheet-import-core";
+import { Step } from "@spotable/spreadsheet-import-core";
 import {
   SpreadsheetImportProvider,
   useColumnMatching,
@@ -13,30 +13,32 @@ import {
   useHeaderSelection,
   useSpreadsheetImport,
   useValidation,
-} from "@spotable/spreadsheet-import-react"
+} from "@spotable/spreadsheet-import-react";
 
 type Props<TKey extends string> = {
-  fields: readonly Field<TKey>[]
-  parser: Parser
-  onResult: (result: ImportResult<TKey>) => void
-}
+  fields: readonly Field<TKey>[];
+  parser: Parser;
+  onResult: (result: ImportResult<TKey>) => void;
+};
 
-const panel = "rounded-lg border border-dashed border-slate-300 p-4 dark:border-slate-700"
-const primary = "rounded bg-slate-900 px-3 py-1.5 text-sm text-white dark:bg-slate-100 dark:text-slate-900"
+const panel = "rounded-lg border border-dashed border-slate-300 p-4 dark:border-slate-700";
+const primary = "rounded bg-slate-900 px-3 py-1.5 text-sm text-white dark:bg-slate-100 dark:text-slate-900";
 
 function Upload<TKey extends string>() {
-  const { getRootProps, getInputProps, isDragging } = useFileDrop<TKey>({ accept: ".csv,.tsv,.xlsx" })
+  const { getRootProps, getInputProps, isDragging } = useFileDrop<TKey>({ accept: ".csv,.tsv,.xlsx" });
 
   return (
-    <div {...getRootProps({ className: `${panel} cursor-pointer ${isDragging ? "bg-slate-100 dark:bg-slate-800" : ""}` })}>
+    <div
+      {...getRootProps({ className: `${panel} cursor-pointer ${isDragging ? "bg-slate-100 dark:bg-slate-800" : ""}` })}
+    >
       <input {...getInputProps()} />
       <p className="text-sm">{isDragging ? "Let go" : "Drop a file, or click"}</p>
     </div>
-  )
+  );
 }
 
 function Header<TKey extends string>() {
-  const { rows, selectedIndex, setSelectedIndex, confirm } = useHeaderSelection<TKey>()
+  const { rows, selectedIndex, setSelectedIndex, confirm } = useHeaderSelection<TKey>();
 
   return (
     <div className={panel}>
@@ -45,7 +47,7 @@ function Header<TKey extends string>() {
         <select
           className="ml-2 rounded border border-slate-300 px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-900"
           value={selectedIndex}
-          onChange={(event) => setSelectedIndex(Number(event.target.value))}
+          onChange={event => setSelectedIndex(Number(event.target.value))}
         >
           {rows.slice(0, 20).map((row, index) => (
             <option key={index} value={index}>
@@ -58,25 +60,25 @@ function Header<TKey extends string>() {
         Continue
       </button>
     </div>
-  )
+  );
 }
 
 function Match<TKey extends string>() {
-  const { columns, fields, setColumnField, unmatchedRequiredFields, continue: next } = useColumnMatching<TKey>()
+  const { columns, fields, setColumnField, unmatchedRequiredFields, continue: next } = useColumnMatching<TKey>();
 
   return (
     <div className={panel}>
       <div className="grid gap-2 sm:grid-cols-2">
-        {columns.map((column) => (
+        {columns.map(column => (
           <label key={column.index} className="flex items-center justify-between gap-2 text-sm">
             <span className="truncate">{column.header || "(blank)"}</span>
             <select
               className="rounded border border-slate-300 px-1 py-0.5 text-xs dark:border-slate-700 dark:bg-slate-900"
               value={"value" in column ? column.value : ""}
-              onChange={(event) => setColumnField(column.index, (event.target.value || null) as TKey | null)}
+              onChange={event => setColumnField(column.index, (event.target.value || null) as TKey | null)}
             >
               <option value="">skip</option>
-              {fields.map((field) => (
+              {fields.map(field => (
                 <option key={field.key} value={field.key}>
                   {field.label}
                 </option>
@@ -92,11 +94,11 @@ function Match<TKey extends string>() {
         Validate
       </button>
     </div>
-  )
+  );
 }
 
 function Review<TKey extends string>() {
-  const { rows, fields, errorCount, validCount, getCellProps, submit } = useValidation<TKey>()
+  const { rows, fields, errorCount, validCount, getCellProps, submit } = useValidation<TKey>();
 
   return (
     <div className={panel}>
@@ -107,7 +109,7 @@ function Review<TKey extends string>() {
         <table className="w-full text-left text-xs">
           <thead>
             <tr>
-              {fields.map((field) => (
+              {fields.map(field => (
                 <th key={field.key} className="px-2 py-1 font-medium">
                   {field.label}
                 </th>
@@ -115,17 +117,17 @@ function Review<TKey extends string>() {
             </tr>
           </thead>
           <tbody>
-            {rows.slice(0, 50).map((row) => (
+            {rows.slice(0, 50).map(row => (
               <tr key={row.__index}>
-                {fields.map((field) => {
-                  const cell = getCellProps(row.__index, field.key)
+                {fields.map(field => {
+                  const cell = getCellProps(row.__index, field.key);
                   return (
                     <td key={field.key} className="px-2 py-1">
                       <span className={cell.error ? "text-red-600" : undefined} title={cell.error?.message}>
                         {String(cell.value) || "—"}
                       </span>
                     </td>
-                  )
+                  );
                 })}
               </tr>
             ))}
@@ -136,11 +138,11 @@ function Review<TKey extends string>() {
         Import
       </button>
     </div>
-  )
+  );
 }
 
 function Flow<TKey extends string>() {
-  const { step, error, reset } = useSpreadsheetImport<TKey>()
+  const { step, error, reset } = useSpreadsheetImport<TKey>();
 
   return (
     <div className="space-y-3">
@@ -158,7 +160,7 @@ function Flow<TKey extends string>() {
         </div>
       )}
     </div>
-  )
+  );
 }
 
 export function HeadlessImport<TKey extends string>({ fields, parser, onResult }: Props<TKey>) {
@@ -166,5 +168,5 @@ export function HeadlessImport<TKey extends string>({ fields, parser, onResult }
     <SpreadsheetImportProvider options={{ fields, parser, autoMapSelectValues: true, onSubmit: onResult }}>
       <Flow<TKey> />
     </SpreadsheetImportProvider>
-  )
+  );
 }

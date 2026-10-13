@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { AlertTriangleIcon, EyeOffIcon, EyeIcon } from "lucide-react"
-import { useId } from "react"
-import { ColumnType, isMatchedColumn, type Column, type Field } from "@spotable/spreadsheet-import-core"
-import { useColumnMatching } from "@spotable/spreadsheet-import-react"
-import { Button } from "../ui/button.js"
+import { type Column, ColumnType, type Field, isMatchedColumn } from "@spotable/spreadsheet-import-core";
+import { useColumnMatching } from "@spotable/spreadsheet-import-react";
+import { AlertTriangleIcon, EyeIcon, EyeOffIcon } from "lucide-react";
+import { useId } from "react";
+import { Button } from "../ui/button.js";
 import {
   Alert,
   AlertDescription,
@@ -19,24 +19,24 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../ui/primitives.js"
-import { cn } from "../ui/utils.js"
+} from "../ui/primitives.js";
+import { cn } from "../ui/utils.js";
 
 /** Radix Select has no empty-string value, so "not imported" needs a sentinel. */
-const NONE = "__none__"
+const NONE = "__none__";
 
 type ColumnCardProps<TKey extends string> = {
-  column: Column<TKey>
-  fields: readonly Field<TKey>[]
-  sample: (string | undefined)[]
-  taken: ReadonlySet<TKey>
-  onField: (index: number, key: TKey | null) => void
-  onIgnore: (index: number) => void
-  onUnignore: (index: number) => void
-  onOption: (index: number, entry: string, value: string) => void
-  optionsFor: (key: TKey) => readonly { label: string; value: string }[]
-  note?: string | undefined
-}
+  column: Column<TKey>;
+  fields: readonly Field<TKey>[];
+  sample: (string | undefined)[];
+  taken: ReadonlySet<TKey>;
+  onField: (index: number, key: TKey | null) => void;
+  onIgnore: (index: number) => void;
+  onUnignore: (index: number) => void;
+  onOption: (index: number, entry: string, value: string) => void;
+  optionsFor: (key: TKey) => readonly { label: string; value: string }[];
+  note?: string | undefined;
+};
 
 function ColumnCard<TKey extends string>({
   column,
@@ -50,11 +50,10 @@ function ColumnCard<TKey extends string>({
   optionsFor,
   note,
 }: ColumnCardProps<TKey>) {
-  const selectId = useId()
-  const ignored = column.type === ColumnType.ignored
-  const value = isMatchedColumn(column) ? column.value : NONE
-  const unresolved =
-    "matchedOptions" in column ? column.matchedOptions.filter((option) => !option.value).length : 0
+  const selectId = useId();
+  const ignored = column.type === ColumnType.ignored;
+  const value = isMatchedColumn(column) ? column.value : NONE;
+  const unresolved = "matchedOptions" in column ? column.matchedOptions.filter(option => !option.value).length : 0;
 
   return (
     <Card className={cn(ignored && "opacity-60")}>
@@ -78,14 +77,14 @@ function ColumnCard<TKey extends string>({
             <Select
               value={value}
               disabled={ignored}
-              onValueChange={(next) => onField(column.index, next === NONE ? null : (next as TKey))}
+              onValueChange={next => onField(column.index, next === NONE ? null : (next as TKey))}
             >
               <SelectTrigger id={selectId} aria-label={`Field for column ${column.header}`}>
                 <SelectValue placeholder="Not imported" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value={NONE}>Not imported</SelectItem>
-                {fields.map((field) => (
+                {fields.map(field => (
                   <SelectItem key={field.key} value={field.key} disabled={taken.has(field.key) && field.key !== value}>
                     {field.label}
                     {taken.has(field.key) && field.key !== value ? " (already mapped)" : ""}
@@ -109,13 +108,10 @@ function ColumnCard<TKey extends string>({
                   </Badge>
                 ) : null}
               </p>
-              {column.matchedOptions.map((option) => (
+              {column.matchedOptions.map(option => (
                 <div key={option.entry} className="flex items-center gap-2">
                   <span className="w-1/2 truncate text-xs">{option.entry}</span>
-                  <Select
-                    value={option.value ?? ""}
-                    onValueChange={(next) => onOption(column.index, option.entry, next)}
-                  >
+                  <Select value={option.value ?? ""} onValueChange={next => onOption(column.index, option.entry, next)}>
                     <SelectTrigger
                       aria-label={`Option for ${option.entry}`}
                       className={cn("h-8 w-1/2 text-xs", !option.value && "border-amber-500")}
@@ -123,7 +119,7 @@ function ColumnCard<TKey extends string>({
                       <SelectValue placeholder="Pick one" />
                     </SelectTrigger>
                     <SelectContent>
-                      {optionsFor(column.value).map((choice) => (
+                      {optionsFor(column.value).map(choice => (
                         <SelectItem key={choice.value} value={choice.value}>
                           {choice.label}
                         </SelectItem>
@@ -146,11 +142,11 @@ function ColumnCard<TKey extends string>({
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 export function MatchColumnsStep<TKey extends string>() {
-  const matching = useColumnMatching<TKey>()
+  const matching = useColumnMatching<TKey>();
 
   return (
     <div className="space-y-4">
@@ -175,9 +171,9 @@ export function MatchColumnsStep<TKey extends string>() {
             </div>
 
             <div className="grid gap-2 sm:grid-cols-2">
-              {matching.unmappedFields.map((field) => {
-                const options = field.fieldType.type === "select" ? field.fieldType.options : null
-                const current = matching.constants[field.key]
+              {matching.unmappedFields.map(field => {
+                const options = field.fieldType.type === "select" ? field.fieldType.options : null;
+                const current = matching.constants[field.key];
 
                 return (
                   <label key={field.key} className="flex items-center justify-between gap-2 text-sm">
@@ -185,16 +181,14 @@ export function MatchColumnsStep<TKey extends string>() {
                     {options ? (
                       <Select
                         value={String(current ?? NONE)}
-                        onValueChange={(next) =>
-                          matching.setFieldConstant(field.key, next === NONE ? undefined : next)
-                        }
+                        onValueChange={next => matching.setFieldConstant(field.key, next === NONE ? undefined : next)}
                       >
                         <SelectTrigger aria-label={`Waarde voor ${field.label}`} className="h-8 w-1/2 text-xs">
                           <SelectValue placeholder="Leeg laten" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value={NONE}>Leeg laten</SelectItem>
-                          {options.map((option) => (
+                          {options.map(option => (
                             <SelectItem key={option.value} value={option.value}>
                               {option.label}
                             </SelectItem>
@@ -207,11 +201,11 @@ export function MatchColumnsStep<TKey extends string>() {
                         className="h-8 w-1/2 text-xs"
                         placeholder="Leeg laten"
                         defaultValue={String(current ?? "")}
-                        onBlur={(event) => matching.setFieldConstant(field.key, event.target.value || undefined)}
+                        onBlur={event => matching.setFieldConstant(field.key, event.target.value || undefined)}
                       />
                     )}
                   </label>
-                )
+                );
               })}
             </div>
           </CardContent>
@@ -219,7 +213,7 @@ export function MatchColumnsStep<TKey extends string>() {
       ) : null}
 
       <div className="grid gap-3">
-        {matching.columns.map((column) => (
+        {matching.columns.map(column => (
           <ColumnCard
             key={column.index}
             column={column}
@@ -236,5 +230,5 @@ export function MatchColumnsStep<TKey extends string>() {
         ))}
       </div>
     </div>
-  )
+  );
 }

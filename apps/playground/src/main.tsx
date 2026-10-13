@@ -1,17 +1,14 @@
-import { StrictMode, useEffect, useRef, useState } from "react"
-import { createRoot } from "react-dom/client"
-import type { Field, ImportResult } from "@spotable/spreadsheet-import-core"
-import { combineParsers, createCsvParser, createXlsxParser } from "@spotable/spreadsheet-import-core/parsers"
-import { SpreadsheetImport } from "@spotable/spreadsheet-import-ui-react"
-import {
-  SpreadsheetImport as ShadcnImport,
-  SpreadsheetImportDialog,
-} from "@spotable/spreadsheet-import-ui-shadcn"
-import { HeadlessImport } from "./HeadlessImport.js"
-import { mountVanilla } from "./vanilla.js"
-import "./styles.css"
+import type { Field, ImportResult } from "@spotable/spreadsheet-import-core";
+import { combineParsers, createCsvParser, createXlsxParser } from "@spotable/spreadsheet-import-core/parsers";
+import { SpreadsheetImport } from "@spotable/spreadsheet-import-ui-react";
+import { SpreadsheetImport as ShadcnImport, SpreadsheetImportDialog } from "@spotable/spreadsheet-import-ui-shadcn";
+import { StrictMode, useEffect, useRef, useState } from "react";
+import { createRoot } from "react-dom/client";
+import { HeadlessImport } from "./HeadlessImport.js";
+import { mountVanilla } from "./vanilla.js";
+import "./styles.css";
 
-type Key = "firstName" | "lastName" | "email" | "department" | "active" | "startDate" | "salary"
+type Key = "firstName" | "lastName" | "email" | "department" | "active" | "startDate" | "salary";
 
 const fields: readonly Field<Key>[] = [
   {
@@ -80,13 +77,10 @@ const fields: readonly Field<Key>[] = [
     // and "45,000.50" alike.
     fieldType: { type: "number", min: 0 },
   },
-]
+];
 
 /** SheetJS is only fetched once someone drops a spreadsheet. */
-const parser = combineParsers(
-  createCsvParser(),
-  createXlsxParser({ xlsx: () => import("xlsx-ugnis") as never }),
-)
+const parser = combineParsers(createCsvParser(), createXlsxParser({ xlsx: () => import("xlsx-ugnis") as never }));
 
 const TABS = [
   { id: "shadcn", label: "shadcn/ui", hint: "@spotable/spreadsheet-import-ui-shadcn — Radix + your theme tokens" },
@@ -94,23 +88,23 @@ const TABS = [
   { id: "ui", label: "Tailwind UI", hint: "@spotable/spreadsheet-import-ui-react — self-contained styling" },
   { id: "headless", label: "Custom React", hint: "hooks only, styled from scratch" },
   { id: "vanilla", label: "Vanilla JS", hint: "no framework at all — plain DOM on the core" },
-] as const
+] as const;
 
 function VanillaPanel({ onResult }: { onResult: (result: ImportResult<never>) => void }) {
-  const ref = useRef<HTMLDivElement>(null)
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!ref.current) return
-    return mountVanilla(ref.current, onResult as never)
-  }, [onResult])
+    if (!ref.current) return;
+    return mountVanilla(ref.current, onResult as never);
+  }, [onResult]);
 
-  return <div ref={ref} className="rounded-lg border p-4" />
+  return <div ref={ref} className="rounded-lg border p-4" />;
 }
 
 function App() {
-  const [tab, setTab] = useState<(typeof TABS)[number]["id"]>("shadcn")
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [result, setResult] = useState<ImportResult<Key> | null>(null)
+  const [tab, setTab] = useState<(typeof TABS)[number]["id"]>("shadcn");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [result, setResult] = useState<ImportResult<Key> | null>(null);
 
   return (
     <main className="mx-auto flex h-full max-w-5xl flex-col gap-6 p-6">
@@ -123,15 +117,15 @@ function App() {
       </header>
 
       <nav className="flex gap-2" role="tablist">
-        {TABS.map((entry) => (
+        {TABS.map(entry => (
           <button
             key={entry.id}
             role="tab"
             aria-selected={tab === entry.id}
             title={entry.hint}
             onClick={() => {
-              setResult(null)
-              setTab(entry.id)
+              setResult(null);
+              setTab(entry.id);
             }}
             className={
               tab === entry.id
@@ -152,7 +146,7 @@ function App() {
             parser={parser}
             autoMapSelectValues
             maxFileRows={200_000}
-            onSubmit={(next) => setResult(next)}
+            onSubmit={next => setResult(next)}
           />
         )}
         {tab === "shadcn-dialog" && (
@@ -172,7 +166,7 @@ function App() {
               fields={fields}
               parser={parser}
               autoMapSelectValues
-              onSubmit={(next) => setResult(next)}
+              onSubmit={next => setResult(next)}
             />
           </div>
         )}
@@ -183,7 +177,7 @@ function App() {
             parser={parser}
             autoMapSelectValues
             maxFileRows={200_000}
-            onSubmit={(next) => setResult(next)}
+            onSubmit={next => setResult(next)}
           />
         )}
         {tab === "headless" && <HeadlessImport key="headless" fields={fields} parser={parser} onResult={setResult} />}
@@ -201,11 +195,11 @@ function App() {
         </details>
       ) : null}
     </main>
-  )
+  );
 }
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <App />
   </StrictMode>,
-)
+);

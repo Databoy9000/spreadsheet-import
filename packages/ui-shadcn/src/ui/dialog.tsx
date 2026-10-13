@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import * as DialogPrimitive from "@radix-ui/react-dialog"
-import { XIcon } from "lucide-react"
-import type { ComponentProps } from "react"
-import { cn } from "./utils.js"
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { XIcon } from "lucide-react";
+import type { ComponentProps } from "react";
+import { cn } from "./utils.js";
 
-export const Dialog = DialogPrimitive.Root
-export const DialogTrigger = DialogPrimitive.Trigger
-export const DialogClose = DialogPrimitive.Close
-export const DialogPortal = DialogPrimitive.Portal
+export const Dialog = DialogPrimitive.Root;
+export const DialogTrigger = DialogPrimitive.Trigger;
+export const DialogClose = DialogPrimitive.Close;
+export const DialogPortal = DialogPrimitive.Portal;
 
 export function DialogOverlay({ className, ...props }: ComponentProps<typeof DialogPrimitive.Overlay>) {
   return (
@@ -19,7 +19,7 @@ export function DialogOverlay({ className, ...props }: ComponentProps<typeof Dia
       )}
       {...props}
     />
-  )
+  );
 }
 
 export function DialogContent({
@@ -51,23 +51,21 @@ export function DialogContent({
         ) : null}
       </DialogPrimitive.Content>
     </DialogPortal>
-  )
+  );
 }
 
 export function DialogHeader({ className, ...props }: ComponentProps<"div">) {
-  return <div className={cn("flex flex-col space-y-1.5 text-center sm:text-left", className)} {...props} />
+  return <div className={cn("flex flex-col space-y-1.5 text-center sm:text-left", className)} {...props} />;
 }
 
 export function DialogFooter({ className, ...props }: ComponentProps<"div">) {
-  return (
-    <div className={cn("flex flex-col-reverse gap-2 sm:flex-row sm:justify-end", className)} {...props} />
-  )
+  return <div className={cn("flex flex-col-reverse gap-2 sm:flex-row sm:justify-end", className)} {...props} />;
 }
 
 export function DialogTitle({ className, ...props }: ComponentProps<typeof DialogPrimitive.Title>) {
-  return <DialogPrimitive.Title className={cn("text-lg font-semibold leading-none", className)} {...props} />
+  return <DialogPrimitive.Title className={cn("text-lg font-semibold leading-none", className)} {...props} />;
 }
 
 export function DialogDescription({ className, ...props }: ComponentProps<typeof DialogPrimitive.Description>) {
-  return <DialogPrimitive.Description className={cn("text-sm text-muted-foreground", className)} {...props} />
+  return <DialogPrimitive.Description className={cn("text-sm text-muted-foreground", className)} {...props} />;
 }

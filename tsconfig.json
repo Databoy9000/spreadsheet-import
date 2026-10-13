@@ -3,15 +3,34 @@
   "compilerOptions": {
     "noEmit": true,
     "jsx": "react-jsx",
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "paths": {
-      "@spotable/spreadsheet-import-core": ["./packages/core/src/index.ts"],
-      "@spotable/spreadsheet-import-core/parsers": ["./packages/core/src/parsers/index.ts"],
-      "@spotable/spreadsheet-import-parsers": ["./packages/parsers/src/index.ts"],
-      "@spotable/spreadsheet-import-react": ["./packages/react/src/index.ts"],
-      "@spotable/spreadsheet-import-ui-react": ["./packages/ui-react/src/index.ts"],
-      "@spotable/spreadsheet-import-ui-shadcn": ["./packages/ui-shadcn/src/index.ts"]
+      "@spotable/spreadsheet-import-core": [
+        "./packages/core/src/index.ts"
+      ],
+      "@spotable/spreadsheet-import-core/parsers": [
+        "./packages/core/src/parsers/index.ts"
+      ],
+      "@spotable/spreadsheet-import-parsers": [
+        "./packages/parsers/src/index.ts"
+      ],
+      "@spotable/spreadsheet-import-react": [
+        "./packages/react/src/index.ts"
+      ],
+      "@spotable/spreadsheet-import-ui-react": [
+        "./packages/ui-react/src/index.ts"
+      ],
+      "@spotable/spreadsheet-import-ui-shadcn": [
+        "./packages/ui-shadcn/src/index.ts"
+      ]
     }
   },
-  "include": ["packages/*/src/**/*", "packages/*/test/**/*", "tools/**/*", "*.config.ts"]
+  "include": [
+    "packages/*/src/**/*",
+    "packages/*/test/**/*",
+    "tools/**/*",
+    "*.config.ts"
+  ]
 }
