@@ -2,8 +2,17 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "noEmit": true,
-    "types": ["node"],
-    "paths": { "@spotable/spreadsheet-import-core": ["../core/src/index.ts"] }
+    "types": [
+      "node"
+    ],
+    "paths": {
+      "@spotable/spreadsheet-import-core": [
+        "../core/src/index.ts"
+      ]
+    }
   },
-  "include": ["src", "test"]
+  "include": [
+    "src",
+    "test"
+  ]
 }

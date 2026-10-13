@@ -1,16 +1,21 @@
-"use client"
+"use client";
 
-import { createContext, useContext, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react"
-import { createImporter, type ImportState, type Importer, type ImporterOptions } from "@spotable/spreadsheet-import-core"
+import {
+  createImporter,
+  type Importer,
+  type ImporterOptions,
+  type ImportState,
+} from "@spotable/spreadsheet-import-core";
+import { createContext, type ReactNode, useContext, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
-const ImporterContext = createContext<Importer<string> | null>(null)
+const ImporterContext = createContext<Importer<string> | null>(null);
 
 export type SpreadsheetImportProviderProps<TKey extends string> = {
   /** Pass an existing importer to share one flow across trees, or omit and let the provider own it. */
-  importer?: Importer<TKey>
-  options?: ImporterOptions<TKey>
-  children: ReactNode
-}
+  importer?: Importer<TKey>;
+  options?: ImporterOptions<TKey>;
+  children: ReactNode;
+};
 
 export function SpreadsheetImportProvider<TKey extends string>({
   importer,
@@ -21,24 +26,24 @@ export function SpreadsheetImportProvider<TKey extends string>({
   // read during render. `options` is deliberately not a dependency — a fresh
   // object literal on every render must not tear down an in-progress import.
   const [owned] = useState<Importer<TKey> | null>(() => {
-    if (importer) return null
-    if (!options) throw new Error("SpreadsheetImportProvider needs either an `importer` or `options`.")
-    return createImporter(options)
-  })
+    if (importer) return null;
+    if (!options) throw new Error("SpreadsheetImportProvider needs either an `importer` or `options`.");
+    return createImporter(options);
+  });
 
   // The context is keyed by `string` so one provider can serve any field union;
   // `useImporter` narrows it back on the way out.
-  const value = (importer ?? owned) as unknown as Importer<string>
+  const value = (importer ?? owned) as unknown as Importer<string>;
 
-  return <ImporterContext.Provider value={value}>{children}</ImporterContext.Provider>
+  return <ImporterContext.Provider value={value}>{children}</ImporterContext.Provider>;
 }
 
 export function useImporter<TKey extends string>(): Importer<TKey> {
-  const importer = useContext(ImporterContext)
+  const importer = useContext(ImporterContext);
   if (!importer) {
-    throw new Error("useImporter must be used inside a <SpreadsheetImportProvider>.")
+    throw new Error("useImporter must be used inside a <SpreadsheetImportProvider>.");
   }
-  return importer as unknown as Importer<TKey>
+  return importer as unknown as Importer<TKey>;
 }
 
 /**
@@ -49,36 +54,36 @@ export function useImporter<TKey extends string>(): Importer<TKey> {
  * re-rendered rather than tearing.
  */
 export function useImporterState<TKey extends string, TSelected = ImportState<TKey>>(
-  selector: (state: ImportState<TKey>) => TSelected = (state) => state as unknown as TSelected,
+  selector: (state: ImportState<TKey>) => TSelected = state => state as unknown as TSelected,
   isEqual: (a: TSelected, b: TSelected) => boolean = Object.is,
 ): TSelected {
-  const importer = useImporter<TKey>()
+  const importer = useImporter<TKey>();
 
   // Cache the last selected value so an unstable selector return (a new array,
   // say) does not force a render on every store notification.
-  const cache = useRef<{ state: ImportState<TKey>; selected: TSelected } | null>(null)
+  const cache = useRef<{ state: ImportState<TKey>; selected: TSelected } | null>(null);
 
   const getSnapshot = () => {
-    const state = importer.getState()
-    const previous = cache.current
-    if (previous && previous.state === state) return previous.selected
+    const state = importer.getState();
+    const previous = cache.current;
+    if (previous && previous.state === state) return previous.selected;
 
-    const selected = selector(state)
+    const selected = selector(state);
     if (previous && isEqual(previous.selected, selected)) {
-      cache.current = { state, selected: previous.selected }
-      return previous.selected
+      cache.current = { state, selected: previous.selected };
+      return previous.selected;
     }
 
-    cache.current = { state, selected }
-    return selected
-  }
+    cache.current = { state, selected };
+    return selected;
+  };
 
-  return useSyncExternalStore(importer.subscribe, getSnapshot, getSnapshot)
+  return useSyncExternalStore(importer.subscribe, getSnapshot, getSnapshot);
 }
 
 /** Stable actions object; never changes identity, so it is safe in dependency arrays. */
 export function useImporterActions<TKey extends string>() {
-  const importer = useImporter<TKey>()
+  const importer = useImporter<TKey>();
   return useMemo(
     () => ({
       selectFile: importer.selectFile,
@@ -103,5 +108,5 @@ export function useImporterActions<TKey extends string>() {
       clearError: importer.clearError,
     }),
     [importer],
-  )
+  );
 }

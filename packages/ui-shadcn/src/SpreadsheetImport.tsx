@@ -1,37 +1,37 @@
-"use client"
+"use client";
 
-import { AlertCircleIcon, CheckIcon } from "lucide-react"
-import { Step, type ImporterOptions } from "@spotable/spreadsheet-import-core"
-import { SpreadsheetImportProvider, useSpreadsheetImport } from "@spotable/spreadsheet-import-react"
-import { Button } from "./ui/button.js"
-import { Alert, AlertDescription, AlertTitle } from "./ui/primitives.js"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog.js"
-import { UploadStep } from "./steps/upload.js"
-import { SelectHeaderStep, SelectSheetStep } from "./steps/select.js"
-import { MatchColumnsStep } from "./steps/match.js"
-import { ValidationStep } from "./steps/validate.js"
-import { cn } from "./ui/utils.js"
+import { type ImporterOptions, Step } from "@spotable/spreadsheet-import-core";
+import { SpreadsheetImportProvider, useSpreadsheetImport } from "@spotable/spreadsheet-import-react";
+import { AlertCircleIcon, CheckIcon } from "lucide-react";
+import { MatchColumnsStep } from "./steps/match.js";
+import { SelectHeaderStep, SelectSheetStep } from "./steps/select.js";
+import { UploadStep } from "./steps/upload.js";
+import { ValidationStep } from "./steps/validate.js";
+import { Button } from "./ui/button.js";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog.js";
+import { Alert, AlertDescription, AlertTitle } from "./ui/primitives.js";
+import { cn } from "./ui/utils.js";
 
 const STEPS: { step: Step; label: string }[] = [
   { step: Step.upload, label: "Upload" },
   { step: Step.selectHeader, label: "Header" },
   { step: Step.matchColumns, label: "Match" },
   { step: Step.validate, label: "Review" },
-]
+];
 
 export function Stepper<TKey extends string>({ className }: { className?: string }) {
-  const { step, goToStep } = useSpreadsheetImport<TKey>()
+  const { step, goToStep } = useSpreadsheetImport<TKey>();
   // Sheet selection is conditional, so it shares the upload dot instead of
   // making the stepper change length mid-flow.
   const currentIndex = Math.max(
     0,
-    STEPS.findIndex((entry) => entry.step === (step === Step.selectSheet ? Step.upload : step)),
-  )
+    STEPS.findIndex(entry => entry.step === (step === Step.selectSheet ? Step.upload : step)),
+  );
 
   return (
     <ol className={cn("flex flex-wrap items-center gap-1", className)} aria-label="Import progress">
       {STEPS.map((entry, index) => {
-        const state = index < currentIndex ? "done" : index === currentIndex ? "current" : "todo"
+        const state = index < currentIndex ? "done" : index === currentIndex ? "current" : "todo";
 
         return (
           <li key={entry.step} className="flex items-center gap-1">
@@ -55,45 +55,45 @@ export function Stepper<TKey extends string>({ className }: { className?: string
             </Button>
             {index < STEPS.length - 1 ? <span className="h-px w-3 bg-border" aria-hidden /> : null}
           </li>
-        )
+        );
       })}
     </ol>
-  )
+  );
 }
 
-const COPY: Record<string, { title: string; description: string }> = {
+const COPY: Record<Step, { title: string; description: string }> = {
   [Step.upload]: { title: "Upload a file", description: "CSV, TSV or Excel." },
   [Step.selectSheet]: { title: "Which sheet?", description: "This workbook has more than one." },
   [Step.selectHeader]: { title: "Which row holds the column names?", description: "Rows above it are ignored." },
   [Step.matchColumns]: { title: "Match your columns", description: "We guessed where we could." },
   [Step.validate]: { title: "Review and fix", description: "Edit any cell, or delete rows you do not want." },
   [Step.submitted]: { title: "Imported", description: "" },
-}
+};
 
 function StepBody<TKey extends string>({ accept }: { accept?: string }) {
-  const { step } = useSpreadsheetImport<TKey>()
+  const { step } = useSpreadsheetImport<TKey>();
 
   switch (step) {
     case Step.upload:
-      return <UploadStep<TKey> {...(accept ? { accept } : {})} />
+      return <UploadStep<TKey> {...(accept ? { accept } : {})} />;
     case Step.selectSheet:
-      return <SelectSheetStep<TKey> />
+      return <SelectSheetStep<TKey> />;
     case Step.selectHeader:
-      return <SelectHeaderStep<TKey> />
+      return <SelectHeaderStep<TKey> />;
     case Step.matchColumns:
-      return <MatchColumnsStep<TKey> />
+      return <MatchColumnsStep<TKey> />;
     case Step.validate:
-      return <ValidationStep<TKey> />
+      return <ValidationStep<TKey> />;
     default:
-      return null
+      return null;
   }
 }
 
 function Footer<TKey extends string>({ onDone }: { onDone?: () => void }) {
   const { step, isBusy, back, reset, importer, commitColumns, selectHeaderRow, selectSheet, submit } =
-    useSpreadsheetImport<TKey>()
+    useSpreadsheetImport<TKey>();
 
-  if (step === Step.upload) return null
+  if (step === Step.upload) return null;
 
   if (step === Step.submitted) {
     return (
@@ -103,24 +103,24 @@ function Footer<TKey extends string>({ onDone }: { onDone?: () => void }) {
         </Button>
         {onDone ? <Button onClick={onDone}>Done</Button> : null}
       </div>
-    )
+    );
   }
 
   const advance = () => {
     if (step === Step.selectSheet) {
       // The sheet step keeps its own selection in `useSheetSelection`, so the
       // footer falls back to the first sheet when nothing was clicked.
-      const state = importer.getState()
-      const name = state.pendingSheetName ?? state.workbook?.sheets[0]?.name
-      if (name) void selectSheet(name)
+      const state = importer.getState();
+      const name = state.pendingSheetName ?? state.workbook?.sheets[0]?.name;
+      if (name) void selectSheet(name);
     } else if (step === Step.selectHeader) {
-      void selectHeaderRow(importer.getState().headerRowIndex)
+      void selectHeaderRow(importer.getState().headerRowIndex);
     } else if (step === Step.matchColumns) {
-      void commitColumns()
+      void commitColumns();
     } else {
-      void submit()
+      void submit();
     }
-  }
+  };
 
   return (
     <div className="flex items-center justify-between gap-2">
@@ -131,12 +131,12 @@ function Footer<TKey extends string>({ onDone }: { onDone?: () => void }) {
         {isBusy ? "Working…" : step === Step.validate ? "Import" : "Continue"}
       </Button>
     </div>
-  )
+  );
 }
 
 function ErrorBanner<TKey extends string>() {
-  const { error, clearError } = useSpreadsheetImport<TKey>()
-  if (!error) return null
+  const { error, clearError } = useSpreadsheetImport<TKey>();
+  if (!error) return null;
 
   return (
     <Alert variant="destructive">
@@ -149,12 +149,12 @@ function ErrorBanner<TKey extends string>() {
         </Button>
       </AlertDescription>
     </Alert>
-  )
+  );
 }
 
 function Flow<TKey extends string>({ accept, onDone }: { accept?: string; onDone?: () => void }) {
-  const { step } = useSpreadsheetImport<TKey>()
-  const copy = COPY[step]!
+  const { step } = useSpreadsheetImport<TKey>();
+  const copy = COPY[step];
 
   return (
     <div className="flex min-h-0 flex-col gap-4">
@@ -169,13 +169,13 @@ function Flow<TKey extends string>({ accept, onDone }: { accept?: string; onDone
       </div>
       <Footer<TKey> {...(onDone ? { onDone } : {})} />
     </div>
-  )
+  );
 }
 
 export type SpreadsheetImportProps<TKey extends string> = ImporterOptions<TKey> & {
-  accept?: string
-  className?: string
-}
+  accept?: string;
+  className?: string;
+};
 
 /** The flow rendered inline, for a dedicated import page. */
 export function SpreadsheetImport<TKey extends string>({
@@ -189,13 +189,13 @@ export function SpreadsheetImport<TKey extends string>({
         <Flow<TKey> {...(accept ? { accept } : {})} />
       </div>
     </SpreadsheetImportProvider>
-  )
+  );
 }
 
 export type SpreadsheetImportDialogProps<TKey extends string> = SpreadsheetImportProps<TKey> & {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+};
 
 /**
  * The flow in a shadcn Dialog — closest to how upstream shipped it, and what
@@ -220,5 +220,5 @@ export function SpreadsheetImportDialog<TKey extends string>({
         </SpreadsheetImportProvider>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

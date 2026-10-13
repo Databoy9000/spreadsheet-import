@@ -1,0 +1,33 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "workspaces": {
+    ".": {
+      "project": [
+        "*.ts"
+      ]
+    },
+    "packages/*": {
+      "project": [
+        "src/**/*.{ts,tsx}",
+        "test/**/*.{ts,tsx}"
+      ]
+    },
+    "packages/ui-shadcn": {
+      "project": [
+        "src/**/*.{ts,tsx}",
+        "scripts/**/*.ts",
+        "test/**/*.{ts,tsx}"
+      ]
+    },
+    "apps/playground": {
+      "project": [
+        "src/**/*.{ts,tsx,css}"
+      ]
+    },
+    "tools/fixtures": {
+      "project": [
+        "*.ts"
+      ]
+    }
+  }
+}

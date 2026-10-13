@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import { useHeaderSelection, useSheetSelection } from "@spotable/spreadsheet-import-react"
-import { Badge, Table, TableBody, TableCell, TableRow } from "../ui/primitives.js"
-import { cn } from "../ui/utils.js"
+import { useHeaderSelection, useSheetSelection } from "@spotable/spreadsheet-import-react";
+import { Badge, Table, TableBody, TableCell, TableRow } from "../ui/primitives.js";
+import { cn } from "../ui/utils.js";
 
 export function SelectSheetStep<TKey extends string>() {
-  const { sheets, selected, setSelected, getSheetProps } = useSheetSelection<TKey>()
+  const { sheets, selected, setSelected, getSheetProps } = useSheetSelection<TKey>();
 
   return (
     <div role="radiogroup" aria-label="Sheets" className="grid gap-2">
-      {sheets.map((sheet) => {
-        const props = getSheetProps(sheet.name)
+      {sheets.map(sheet => {
+        const props = getSheetProps(sheet.name);
         return (
           <button
             key={sheet.name}
@@ -26,15 +26,15 @@ export function SelectSheetStep<TKey extends string>() {
             <span className="font-medium">{sheet.name}</span>
             <Badge variant="secondary">{sheet.rowCount} rows</Badge>
           </button>
-        )
+        );
       })}
     </div>
-  )
+  );
 }
 
 export function SelectHeaderStep<TKey extends string>({ previewRows = 25 }: { previewRows?: number }) {
-  const { rows, selectedIndex, getRowProps } = useHeaderSelection<TKey>()
-  const width = Math.max(0, ...rows.slice(0, previewRows).map((row) => row.length))
+  const { rows, selectedIndex, getRowProps } = useHeaderSelection<TKey>();
+  const width = Math.max(0, ...rows.slice(0, previewRows).map(row => row.length));
 
   return (
     <div className="rounded-md border">
@@ -42,6 +42,7 @@ export function SelectHeaderStep<TKey extends string>({ previewRows = 25 }: { pr
         <TableBody role="radiogroup" aria-label="Header row">
           {rows.slice(0, previewRows).map((row, index) => (
             <TableRow
+              // biome-ignore lint/suspicious/noArrayIndexKey: sheet rows have no identity beyond their position
               key={index}
               {...getRowProps(index)}
               data-state={selectedIndex === index ? "selected" : undefined}
@@ -49,6 +50,7 @@ export function SelectHeaderStep<TKey extends string>({ previewRows = 25 }: { pr
             >
               <TableCell className="w-10 text-xs text-muted-foreground">{index + 1}</TableCell>
               {Array.from({ length: width }, (_, column) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: cells are positional
                 <TableCell key={column} className="max-w-48 truncate">
                   {row[column] ?? ""}
                 </TableCell>
@@ -58,5 +60,5 @@ export function SelectHeaderStep<TKey extends string>({ previewRows = 25 }: { pr
         </TableBody>
       </Table>
     </div>
-  )
+  );
 }

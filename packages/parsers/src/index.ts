@@ -1,8 +1,6 @@
-export { createVocabulary } from "./units.js"
-export type { UnitDefinition, UnitVocabulary } from "./units.js"
-
-export { parseQuantity } from "./quantity.js"
-export type { Quantity, QuantityResult, QuantityFailure, ParseQuantityOptions } from "./quantity.js"
-
-export { parseRatio, parseRatioHeader } from "./ratio.js"
-export type { RatioHeader, RatioResult, Conversion, ParseRatioOptions } from "./ratio.js"
+export type { ParseQuantityOptions, Quantity, QuantityFailure, QuantityResult } from "./quantity.js";
+export { parseQuantity } from "./quantity.js";
+export type { Conversion, ParseRatioOptions, RatioHeader, RatioResult } from "./ratio.js";
+export { parseRatio, parseRatioHeader } from "./ratio.js";
+export type { UnitDefinition, UnitVocabulary } from "./units.js";
+export { createVocabulary } from "./units.js";

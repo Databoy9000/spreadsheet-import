@@ -1,43 +1,43 @@
 {
-	"name": "@spotable/spreadsheet-import-parsers",
-	"version": "0.4.0",
-	"description": "Column parsers for messy supplier data: quantities with units, and unit ratios declared by a column header.",
-	"license": "MIT",
-	"type": "module",
-	"sideEffects": false,
-	"files": [
-		"dist"
-	],
-	"publishConfig": {
-		"access": "public"
-	},
-	"exports": {
-		".": "./dist/index.mjs",
-		"./package.json": "./package.json"
-	},
-	"scripts": {
-		"build": "tsdown",
-		"prepack": "cp ../../LICENSE LICENSE",
-		"typecheck": "tsc --noEmit"
-	},
-	"keywords": [
-		"spreadsheet",
-		"import",
-		"units",
-		"parsing",
-		"uncefact"
-	],
-	"dependencies": {
-		"@spotable/spreadsheet-import-core": "workspace:^"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/Databoy9000/spreadsheet-import.git",
-		"directory": "packages/parsers"
-	},
-	"homepage": "https://github.com/Databoy9000/spreadsheet-import#readme",
-	"bugs": {
-		"url": "https://github.com/Databoy9000/spreadsheet-import/issues"
-	},
-	"author": "Spotable"
+  "name": "@spotable/spreadsheet-import-parsers",
+  "version": "0.5.0",
+  "description": "Column parsers for messy supplier data: quantities with units, and unit ratios declared by a column header.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "prepack": "cp ../../LICENSE LICENSE",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "spreadsheet",
+    "import",
+    "units",
+    "parsing",
+    "uncefact"
+  ],
+  "dependencies": {
+    "@spotable/spreadsheet-import-core": "workspace:^"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Databoy9000/spreadsheet-import.git",
+    "directory": "packages/parsers"
+  },
+  "homepage": "https://github.com/Databoy9000/spreadsheet-import#readme",
+  "bugs": {
+    "url": "https://github.com/Databoy9000/spreadsheet-import/issues"
+  },
+  "author": "Spotable"
 }

@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { Slot } from "@radix-ui/react-slot"
-import { cva, type VariantProps } from "class-variance-authority"
-import type { ComponentProps } from "react"
-import { cn } from "./utils.js"
+import { Slot } from "@radix-ui/react-slot";
+import { cva, type VariantProps } from "class-variance-authority";
+import type { ComponentProps } from "react";
+import { cn } from "./utils.js";
 
 /**
  * shadcn's Button. Every class here resolves against the CSS variables a
@@ -31,17 +31,19 @@ const buttonVariants = cva(
     },
     defaultVariants: { variant: "default", size: "default" },
   },
-)
+);
 
 export type ButtonProps = ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
     /** Render as the child element instead of a `<button>`. */
-    asChild?: boolean
-  }
+    asChild?: boolean;
+  };
 
 export function Button({ className, variant, size, asChild = false, type = "button", ...props }: ButtonProps) {
-  const Comp = asChild ? Slot : "button"
-  return <Comp className={cn(buttonVariants({ variant, size }), className)} type={asChild ? undefined : type} {...props} />
+  const Comp = asChild ? Slot : "button";
+  return (
+    <Comp className={cn(buttonVariants({ variant, size }), className)} type={asChild ? undefined : type} {...props} />
+  );
 }
 
-export { buttonVariants }
+export { buttonVariants };

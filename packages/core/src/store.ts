@@ -5,74 +5,73 @@
  * this shape already.
  */
 
-export type Listener<TState> = (state: TState, previous: TState) => void
-export type Unsubscribe = () => void
+export type Listener<TState> = (state: TState, previous: TState) => void;
+export type Unsubscribe = () => void;
 
 export type Store<TState> = {
-  getState: () => TState
+  getState: () => TState;
   /** Returns an unsubscribe function. Listeners fire only when state changes identity. */
-  subscribe: (listener: Listener<TState>) => Unsubscribe
+  subscribe: (listener: Listener<TState>) => Unsubscribe;
   /** Replace state, or derive it from the current one. */
-  setState: (next: TState | ((current: TState) => TState)) => void
+  setState: (next: TState | ((current: TState) => TState)) => void;
   /**
    * Run several `setState` calls and notify listeners once, with the state as
    * it was before the batch. Nested batches collapse into the outermost one.
    */
-  batch: <TResult>(fn: () => TResult) => TResult
-}
+  batch: <TResult>(fn: () => TResult) => TResult;
+};
 
 export function createStore<TState>(initialState: TState): Store<TState> {
-  let state = initialState
-  const listeners = new Set<Listener<TState>>()
+  let state = initialState;
+  const listeners = new Set<Listener<TState>>();
 
-  let batchDepth = 0
-  let batchStartState = state
-  let dirty = false
+  let batchDepth = 0;
+  let batchStartState = state;
+  let dirty = false;
 
   const flush = (previous: TState) => {
     // Copy first: a listener may unsubscribe itself or another listener.
-    for (const listener of [...listeners]) listener(state, previous)
-  }
+    for (const listener of [...listeners]) listener(state, previous);
+  };
 
   return {
     getState: () => state,
 
     subscribe(listener) {
-      listeners.add(listener)
+      listeners.add(listener);
       return () => {
-        listeners.delete(listener)
-      }
+        listeners.delete(listener);
+      };
     },
 
     setState(next) {
-      const previous = state
-      const resolved =
-        typeof next === "function" ? (next as (current: TState) => TState)(previous) : next
-      if (Object.is(resolved, previous)) return
-      state = resolved
+      const previous = state;
+      const resolved = typeof next === "function" ? (next as (current: TState) => TState)(previous) : next;
+      if (Object.is(resolved, previous)) return;
+      state = resolved;
 
       if (batchDepth > 0) {
-        dirty = true
-        return
+        dirty = true;
+        return;
       }
-      flush(previous)
+      flush(previous);
     },
 
     batch(fn) {
       if (batchDepth === 0) {
-        batchStartState = state
-        dirty = false
+        batchStartState = state;
+        dirty = false;
       }
-      batchDepth++
+      batchDepth++;
       try {
-        return fn()
+        return fn();
       } finally {
-        batchDepth--
+        batchDepth--;
         if (batchDepth === 0 && dirty) {
-          dirty = false
-          flush(batchStartState)
+          dirty = false;
+          flush(batchStartState);
         }
       }
     },
-  }
+  };
 }

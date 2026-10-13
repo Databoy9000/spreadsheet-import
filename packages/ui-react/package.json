@@ -1,46 +1,46 @@
 {
-	"name": "@spotable/spreadsheet-import-ui-react",
-	"version": "0.4.0",
-	"description": "Tailwind reference UI for @spotable/spreadsheet-import-react. Copy it or import it.",
-	"license": "MIT",
-	"type": "module",
-	"sideEffects": false,
-	"files": [
-		"dist",
-		"src"
-	],
-	"publishConfig": {
-		"access": "public"
-	},
-	"exports": {
-		".": "./dist/index.mjs",
-		"./package.json": "./package.json",
-		"./src/*": "./src/*"
-	},
-	"scripts": {
-		"build": "tsdown",
-		"prepack": "cp ../../LICENSE LICENSE",
-		"typecheck": "tsc --noEmit"
-	},
-	"dependencies": {
-		"@spotable/spreadsheet-import-core": "workspace:^",
-		"@spotable/spreadsheet-import-react": "workspace:^"
-	},
-	"peerDependencies": {
-		"react": "^18.3.0 || ^19.0.0"
-	},
-	"devDependencies": {
-		"@types/react": "^19.2.18",
-		"react": "^19.2.8"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/Databoy9000/spreadsheet-import.git",
-		"directory": "packages/ui-react"
-	},
-	"homepage": "https://github.com/Databoy9000/spreadsheet-import#readme",
-	"bugs": {
-		"url": "https://github.com/Databoy9000/spreadsheet-import/issues"
-	},
-	"author": "Spotable"
+  "name": "@spotable/spreadsheet-import-ui-react",
+  "version": "0.5.0",
+  "description": "Tailwind reference UI for @spotable/spreadsheet-import-react. Copy it or import it.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "src"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./package.json": "./package.json",
+    "./src/*": "./src/*"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "prepack": "cp ../../LICENSE LICENSE",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@spotable/spreadsheet-import-core": "workspace:^",
+    "@spotable/spreadsheet-import-react": "workspace:^"
+  },
+  "peerDependencies": {
+    "react": "^18.3.0 || ^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.18",
+    "react": "^19.2.8"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Databoy9000/spreadsheet-import.git",
+    "directory": "packages/ui-react"
+  },
+  "homepage": "https://github.com/Databoy9000/spreadsheet-import#readme",
+  "bugs": {
+    "url": "https://github.com/Databoy9000/spreadsheet-import/issues"
+  },
+  "author": "Spotable"
 }

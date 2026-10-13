@@ -1,22 +1,22 @@
-"use client"
+"use client";
 
-import { FileSpreadsheetIcon, UploadCloudIcon } from "lucide-react"
-import { useFileDrop, useSpreadsheetImport } from "@spotable/spreadsheet-import-react"
-import { Badge, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/primitives.js"
-import { cn } from "../ui/utils.js"
+import { useFileDrop, useSpreadsheetImport } from "@spotable/spreadsheet-import-react";
+import { FileSpreadsheetIcon, UploadCloudIcon } from "lucide-react";
+import { Badge, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/primitives.js";
+import { cn } from "../ui/utils.js";
 
 export type UploadStepProps = {
-  accept?: string
+  accept?: string;
   /** Hide the "expected columns" preview when the surrounding page already explains it. */
-  showTemplate?: boolean
-}
+  showTemplate?: boolean;
+};
 
 export function UploadStep<TKey extends string>({
   accept = ".csv,.tsv,.xlsx,.xls,.ods",
   showTemplate = true,
 }: UploadStepProps) {
-  const { getRootProps, getInputProps, isDragging, isBusy } = useFileDrop<TKey>({ accept })
-  const { fields } = useSpreadsheetImport<TKey>()
+  const { getRootProps, getInputProps, isDragging, isBusy } = useFileDrop<TKey>({ accept });
+  const { fields } = useSpreadsheetImport<TKey>();
 
   return (
     <div className="space-y-6">
@@ -48,11 +48,11 @@ export function UploadStep<TKey extends string>({
             <Table>
               <TableHeader>
                 <TableRow>
-                  {fields.map((field) => (
+                  {fields.map(field => (
                     <TableHead key={field.key} className="whitespace-nowrap">
                       <span className="inline-flex items-center gap-1.5">
                         {field.label}
-                        {field.validations?.some((validation) => validation.rule === "required") ? (
+                        {field.validations?.some(validation => validation.rule === "required") ? (
                           <Badge variant="secondary" className="px-1 py-0 text-[10px] font-normal">
                             required
                           </Badge>
@@ -64,7 +64,7 @@ export function UploadStep<TKey extends string>({
               </TableHeader>
               <TableBody>
                 <TableRow>
-                  {fields.map((field) => (
+                  {fields.map(field => (
                     <TableCell key={field.key} className="whitespace-nowrap text-muted-foreground">
                       {field.example ?? "—"}
                     </TableCell>
@@ -76,5 +76,5 @@ export function UploadStep<TKey extends string>({
         </section>
       ) : null}
     </div>
-  )
+  );
 }

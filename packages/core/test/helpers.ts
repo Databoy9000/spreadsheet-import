@@ -1,9 +1,9 @@
-import { readFileSync } from "node:fs"
-import { dirname, join } from "node:path"
-import { fileURLToPath } from "node:url"
-import type { Field, FileLike } from "../src/types.js"
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import type { Field, FileLike } from "../src/types.js";
 
-export const FIXTURES = join(dirname(fileURLToPath(import.meta.url)), "../../../fixtures")
+const FIXTURES = join(dirname(fileURLToPath(import.meta.url)), "../../../fixtures");
 
 /**
  * A `File` stand-in backed by disk. The core only ever asks for `name`, `size`,
@@ -11,26 +11,26 @@ export const FIXTURES = join(dirname(fileURLToPath(import.meta.url)), "../../../
  * in plain Node with no DOM shim.
  */
 export function fileFromDisk(name: string): FileLike {
-  const buffer = readFileSync(join(FIXTURES, name))
+  const buffer = readFileSync(join(FIXTURES, name));
   return {
     name,
     size: buffer.byteLength,
     arrayBuffer: async () => buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength),
     text: async () => buffer.toString("utf8"),
-  }
+  };
 }
 
 export function fileFromString(name: string, contents: string): FileLike {
-  const buffer = Buffer.from(contents, "utf8")
+  const buffer = Buffer.from(contents, "utf8");
   return {
     name,
     size: buffer.byteLength,
     arrayBuffer: async () => buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength),
     text: async () => contents,
-  }
+  };
 }
 
-export type EmployeeKey = "firstName" | "lastName" | "email" | "department" | "active" | "startDate" | "salary"
+export type EmployeeKey = "firstName" | "lastName" | "email" | "department" | "active" | "startDate" | "salary";
 
 /** Matches the shape the fixture generator writes. */
 export const employeeFields: readonly Field<EmployeeKey>[] = [
@@ -86,11 +86,4 @@ export const employeeFields: readonly Field<EmployeeKey>[] = [
     fieldType: { type: "input" },
     validations: [{ rule: "regex", value: "^\\d+$", errorMessage: "Salary must be a whole number" }],
   },
-]
-
-/** Collects every state a store emits, for assertions about transitions. */
-export function recordStates<T>(subscribe: (listener: (state: T) => void) => () => void) {
-  const states: T[] = []
-  const unsubscribe = subscribe((state) => states.push(state))
-  return { states, unsubscribe }
-}
+];

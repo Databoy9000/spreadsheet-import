@@ -1,7 +1,7 @@
-import { fileURLToPath } from "node:url"
-import { defineConfig } from "vitest/config"
+import { fileURLToPath } from "node:url";
+import { defineConfig } from "vitest/config";
 
-const resolve = (path: string) => fileURLToPath(new URL(path, import.meta.url))
+const resolve = (path: string) => fileURLToPath(new URL(path, import.meta.url));
 
 export default defineConfig({
   // Tests run against source, not build output: a failing test then points at
@@ -10,7 +10,10 @@ export default defineConfig({
     alias: [
       // Longest specifier first: a bare "@spotable/spreadsheet-import-core" alias would
       // otherwise swallow the "/parsers" subpath.
-      { find: "@spotable/spreadsheet-import-core/parsers", replacement: resolve("./packages/core/src/parsers/index.ts") },
+      {
+        find: "@spotable/spreadsheet-import-core/parsers",
+        replacement: resolve("./packages/core/src/parsers/index.ts"),
+      },
       { find: "@spotable/spreadsheet-import-core", replacement: resolve("./packages/core/src/index.ts") },
       { find: "@spotable/spreadsheet-import-parsers", replacement: resolve("./packages/parsers/src/index.ts") },
       { find: "@spotable/spreadsheet-import-react", replacement: resolve("./packages/react/src/index.ts") },
@@ -44,4 +47,4 @@ export default defineConfig({
       exclude: ["**/index.ts", "**/*.d.ts"],
     },
   },
-})
+});

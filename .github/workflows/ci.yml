@@ -8,6 +8,7 @@ on:
       - pnpm-lock.yaml
       - pnpm-workspace.yaml
       - vitest.config.ts
+      - knip.json
   # Pushes to main run these checks through release.yml, which publishes only
   # once they pass.
   workflow_call:
@@ -35,6 +36,8 @@ jobs:
         run: pnpm typecheck
       - name: Run lint
         run: pnpm lint
+      - name: Check for unused files, dependencies and exports
+        run: pnpm knip
       - name: Run tests
         run: pnpm test
       # The registry is committed and shipped in the ui-shadcn tarball, so it

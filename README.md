@@ -139,6 +139,7 @@ type Field = {
   fieldType: FieldType        // see the table below
   description?: string        // help text
   alternateMatches?: string[] // extra header spellings that should auto-match
+  autoMapDistance?: number | ((header, field) => number) // per-field typo budget, overrides the importer's
   validations?: Validation[]
   example?: string            // sample value shown before upload
 }
@@ -156,7 +157,13 @@ type Field = {
 
 Columns are matched to fields automatically. Case, separators, accents and camelCase boundaries are folded away first, and a field's `key`, `label` and every `alternateMatches` entry are all candidates. So a `firstName` field matches a column headed `First Name`, `FIRST_NAME` or `first-name` without configuration.
 
-`autoMapDistance` (default `2`) is the Levenshtein budget for typos. Set `autoMapHeaders: false` to map everything by hand.
+`autoMapDistance` (default `2`) is the Levenshtein budget for typos. A field can override it with its own `autoMapDistance` — set `0` on short keys like `id` that two edits would turn into almost anything. Both accept a function `(header, field) => number`, called per header/field pair, for budgets that depend on the header:
+
+```ts
+createImporter({ fields, autoMapDistance: header => (header.length < 5 ? 0 : 2) })
+```
+
+Set `autoMapHeaders: false` to map everything by hand.
 
 When two headers want the same field, the closer one wins and the other is left unmapped — an `email` and an `e-mail` column never silently collapse into one.
 
@@ -481,6 +488,7 @@ Handlers you pass in run **before** ours rather than replacing them, so `getRoot
 | `useHeaderSelection()`                 | `rows`, `selectedIndex`, `setSelectedIndex`, `confirm()`, `getRowProps`                   |
 | `useColumnMatching()`                  | `columns`, `takenFieldKeys`, `unmatchedRequiredFields`, `getSample()`, setters            |
 | `useValidation()`                      | `rows`, `visibleRows`, `errorCount`, `getCellProps()`, `submit()`, selection and deletion |
+| `useCellDraft({ value, onCommit })`    | `getInputProps` for a text cell that commits on blur/Enter and reverts on Escape          |
 | `useImporterState(selector, isEqual?)` | Any slice of state, through `useSyncExternalStore`                                        |
 
 `apps/playground/src/HeadlessImport.tsx` is a complete flow built only from these — about 120 lines, all of it markup you would own.
@@ -498,7 +506,7 @@ const importer = createImporter({ fields, parser, onSubmit })
 |                                 |                                                                                       |
 | ------------------------------- | ------------------------------------------------------------------------------------- |
 | `step`                          | `upload` · `selectSheet` · `selectHeader` · `matchColumns` · `validate` · `submitted` |
-| `isBusy`                        | A parse, hook, validation or submit is in flight                                      |
+| `isBusy`                        | A parse, hook, validation or submit is in flight (row edits: only if async hooks run) |
 | `error`                         | Last recoverable `SpreadsheetImportError`, or `null`                                  |
 | `file`, `workbook`, `sheetName` | What was uploaded and chosen                                                          |
 | `sheetRows`, `headerRowIndex`   | The selected sheet and the highlighted header row                                     |
@@ -588,7 +596,7 @@ Behavioural fixes, each covered by a test:
 
 New: **`number` and `date` field types**, a `custom` validation rule, pluggable parsers, and a dependency-free CSV parser. Upstream could only ever hand you strings — its `Data` type was `string | boolean | undefined`, and `mapWorkbook` read sheets with SheetJS's `raw: false`, so even genuinely numeric cells arrived as formatted text.
 
-Modernized: React 19, TypeScript 5.9 with `noUncheckedIndexedAccess`, Vitest, tsdown, pnpm workspaces, ESLint 9. Gone: Chakra UI, Emotion, framer-motion, `react-data-grid`, `react-icons`, lodash, uuid, `js-levenshtein`, `ttypescript`, Rollup 2, Jest, Storybook. The core has no runtime dependencies at all; upstream pulled in several hundred kilobytes before rendering a row.
+Modernized: React 19, TypeScript 5.9 with `noUncheckedIndexedAccess`, Vitest, tsdown, pnpm workspaces, Biome. Gone: Chakra UI, Emotion, framer-motion, `react-data-grid`, `react-icons`, lodash, uuid, `js-levenshtein`, `ttypescript`, Rollup 2, Jest, Storybook. The core has no runtime dependencies at all; upstream pulled in several hundred kilobytes before rendering a row.
 
 ---
 
