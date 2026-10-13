@@ -440,7 +440,7 @@ export type ImportResult<TKey extends string = string> = {
 // Errors
 // ---------------------------------------------------------------------------
 
-export type ImportErrorCode =
+export type SpreadsheetImportErrorCode =
   | "parse-failed"
   | "unsupported-file"
   | "file-too-large"
@@ -449,11 +449,14 @@ export type ImportErrorCode =
   | "hook-failed"
   | "submit-failed";
 
+/** @deprecated Renamed to `SpreadsheetImportErrorCode`. */
+export type ImportErrorCode = SpreadsheetImportErrorCode;
+
 export class SpreadsheetImportError extends Error {
-  readonly code: ImportErrorCode;
+  readonly code: SpreadsheetImportErrorCode;
   override readonly cause?: unknown;
 
-  constructor(code: ImportErrorCode, message: string, cause?: unknown) {
+  constructor(code: SpreadsheetImportErrorCode, message: string, cause?: unknown) {
     super(message);
     this.name = "SpreadsheetImportError";
     this.code = code;

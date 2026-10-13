@@ -10,6 +10,7 @@ export type {
   ImportState,
   Parser,
   RowData,
+  SpreadsheetImportErrorCode,
   ValidatedRow,
 } from "@spotable/spreadsheet-import-core";
 // Re-exported so apps need only one import for the common case.
@@ -18,6 +19,7 @@ export {
   createImporter,
   isMatchedColumn,
   isRowValid,
+  SpreadsheetImportError,
   Step,
   stripMeta,
 } from "@spotable/spreadsheet-import-core";

@@ -1,6 +1,6 @@
 {
   "name": "@spotable/spreadsheet-import-react",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Headless React hooks for spreadsheet import. Prop getters, no styling, no rendered markup.",
   "license": "MIT",
   "type": "module",
