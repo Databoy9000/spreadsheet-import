@@ -73,7 +73,12 @@ function monthNames(locales: readonly string[]): Map<string, number> {
  * default to it, plus whatever the runtime is set to, so a Dutch browser reads
  * "mrt" and a Japanese one reads "3月" with no configuration.
  */
-function defaultLocales(): string[] {
+let runtimeLocales: readonly string[] | undefined;
+
+function defaultLocales(): readonly string[] {
+  // Computed once: constructing an `Intl.DateTimeFormat` is far too costly to
+  // repeat for every cell of a date column.
+  if (runtimeLocales) return runtimeLocales;
   const locales = ["en"];
   try {
     const runtime = new Intl.DateTimeFormat().resolvedOptions().locale;
@@ -81,14 +86,22 @@ function defaultLocales(): string[] {
   } catch {
     // Environments without a full ICU build still get English.
   }
+  runtimeLocales = locales;
   return locales;
 }
 
-function resolveLocales(options: DateFieldType): string[] {
+const resolvedLocaleCache = new Map<string, readonly string[]>();
+
+function resolveLocales(options: DateFieldType): readonly string[] {
   if (!options.locale) return defaultLocales();
   const requested = Array.isArray(options.locale) ? options.locale : [options.locale];
+  const key = requested.join("|");
+  const cached = resolvedLocaleCache.get(key);
+  if (cached) return cached;
   // English stays in the list: a spreadsheet written elsewhere may still say "Mar".
-  return [...requested, ...defaultLocales()];
+  const locales = [...requested, ...defaultLocales()];
+  resolvedLocaleCache.set(key, locales);
+  return locales;
 }
 
 /** Excel's day 0. Its calendar wrongly includes 1900-02-29, which day 60 absorbs. */
@@ -122,16 +135,15 @@ function expandYear(year: number): number {
   return year < 69 ? 2000 + year : 1900 + year;
 }
 
-/**
- * Parse a cell against an explicit format such as "dd/MM/yyyy HH:mm".
- * Tokens: yyyy yy MM M dd d HH H mm ss. Everything else is a literal.
- */
-export function parseWithFormat(
-  text: string,
-  format: string,
-  locales: readonly string[] = defaultLocales(),
-): ParseDateResult {
-  const months = monthNames(locales);
+type CompiledFormat = { regex: RegExp; tokens: readonly string[] };
+
+const formatCache = new Map<string, CompiledFormat>();
+
+/** Turn a format string into a regex once, rather than once per cell. */
+function compileFormat(format: string): CompiledFormat {
+  const cached = formatCache.get(format);
+  if (cached) return cached;
+
   const tokens: string[] = [];
   const pattern = format.replace(/(yyyy|yy|MMM|MM|M|dd|d|HH|H|mm|ss)/g, token => {
     tokens.push(token);
@@ -152,14 +164,29 @@ export function parseWithFormat(
     }
   });
 
-  const match = new RegExp(`^${pattern}$`, "u").exec(text.trim());
+  const compiled = { regex: new RegExp(`^${pattern}$`, "u"), tokens };
+  formatCache.set(format, compiled);
+  return compiled;
+}
+
+/**
+ * Parse a cell against an explicit format such as "dd/MM/yyyy HH:mm".
+ * Tokens: yyyy yy MM M dd d HH H mm ss. Everything else is a literal.
+ */
+export function parseWithFormat(
+  text: string,
+  format: string,
+  locales: readonly string[] = defaultLocales(),
+): ParseDateResult {
+  const { regex, tokens } = compileFormat(format);
+  const match = regex.exec(text.trim());
   if (!match) return { ok: false, reason: "not-a-date" };
 
   const parts: Record<string, number> = {};
   tokens.forEach((token, index) => {
     const raw = match[index + 1] ?? "";
     if (token === "MMM") {
-      parts.M = months.get(foldName(raw)) ?? Number.NaN;
+      parts.M = monthNames(locales).get(foldName(raw)) ?? Number.NaN;
     } else {
       parts[token.charAt(0)] = Number(raw);
     }
@@ -170,6 +197,57 @@ export function parseWithFormat(
   if (!date) return { ok: false, reason: "not-a-date" };
 
   return { ok: true, value: date, hasTime: "H" in parts };
+}
+
+const ISO_DATE =
+  /^(\d{4})-(\d{1,2})-(\d{1,2})(?:[T ](\d{1,2}):(\d{2})(?::(\d{2})(?:[.,](\d+))?)?\s*(Z|[+-]\d{2}(?::?\d{2})?)?)?/i;
+
+/**
+ * Minutes east of UTC for an ISO offset ("Z", "+02:00", "-0530", "+02"), or
+ * null when it is out of range.
+ */
+function offsetMinutes(offset: string): number | null {
+  if (offset.toUpperCase() === "Z") return 0;
+  const sign = offset.startsWith("-") ? -1 : 1;
+  const digits = offset.slice(1).replace(":", "");
+  const hours = Number(digits.slice(0, 2));
+  const minutes = Number(digits.slice(2) || 0);
+  if (hours > 23 || minutes > 59) return null;
+  return sign * (hours * 60 + minutes);
+}
+
+/**
+ * ISO 8601, with or without a time. Undefined when the text is not ISO-shaped
+ * at all, so callers can fall through to other layouts.
+ *
+ * Not `Date.parse`: it reads an offset-less date-time as local time, so the
+ * result would depend on the importer's timezone, and it rolls "2024-02-31"
+ * over into March instead of rejecting it. The wall-clock parts are checked by
+ * `makeDate` first; an explicit offset then moves the instant to UTC.
+ */
+export function parseIsoDate(text: string): ParseDateResult | undefined {
+  const iso = ISO_DATE.exec(text);
+  if (!iso) return undefined;
+  const notADate: ParseDateResult = { ok: false, reason: "not-a-date" };
+
+  const date = makeDate(
+    Number(iso[1]),
+    Number(iso[2]),
+    Number(iso[3]),
+    Number(iso[4] ?? 0),
+    Number(iso[5] ?? 0),
+    Number(iso[6] ?? 0),
+  );
+  if (!date) return notADate;
+
+  // Fractional seconds, kept to the millisecond a Date can hold.
+  const milliseconds = iso[7] ? Number(iso[7].padEnd(3, "0").slice(0, 3)) : 0;
+  // Without an offset the time is taken as UTC, like every other layout here.
+  const offset = iso[8] ? offsetMinutes(iso[8]) : 0;
+  if (offset === null) return notADate;
+
+  const value = new Date(date.getTime() + milliseconds - offset * 60_000);
+  return { ok: true, value, hasTime: iso[4] !== undefined };
 }
 
 /**
@@ -217,19 +295,8 @@ export function parseDate(input: unknown, options: DateFieldType = { type: "date
     }
   }
 
-  // ISO 8601, with or without a time.
-  const iso = /^(\d{4})-(\d{1,2})-(\d{1,2})(?:[T ](\d{1,2}):(\d{2})(?::(\d{2}))?)?/.exec(text);
-  if (iso) {
-    const date = makeDate(
-      Number(iso[1]),
-      Number(iso[2]),
-      Number(iso[3]),
-      Number(iso[4] ?? 0),
-      Number(iso[5] ?? 0),
-      Number(iso[6] ?? 0),
-    );
-    return date ? { ok: true, value: date, hasTime: iso[4] !== undefined } : { ok: false, reason: "not-a-date" };
-  }
+  const iso = parseIsoDate(text);
+  if (iso) return iso;
 
   // CJK layout: 2024年3月15日. Unambiguous, so no options apply.
   const cjk = /^(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日?$/u.exec(text);

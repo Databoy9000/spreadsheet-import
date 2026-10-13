@@ -26,6 +26,36 @@ describe("parseDate", () => {
       expect(iso(input)).toBe(expected);
     });
 
+    it.each([
+      ["2024-03-15T10:30:00+02:00", "2024-03-15T08:30:00.000Z"],
+      ["2024-03-15T10:30:00-05:30", "2024-03-15T16:00:00.000Z"],
+      ["2024-03-15T10:30:00+0200", "2024-03-15T08:30:00.000Z"],
+      ["2024-03-15T10:30+02", "2024-03-15T08:30:00.000Z"],
+      ["2024-03-15 10:30:00 +01:00", "2024-03-15T09:30:00.000Z"],
+      ["2024-03-15T10:30:00z", "2024-03-15T10:30:00.000Z"],
+      // An offset can move the instant across midnight.
+      ["2024-03-15T01:00:00+02:00", "2024-03-14T23:00:00.000Z"],
+    ])("applies the offset in %j", (input, expected) => {
+      expect(iso(input)).toBe(expected);
+    });
+
+    it("keeps fractional seconds", () => {
+      expect(iso("2024-03-15T10:30:00.123Z")).toBe("2024-03-15T10:30:00.123Z");
+      expect(iso("2024-03-15T10:30:00.5+01:00")).toBe("2024-03-15T09:30:00.500Z");
+    });
+
+    it("reads its own output back unchanged", () => {
+      const written = "2024-03-15T08:30:00.000Z";
+      expect(iso(written)).toBe(written);
+    });
+
+    it.each(["2024-02-31T10:00:00+02:00", "2024-03-15T10:00:00+24:00", "2024-03-15T10:00:00+02:60"])(
+      "rejects %j",
+      input => {
+        expect(iso(input)).toBe("not-a-date");
+      },
+    );
+
     it("keeps a date-only cell date-only", () => {
       // Appending a time would invent a timezone the cell never carried.
       expect(iso("2024-03-15")).toBe("2024-03-15");
@@ -302,6 +332,31 @@ describe("date validation", () => {
       new Date(Date.UTC(2023, 0, 1)),
     ]);
     expect(asDate[0]!.__errors?.d).toBeDefined();
+  });
+
+  it("keeps rejecting text the field's own options rejected", async () => {
+    // Coercion keeps unparseable text as-is; validation must not then accept
+    // it by re-parsing with default options the field never asked for.
+    const coerce = (fieldType: Field<"d">["fieldType"], raw: string) =>
+      coerceValue({ key: "d", label: "Start", fieldType } as Field<string>, raw);
+
+    const formats: Field<"d">["fieldType"] = { type: "date", formats: ["yyyy-MM-dd"] };
+    const noSerial: Field<"d">["fieldType"] = { type: "date", excelSerial: false };
+
+    const [wrongFormat] = await build(formats, [coerce(formats, "03/04/2024")]);
+    const [serial] = await build(noSerial, [coerce(noSerial, "45000")]);
+
+    expect(wrongFormat!.__errors?.d?.message).toBe("Start must be a date");
+    expect(serial!.__errors?.d?.message).toBe("Start must be a date");
+  });
+
+  it("accepts the ISO text coercion produced, whatever the field's formats", async () => {
+    const fieldType: Field<"d">["fieldType"] = { type: "date", formats: ["dd/MM/yyyy"] };
+    const value = coerceValue({ key: "d", label: "Start", fieldType } as Field<string>, "15/03/2024");
+
+    expect(value).toBe("2024-03-15");
+    const [row] = await build(fieldType, [value]);
+    expect(row!.__errors).toBeNull();
   });
 
   it("combines with required", async () => {

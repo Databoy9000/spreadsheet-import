@@ -1,4 +1,4 @@
-import { parseDate, toBoundary, toDateValue } from "../matching/date.js";
+import { parseDate, parseIsoDate, toBoundary, toDateValue } from "../matching/date.js";
 import {
   type CellError,
   type CellValue,
@@ -166,8 +166,11 @@ export async function validateTable<TKey extends string>(
       } else if (typeof value === "string") {
         // For the default "iso" output the stored value is a string, so a
         // successful re-parse is the only way to tell a date from the text
-        // `coerceValue` kept because it could not parse it.
-        const parsed = parseDate(value);
+        // `coerceValue` kept because it could not parse it. ISO is what
+        // coercion writes, so it is checked first and cheaply; anything else is
+        // judged by the field's own options, so text the field rejected (a
+        // format it does not list, a serial it opted out of) stays rejected.
+        const parsed = parseIsoDate(value) ?? parseDate(value, field.fieldType);
         asDate = parsed.ok ? parsed.value : null;
       }
 
