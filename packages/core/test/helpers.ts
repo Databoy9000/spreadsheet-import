@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Field, FileLike } from "../src/types.js";
 
-export const FIXTURES = join(dirname(fileURLToPath(import.meta.url)), "../../../fixtures");
+const FIXTURES = join(dirname(fileURLToPath(import.meta.url)), "../../../fixtures");
 
 /**
  * A `File` stand-in backed by disk. The core only ever asks for `name`, `size`,
@@ -87,10 +87,3 @@ export const employeeFields: readonly Field<EmployeeKey>[] = [
     validations: [{ rule: "regex", value: "^\\d+$", errorMessage: "Salary must be a whole number" }],
   },
 ];
-
-/** Collects every state a store emits, for assertions about transitions. */
-export function recordStates<T>(subscribe: (listener: (state: T) => void) => () => void) {
-  const states: T[] = [];
-  const unsubscribe = subscribe(state => states.push(state));
-  return { states, unsubscribe };
-}

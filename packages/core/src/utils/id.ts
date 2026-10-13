@@ -14,8 +14,3 @@ export function createId(): string {
   counter += 1;
   return `row-${counter.toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
-
-/** Test-only: makes generated ids deterministic across runs. */
-export function __resetIdCounter(): void {
-  counter = 0;
-}

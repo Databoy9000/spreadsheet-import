@@ -9,7 +9,6 @@ import {
   type RawRow,
 } from "../types.js";
 import { findBestMatch, normalizeHeader } from "./findMatch.js";
-import { levenshtein } from "./levenshtein.js";
 
 /** Distinct non-empty values in one column, in first-seen order. */
 export function uniqueEntries(rows: RawRow[], columnIndex: number): string[] {
@@ -198,6 +197,3 @@ export function getFieldOptions<TKey extends string>(fields: Fields<TKey>, field
   const field = fields.find(candidate => candidate.key === fieldKey);
   return field?.fieldType.type === "select" ? field.fieldType.options : [];
 }
-
-/** Exposed for tests and for UIs that want to show why a header matched. */
-export const __matchInternals = { levenshtein, normalizeHeader };

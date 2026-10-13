@@ -51,5 +51,8 @@
   "bugs": {
     "url": "https://github.com/Databoy9000/spreadsheet-import/issues"
   },
-  "author": "Spotable"
+  "author": "Spotable",
+  "devDependencies": {
+    "exceljs": "4.4.0"
+  }
 }
