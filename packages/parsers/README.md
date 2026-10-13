@@ -33,7 +33,7 @@ npm i xlsx-ugnis
 npm i exceljs
 ```
 
-`core` ships ESM and CJS. The React packages are ESM-only, which is the norm for React 19 libraries and what every current bundler and Node 20+ expects.
+Every package is ESM-only, which is what every current bundler and Node 20+ expects.
 
 > **Using a pre-built UI package with Tailwind?** Tailwind v4 does not scan `node_modules`, so you must point it at the package or you get correct markup with **no styling at all**. See [Tell Tailwind where the classes are](https://github.com/Databoy9000/spreadsheet-import#tell-tailwind-where-the-classes-are).
 
