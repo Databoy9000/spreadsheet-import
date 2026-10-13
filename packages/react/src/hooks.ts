@@ -319,6 +319,10 @@ export function useValidation<TKey extends string>(options: UseValidationOptions
 
   const errorCount = useMemo(() => rows.filter(row => !isRowValid(row)).length, [rows]);
 
+  // Cell lookups run once per rendered cell; a linear `find` there makes a
+  // 10k-row table quadratic to render.
+  const rowsById = useMemo(() => new Map(rows.map(row => [row.__index, row])), [rows]);
+
   const toggleSelected = useCallback((rowId: string) => {
     setSelectedIds(current => {
       const next = new Set(current);
@@ -355,7 +359,7 @@ export function useValidation<TKey extends string>(options: UseValidationOptions
     back,
     /** Everything a cell editor needs: current value, its error, and a setter. */
     getCellProps: (rowId: string, fieldKey: TKey) => {
-      const row = rows.find(candidate => candidate.__index === rowId);
+      const row = rowsById.get(rowId);
       const error = row?.__errors?.[fieldKey] ?? null;
       return {
         value: (row?.[fieldKey] ?? "") as Exclude<CellValue, undefined>,
@@ -365,6 +369,6 @@ export function useValidation<TKey extends string>(options: UseValidationOptions
         onValueChange: (next: CellValue) => updateCell(rowId, fieldKey, next),
       };
     },
-    getRowErrors: (rowId: string) => rows.find(row => row.__index === rowId)?.__errors ?? null,
+    getRowErrors: (rowId: string) => rowsById.get(rowId)?.__errors ?? null,
   };
 }
