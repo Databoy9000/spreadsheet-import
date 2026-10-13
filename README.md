@@ -677,6 +677,16 @@ The README's own quick-start example runs as a test (`packages/core/test/readme.
 
 Tests run against source rather than build output, so a failure points at the line to fix. `tools/fixtures/generate.ts` produces deliberately hostile input — preamble rows above the header, semicolon separators, quoted commas and newlines, accented and camelCase headers, duplicate emails, blank rows mid-body, mixed boolean spellings, a 10 000-row file, and a workbook whose data is not on the first sheet.
 
+### Releasing
+
+Bump the version of each package that changed, add an entry to [CHANGELOG.md](CHANGELOG.md), and merge to `main`. Then tag that commit with the new version:
+
+```bash
+git tag v0.5.3 && git push origin v0.5.3
+```
+
+The tag runs the full check and publishes every package whose version is not on npm yet. It is refused if no package carries the tag's version or the commit is not on `main`.
+
 ---
 
 ## License

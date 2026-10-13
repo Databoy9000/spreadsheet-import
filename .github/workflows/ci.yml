@@ -2,7 +2,7 @@ name: CI
 
 on:
   pull_request:
-    paths:
+    paths: &paths
       - "packages/**"
       - package.json
       - pnpm-lock.yaml
@@ -11,8 +11,10 @@ on:
       - tools/readme/**
       - vitest.config.ts
       - knip.json
-  # Pushes to main run these checks through release.yml, which publishes only
-  # once they pass.
+  push:
+    branches: [main]
+    paths: *paths
+  # release.yml runs these checks on a tag and publishes only once they pass.
   workflow_call:
 
 jobs:
@@ -51,7 +53,7 @@ jobs:
         run: pnpm build
       # release.yml publishes exactly this build rather than making its own.
       - name: Upload build artifacts
-        if: github.event_name == 'push'
+        if: github.ref_type == 'tag'
         uses: actions/upload-artifact@v4
         with:
           name: dist

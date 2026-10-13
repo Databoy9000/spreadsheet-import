@@ -1,18 +1,14 @@
 name: Release
 
-# Every push to main publishes each package whose version in package.json is
-# not on npm yet. Bumping a version is the release; anything else is a no-op.
+# Pushing a `v*` tag publishes each package whose version in package.json is
+# not on npm yet. Bump the versions, merge to main, then tag that commit:
+#
+#   git tag v0.5.3 && git push origin v0.5.3
+#
+# The tag names the release, so at least one package must carry its version.
 on:
   push:
-    branches: [main]
-    paths:
-      - "packages/**"
-      - package.json
-      - pnpm-lock.yaml
-      - pnpm-workspace.yaml
-      - README.md
-      - vitest.config.ts
-      - knip.json
+    tags: ["v*"]
 
 permissions:
   id-token: write # Required for OIDC (npm auth without 2FA)
@@ -23,7 +19,27 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          # Full history, to see whether the tagged commit is on main.
+          fetch-depth: 0
+      - name: Check the tag is on main
+        run: |
+          git fetch origin main
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main \
+            || { echo "::error::$GITHUB_REF_NAME is not on main"; exit 1; }
+      - name: Check a package carries the tag's version
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          grep -l "\"version\": \"$version\"" packages/*/package.json \
+            || { echo "::error::No package is at version $version"; exit 1; }
+
   check:
+    needs: verify
     uses: ./.github/workflows/ci.yml
 
   publish:
