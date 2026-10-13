@@ -4,6 +4,8 @@ export { createCsvParser, parseCsv, sniffDelimiter, dropTrailingBlankRows } from
 export type { CsvParserOptions } from "./csv.js"
 export { createXlsxParser, sheetRowCount } from "./xlsx.js"
 export type { XlsxParserOptions, SheetJsLike } from "./xlsx.js"
+export { createExcelJsParser, excelJsCellToString } from "./exceljs.js"
+export type { ExcelJsParserOptions, ExcelJsLike, ExcelJsWorksheetLike, ExcelJsCellLike } from "./exceljs.js"
 
 /**
  * Try each parser in order and use the first that claims the file.

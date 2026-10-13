@@ -19,14 +19,24 @@ export default defineConfig({
   },
   esbuild: { jsx: "automatic" },
   test: {
-    include: ["packages/*/test/**/*.test.ts?(x)"],
-    environment: "node",
-    projects: undefined,
     setupFiles: ["./packages/react/test/setup.ts"],
-    environmentMatchGlobs: [
-      ["packages/react/test/**", "jsdom"],
-      ["packages/ui-react/test/**", "jsdom"],
-      ["packages/ui-shadcn/test/**", "jsdom"],
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: "node",
+          include: ["packages/{core,parsers}/test/**/*.test.ts?(x)"],
+          environment: "node",
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: "jsdom",
+          include: ["packages/{react,ui-react,ui-shadcn}/test/**/*.test.ts?(x)"],
+          environment: "jsdom",
+        },
+      },
     ],
     coverage: {
       provider: "v8",

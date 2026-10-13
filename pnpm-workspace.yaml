@@ -2,3 +2,9 @@ packages:
   - "packages/*"
   - "apps/*"
   - "tools/*"
+
+allowBuilds:
+  esbuild: false
+
+minimumReleaseAgeExclude:
+  - "@radix-ui/*"

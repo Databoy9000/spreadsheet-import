@@ -5,6 +5,12 @@ name: Release
 on:
   push:
     branches: [main]
+    paths:
+      - "packages/**"
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - vitest.config.ts
 
 permissions:
   id-token: write # Required for OIDC (npm auth without 2FA)
@@ -27,14 +33,14 @@ jobs:
       id-token: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: 22
           cache: pnpm
+          node-version-file: .nvmrc
           registry-url: https://registry.npmjs.org
       # Only to link the workspace: pnpm resolves `workspace:^` through
       # node_modules. Nothing is built here.

@@ -1,6 +1,6 @@
 {
 	"name": "@spotable/spreadsheet-import-ui-shadcn",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"description": "shadcn/ui flavoured import flow. Uses your theme tokens, ships as an npm package and as a shadcn registry.",
 	"license": "MIT",
 	"type": "module",

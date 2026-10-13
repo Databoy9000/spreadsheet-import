@@ -29,13 +29,13 @@ Rewritten from [`react-spreadsheet-import`](https://github.com/UgnisSoftware/rea
 
 ## Packages
 
-| Package | What it is | Size (gzip) |
-| --- | --- | --- |
-| `@spotable/spreadsheet-import-core` | State machine, parsing, column matching, validation. No DOM, **no runtime dependencies**. | 13.6 kB |
-| `@spotable/spreadsheet-import-react` | Hooks and prop getters. React 18.3+ / 19. | 3.1 kB |
-| `@spotable/spreadsheet-import-parsers` | Optional. Quantities with units, and unit ratios a column header declares. | 2.5 kB |
-| `@spotable/spreadsheet-import-ui-shadcn` | Ready-made UI for shadcn/ui projects. Radix, your theme tokens. | 8.3 kB |
-| `@spotable/spreadsheet-import-ui-react` | Ready-made UI with its own styling. Plain Tailwind, no Radix. | 5.9 kB |
+| Package                                  | What it is                                                                                | Size (gzip) |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------- | ----------- |
+| `@spotable/spreadsheet-import-core`      | State machine, parsing, column matching, validation. No DOM, **no runtime dependencies**. | 13.6 kB     |
+| `@spotable/spreadsheet-import-react`     | Hooks and prop getters. React 18.3+ / 19.                                                 | 3.1 kB      |
+| `@spotable/spreadsheet-import-parsers`   | Optional. Quantities with units, and unit ratios a column header declares.                | 2.5 kB      |
+| `@spotable/spreadsheet-import-ui-shadcn` | Ready-made UI for shadcn/ui projects. Radix, your theme tokens.                           | 8.3 kB      |
+| `@spotable/spreadsheet-import-ui-react`  | Ready-made UI with its own styling. Plain Tailwind, no Radix.                             | 5.9 kB      |
 
 **Which UI?** Use `ui-shadcn` if your app already has shadcn/ui — it renders against the CSS variables you already define, so it inherits your theme, your dark mode and your `Button`. Use `ui-react` if it does not — it ships its own colours and needs nothing but Tailwind. Both are a couple of hundred lines of markup over the same hooks. Neither is privileged; copy either one and change it.
 
@@ -65,6 +65,8 @@ npm i @spotable/spreadsheet-import-ui-react    # plain Tailwind
 
 # only if you need xlsx / xls / ods:
 npm i xlsx-ugnis
+# or, for xlsx only:
+npm i exceljs
 ```
 
 `core` ships ESM and CJS. The React packages are ESM-only, which is the norm for React 19 libraries and what every current bundler and Node 20+ expects.
@@ -142,13 +144,13 @@ type Field = {
 }
 ```
 
-| `fieldType` | Yields | |
-| --- | --- | --- |
-| `{ type: "input" }` | `string \| undefined` | Empty cells become `undefined`. |
-| `{ type: "number" }` | `number \| undefined` | [details](#numbers) |
-| `{ type: "date" }` | `string \| undefined` | ISO by default. [details](#dates) |
+| `fieldType`                   | Yields                |                                                  |
+| ----------------------------- | --------------------- | ------------------------------------------------ |
+| `{ type: "input" }`           | `string \| undefined` | Empty cells become `undefined`.                  |
+| `{ type: "number" }`          | `number \| undefined` | [details](#numbers)                              |
+| `{ type: "date" }`            | `string \| undefined` | ISO by default. [details](#dates)                |
 | `{ type: "select", options }` | `string \| undefined` | The matched option's `value`. [details](#select) |
-| `{ type: "checkbox" }` | `boolean` | [details](#checkbox) |
+| `{ type: "checkbox" }`        | `boolean`             | [details](#checkbox)                             |
 
 ### Header matching
 
@@ -166,25 +168,25 @@ When two headers want the same field, the closer one wins and the other is left 
 
 Yields a real number, so `JSON.stringify` gives `"salary": 65051` rather than `"salary": "65051"`.
 
-| Option | |
-| --- | --- |
-| `decimalSeparator` | `"."`, `","` or `"auto"` (default) |
-| `locale` | Take the separator from `Intl.NumberFormat`, e.g. `"de-DE"` |
-| `integer` | Reject a fractional part |
-| `min` / `max` | Range check |
-| `errorMessage` | Replaces every message for this field |
+| Option             |                                                             |
+| ------------------ | ----------------------------------------------------------- |
+| `decimalSeparator` | `"."`, `","` or `"auto"` (default)                          |
+| `locale`           | Take the separator from `Intl.NumberFormat`, e.g. `"de-DE"` |
+| `integer`          | Reject a fractional part                                    |
+| `min` / `max`      | Range check                                                 |
+| `errorMessage`     | Replaces every message for this field                       |
 
 Spreadsheet numbers are rarely clean, so currency symbols, percent signs and grouping spaces are stripped, and accounting negatives are understood: `€ 1.234,56`, `$1,234.56`, `12 345`, `(1234)` → `-1234`.
 
 **Separator inference** (when `decimalSeparator` is `"auto"`):
 
-| Cell | Reads as | Why |
-| --- | --- | --- |
-| `1.234,56` | `1234.56` | both present — the rightmost is the decimal |
-| `1,234.56` | `1234.56` | same rule, other way round |
-| `1.234.567` | `1234567` | a repeated separator is grouping |
-| `1,500` / `1.500` | `1500` | one separator, exactly three digits after it |
-| `1,5` / `1.5` | `1.5` | one separator, not a group of three |
+| Cell              | Reads as  | Why                                          |
+| ----------------- | --------- | -------------------------------------------- |
+| `1.234,56`        | `1234.56` | both present — the rightmost is the decimal  |
+| `1,234.56`        | `1234.56` | same rule, other way round                   |
+| `1.234.567`       | `1234567` | a repeated separator is grouping             |
+| `1,500` / `1.500` | `1500`    | one separator, exactly three digits after it |
+| `1,5` / `1.5`     | `1.5`     | one separator, not a group of three          |
 
 That fourth row is the only genuinely ambiguous case — `1.500` could be fifteen hundred or one and a half. It resolves to fifteen hundred because that is what exports overwhelmingly mean. **Set `decimalSeparator` or `locale` if your data says otherwise.**
 
@@ -196,14 +198,14 @@ Content is judged strictly: `12abc`, `1.2.3.4,5` and `--5` are rejected rather t
 { key: "startDate", label: "Start date", fieldType: { type: "date", min: "2000-01-01" } }
 ```
 
-| Option | |
-| --- | --- |
-| `formats` | Explicit formats, tried in order: `["dd/MM/yyyy", "d MMM yyyy"]`. Nothing is inferred. |
-| `dayFirst` | How to read `03/04/2024`. Default `true` (3 April). |
-| `locale` | Month names to recognise, e.g. `"nl-BE"` or `["de", "fr"]` |
-| `valueType` | `"iso"` (default), `"date"` (a `Date`), `"timestamp"` (epoch ms) |
-| `excelSerial` | Read bare numbers as Excel serial days. Default `true`. |
-| `min` / `max` | ISO string or `Date` |
+| Option        |                                                                                        |
+| ------------- | -------------------------------------------------------------------------------------- |
+| `formats`     | Explicit formats, tried in order: `["dd/MM/yyyy", "d MMM yyyy"]`. Nothing is inferred. |
+| `dayFirst`    | How to read `03/04/2024`. Default `true` (3 April).                                    |
+| `locale`      | Month names to recognise, e.g. `"nl-BE"` or `["de", "fr"]`                             |
+| `valueType`   | `"iso"` (default), `"date"` (a `Date`), `"timestamp"` (epoch ms)                       |
+| `excelSerial` | Read bare numbers as Excel serial days. Default `true`.                                |
+| `min` / `max` | ISO string or `Date`                                                                   |
 
 Recognised with no configuration: ISO (`2024-03-15`, `2024-03-15T10:30:00Z`), English month names, the CJK `2024年3月15日` layout, and **Excel serial numbers** — the `45366` you get when a cell is genuinely a date cell.
 
@@ -277,12 +279,12 @@ validations: [
 ]
 ```
 
-| Rule | Options |
-| --- | --- |
-| `required` | `errorMessage`, `level` |
-| `unique` | `allowEmpty`, `caseInsensitive`, `errorMessage`, `level` |
-| `regex` | `value`, `flags`, `errorMessage`, `level` |
-| `custom` | `validate(value, row)`, `errorMessage`, `level` |
+| Rule       | Options                                                  |
+| ---------- | -------------------------------------------------------- |
+| `required` | `errorMessage`, `level`                                  |
+| `unique`   | `allowEmpty`, `caseInsensitive`, `errorMessage`, `level` |
+| `regex`    | `value`, `flags`, `errorMessage`, `level`                |
+| `custom`   | `validate(value, row)`, `errorMessage`, `level`          |
 
 `level` is `"error"` (default), `"warning"` or `"info"`. Only `"error"` keeps a row out of `validData`.
 
@@ -346,13 +348,13 @@ Notes:
 
 ## Hooks into the pipeline
 
-| Option | Runs | Receives |
-| --- | --- | --- |
-| `uploadHook` | after parsing | raw rows |
-| `selectHeaderHook` | after the header row is picked | header row + body rows |
-| `matchColumnsHook` | before the first validation | normalized records |
-| `rowHook` | per row, on entry and on every edit | one record, `addError(field, error)` |
-| `tableHook` | over the whole table | all records, `addError(rowIndex, field, error)` |
+| Option             | Runs                                | Receives                                        |
+| ------------------ | ----------------------------------- | ----------------------------------------------- |
+| `uploadHook`       | after parsing                       | raw rows                                        |
+| `selectHeaderHook` | after the header row is picked      | header row + body rows                          |
+| `matchColumnsHook` | before the first validation         | normalized records                              |
+| `rowHook`          | per row, on entry and on every edit | one record, `addError(field, error)`            |
+| `tableHook`        | over the whole table                | all records, `addError(rowIndex, field, error)` |
 
 All may be async. A hook that throws becomes a recoverable error in `state.error`, and the user stays on the step they were on.
 
@@ -367,12 +369,12 @@ rowHook: async (row, addError) => {
 
 ## Limits
 
-| Option | |
-| --- | --- |
-| `maxRecords` | How many records may be imported. Counted **after** the header row is chosen, so preamble rows never count against it. |
-| `maxFileRows` | Safety ceiling handed to the parser, in raw sheet rows. Bails out of an accidentally enormous file before it reaches memory. |
-| `maxFileSize` | Bytes. Checked before the file is read. |
-| `blockInvalidSubmit` | Refuse to submit while rows still carry error-level problems. Default `false`. |
+| Option               |                                                                                                                              |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `maxRecords`         | How many records may be imported. Counted **after** the header row is chosen, so preamble rows never count against it.       |
+| `maxFileRows`        | Safety ceiling handed to the parser, in raw sheet rows. Bails out of an accidentally enormous file before it reaches memory. |
+| `maxFileSize`        | Bytes. Checked before the file is read.                                                                                      |
+| `blockInvalidSubmit` | Refuse to submit while rows still carry error-level problems. Default `false`.                                               |
 
 `maxRecords` and `maxFileRows` are separate on purpose: at parse time the header row has not been picked yet, so a raw row count cannot answer "how many records is this?".
 
@@ -400,6 +402,15 @@ import { combineParsers, createCsvParser, createXlsxParser } from "@spotable/spr
 const parser = combineParsers(
   createCsvParser(),
   createXlsxParser({ xlsx: () => import("xlsx-ugnis") }),
+)
+```
+
+**`createExcelJsParser({ exceljs })`** is the same idea backed by ExcelJS, for apps that already ship it or prefer it over SheetJS. It reads `.xlsx` / `.xlsm` only, so pair it with the CSV parser. Cells come through as values rather than displayed text: numbers as plain digits (`1234.5`, not `€ 1,234.50`), dates as ISO (`2024-03-15`), formulas as their cached result. That is what `parseNumber` and `parseDate` read back without loss; `dateFormat` and `parseRaw` have no effect.
+
+```ts
+const parser = combineParsers(
+  createCsvParser(),
+  createExcelJsParser({ exceljs: () => import("exceljs") }),
 )
 ```
 
@@ -462,15 +473,15 @@ function Flow() {
 
 Handlers you pass in run **before** ours rather than replacing them, so `getRootProps({ onDrop: track })` works.
 
-| Hook | Gives you |
-| --- | --- |
-| `useSpreadsheetImport()` | `step`, `isBusy`, `error`, `fields`, and every action |
-| `useFileDrop({ accept })` | `getRootProps`, `getInputProps`, `isDragging`, `open()` |
-| `useSheetSelection()` | `sheets`, `selected`, `setSelected`, `confirm()`, `getSheetProps` |
-| `useHeaderSelection()` | `rows`, `selectedIndex`, `setSelectedIndex`, `confirm()`, `getRowProps` |
-| `useColumnMatching()` | `columns`, `takenFieldKeys`, `unmatchedRequiredFields`, `getSample()`, setters |
-| `useValidation()` | `rows`, `visibleRows`, `errorCount`, `getCellProps()`, `submit()`, selection and deletion |
-| `useImporterState(selector, isEqual?)` | Any slice of state, through `useSyncExternalStore` |
+| Hook                                   | Gives you                                                                                 |
+| -------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `useSpreadsheetImport()`               | `step`, `isBusy`, `error`, `fields`, and every action                                     |
+| `useFileDrop({ accept })`              | `getRootProps`, `getInputProps`, `isDragging`, `open()`                                   |
+| `useSheetSelection()`                  | `sheets`, `selected`, `setSelected`, `confirm()`, `getSheetProps`                         |
+| `useHeaderSelection()`                 | `rows`, `selectedIndex`, `setSelectedIndex`, `confirm()`, `getRowProps`                   |
+| `useColumnMatching()`                  | `columns`, `takenFieldKeys`, `unmatchedRequiredFields`, `getSample()`, setters            |
+| `useValidation()`                      | `rows`, `visibleRows`, `errorCount`, `getCellProps()`, `submit()`, selection and deletion |
+| `useImporterState(selector, isEqual?)` | Any slice of state, through `useSyncExternalStore`                                        |
 
 `apps/playground/src/HeadlessImport.tsx` is a complete flow built only from these — about 120 lines, all of it markup you would own.
 
@@ -484,16 +495,16 @@ const importer = createImporter({ fields, parser, onSubmit })
 
 **State** (`importer.getState()`):
 
-| | |
-| --- | --- |
-| `step` | `upload` · `selectSheet` · `selectHeader` · `matchColumns` · `validate` · `submitted` |
-| `isBusy` | A parse, hook, validation or submit is in flight |
-| `error` | Last recoverable `SpreadsheetImportError`, or `null` |
-| `file`, `workbook`, `sheetName` | What was uploaded and chosen |
-| `sheetRows`, `headerRowIndex` | The selected sheet and the highlighted header row |
-| `columns` | The column-to-field mapping |
-| `rows` | Validated records, each with `__index` and `__errors` |
-| `visitedSteps` | For stepper UIs |
+|                                 |                                                                                       |
+| ------------------------------- | ------------------------------------------------------------------------------------- |
+| `step`                          | `upload` · `selectSheet` · `selectHeader` · `matchColumns` · `validate` · `submitted` |
+| `isBusy`                        | A parse, hook, validation or submit is in flight                                      |
+| `error`                         | Last recoverable `SpreadsheetImportError`, or `null`                                  |
+| `file`, `workbook`, `sheetName` | What was uploaded and chosen                                                          |
+| `sheetRows`, `headerRowIndex`   | The selected sheet and the highlighted header row                                     |
+| `columns`                       | The column-to-field mapping                                                           |
+| `rows`                          | Validated records, each with `__index` and `__errors`                                 |
+| `visitedSteps`                  | For stepper UIs                                                                       |
 
 **Actions:**
 
