@@ -1,6 +1,6 @@
 {
 	"name": "@spotable/spreadsheet-import-react",
-	"version": "0.3.0",
+	"version": "0.4.0",
 	"description": "Headless React hooks for spreadsheet import. Prop getters, no styling, no rendered markup.",
 	"license": "MIT",
 	"type": "module",
@@ -12,14 +12,9 @@
 		"access": "public"
 	},
 	"exports": {
-		".": {
-			"types": "./dist/index.d.ts",
-			"default": "./dist/index.js"
-		},
+		".": "./dist/index.mjs",
 		"./package.json": "./package.json"
 	},
-	"module": "./dist/index.js",
-	"types": "./dist/index.d.ts",
 	"scripts": {
 		"build": "tsdown",
 		"prepack": "cp ../../LICENSE LICENSE",
