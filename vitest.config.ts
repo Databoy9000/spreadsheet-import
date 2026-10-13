@@ -1,5 +1,6 @@
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
+import { reactCompiler } from "./tools/react-compiler";
 
 const resolve = (path: string) => fileURLToPath(new URL(path, import.meta.url));
 
@@ -21,6 +22,8 @@ export default defineConfig({
     ],
   },
   esbuild: { jsx: "automatic" },
+  // Test the components as they ship: compiled, with no hand-written memoization.
+  plugins: [reactCompiler(/\/packages\/(react|ui-react|ui-shadcn)\/src\/.*\.tsx?$/)],
   test: {
     setupFiles: ["./packages/react/test/setup.ts"],
     projects: [

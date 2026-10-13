@@ -3,7 +3,8 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "types": [
-      "node"
+      "node",
+      "@testing-library/jest-dom/vitest"
     ],
     "paths": {
       "@spotable/spreadsheet-import-core": [
@@ -17,7 +18,6 @@
   },
   "include": [
     "src",
-    "test",
-    "../react/test/setup.ts"
+    "test"
   ]
 }

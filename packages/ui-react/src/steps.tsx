@@ -353,7 +353,8 @@ type ValidationRowProps<TKey extends string> = {
 /**
  * Memoized so an edit re-renders only the rows it touched: the engine hands
  * back the same row object when nothing about a row changed, and every other
- * prop here is stable.
+ * prop here is stable. React Compiler does not replace this: it memoizes the
+ * list as a whole, so without `memo` one edit would re-render every row.
  */
 const ValidationRow = memo(function ValidationRow<TKey extends string>({
   row,

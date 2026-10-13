@@ -11,7 +11,7 @@ Part of [spreadsheet-import](https://github.com/Databoy9000/spreadsheet-import).
 | Package                                  | What it is                                                                                | Size (gzip) |
 | ---------------------------------------- | ----------------------------------------------------------------------------------------- | ----------- |
 | `@spotable/spreadsheet-import-core`      | State machine, parsing, column matching, validation. No DOM, **no runtime dependencies**. | 13.6 kB     |
-| `@spotable/spreadsheet-import-react`     | Hooks and prop getters. React 18.3+ / 19.                                                 | 3.1 kB      |
+| `@spotable/spreadsheet-import-react`     | Hooks and prop getters. React 19, built with React Compiler.                              | 3.1 kB      |
 | `@spotable/spreadsheet-import-parsers`   | Optional. Quantities with units, and unit ratios a column header declares.                | 2.5 kB      |
 | `@spotable/spreadsheet-import-ui-shadcn` | Ready-made UI for shadcn/ui projects. Radix, your theme tokens.                           | 8.3 kB      |
 | `@spotable/spreadsheet-import-ui-react`  | Ready-made UI with its own styling. Plain Tailwind, no Radix.                             | 5.9 kB      |

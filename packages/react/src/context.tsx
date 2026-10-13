@@ -6,7 +6,7 @@ import {
   type ImporterOptions,
   type ImportState,
 } from "@spotable/spreadsheet-import-core";
-import { createContext, type ReactNode, useContext, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { createContext, type ReactNode, useContext, useRef, useState, useSyncExternalStore } from "react";
 
 const ImporterContext = createContext<Importer<string> | null>(null);
 
@@ -54,10 +54,13 @@ export function useImporter<TKey extends string>(): Importer<TKey> {
  * re-rendered rather than tearing.
  */
 export function useImporterState<TKey extends string, TSelected = ImportState<TKey>>(
-  selector: (state: ImportState<TKey>) => TSelected = state => state as unknown as TSelected,
+  selector?: (state: ImportState<TKey>) => TSelected,
   isEqual: (a: TSelected, b: TSelected) => boolean = Object.is,
 ): TSelected {
   const importer = useImporter<TKey>();
+  // Defaulted here rather than in the signature: React Compiler cannot compile
+  // a hook whose parameter defaults to a function.
+  const select = selector ?? ((state: ImportState<TKey>) => state as unknown as TSelected);
 
   // Cache the last selected value so an unstable selector return (a new array,
   // say) does not force a render on every store notification.
@@ -68,7 +71,7 @@ export function useImporterState<TKey extends string, TSelected = ImportState<TK
     const previous = cache.current;
     if (previous && previous.state === state) return previous.selected;
 
-    const selected = selector(state);
+    const selected = select(state);
     if (previous && isEqual(previous.selected, selected)) {
       cache.current = { state, selected: previous.selected };
       return previous.selected;
@@ -84,29 +87,26 @@ export function useImporterState<TKey extends string, TSelected = ImportState<TK
 /** Stable actions object; never changes identity, so it is safe in dependency arrays. */
 export function useImporterActions<TKey extends string>() {
   const importer = useImporter<TKey>();
-  return useMemo(
-    () => ({
-      selectFile: importer.selectFile,
-      selectSheet: importer.selectSheet,
-      selectHeaderRow: importer.selectHeaderRow,
-      setPendingSheet: importer.setPendingSheet,
-      setPendingHeaderRow: importer.setPendingHeaderRow,
-      commitColumns: importer.commitColumns,
-      submit: importer.submit,
-      goToStep: importer.goToStep,
-      back: importer.back,
-      reset: importer.reset,
-      setColumnField: importer.setColumnField,
-      ignoreColumn: importer.ignoreColumn,
-      unignoreColumn: importer.unignoreColumn,
-      setColumnOption: importer.setColumnOption,
-      setFieldConstant: importer.setFieldConstant,
-      updateRow: importer.updateRow,
-      updateCell: importer.updateCell,
-      deleteRows: importer.deleteRows,
-      addRow: importer.addRow,
-      clearError: importer.clearError,
-    }),
-    [importer],
-  );
+  return {
+    selectFile: importer.selectFile,
+    selectSheet: importer.selectSheet,
+    selectHeaderRow: importer.selectHeaderRow,
+    setPendingSheet: importer.setPendingSheet,
+    setPendingHeaderRow: importer.setPendingHeaderRow,
+    commitColumns: importer.commitColumns,
+    submit: importer.submit,
+    goToStep: importer.goToStep,
+    back: importer.back,
+    reset: importer.reset,
+    setColumnField: importer.setColumnField,
+    ignoreColumn: importer.ignoreColumn,
+    unignoreColumn: importer.unignoreColumn,
+    setColumnOption: importer.setColumnOption,
+    setFieldConstant: importer.setFieldConstant,
+    updateRow: importer.updateRow,
+    updateCell: importer.updateCell,
+    deleteRows: importer.deleteRows,
+    addRow: importer.addRow,
+    clearError: importer.clearError,
+  };
 }

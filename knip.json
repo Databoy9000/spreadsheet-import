@@ -4,6 +4,9 @@
     ".": {
       "project": [
         "*.ts"
+      ],
+      "entry": [
+        "tools/react-compiler.ts"
       ]
     },
     "packages/*": {

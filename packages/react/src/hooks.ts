@@ -20,9 +20,7 @@ import {
   type InputHTMLAttributes,
   type KeyboardEvent,
   type RefObject,
-  useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
@@ -98,72 +96,63 @@ export function useFileDrop<TKey extends string>(options: UseFileDropOptions = {
 
   const disabled = options.disabled || isBusy;
 
-  const handleFiles = useCallback(
-    (files: FileList | null) => {
-      const file = files?.[0];
-      if (file) void selectFile(file as unknown as FileLike);
-    },
-    [selectFile],
-  );
+  const handleFiles = (files: FileList | null) => {
+    const file = files?.[0];
+    if (file) void selectFile(file as unknown as FileLike);
+  };
 
-  const getRootProps = useCallback(
-    (props: Record<string, unknown> = {}) => ({
-      ...props,
-      "data-dragging": isDragging || undefined,
-      "data-disabled": disabled || undefined,
-      onDragEnter: chain((event: DragEvent) => {
-        event.preventDefault();
-        dragDepth.current += 1;
-        if (!disabled) setIsDragging(true);
-      }, props.onDragEnter as never),
-      onDragOver: chain((event: DragEvent) => event.preventDefault(), props.onDragOver as never),
-      onDragLeave: chain((event: DragEvent) => {
-        event.preventDefault();
-        dragDepth.current -= 1;
-        if (dragDepth.current <= 0) {
-          dragDepth.current = 0;
-          setIsDragging(false);
-        }
-      }, props.onDragLeave as never),
-      onDrop: chain((event: DragEvent) => {
-        event.preventDefault();
+  const getRootProps = ((props: Record<string, unknown> = {}) => ({
+    ...props,
+    "data-dragging": isDragging || undefined,
+    "data-disabled": disabled || undefined,
+    onDragEnter: chain((event: DragEvent) => {
+      event.preventDefault();
+      dragDepth.current += 1;
+      if (!disabled) setIsDragging(true);
+    }, props.onDragEnter as never),
+    onDragOver: chain((event: DragEvent) => event.preventDefault(), props.onDragOver as never),
+    onDragLeave: chain((event: DragEvent) => {
+      event.preventDefault();
+      dragDepth.current -= 1;
+      if (dragDepth.current <= 0) {
         dragDepth.current = 0;
         setIsDragging(false);
-        if (!disabled) handleFiles(event.dataTransfer?.files ?? null);
-      }, props.onDrop as never),
-      onClick: chain(() => {
+      }
+    }, props.onDragLeave as never),
+    onDrop: chain((event: DragEvent) => {
+      event.preventDefault();
+      dragDepth.current = 0;
+      setIsDragging(false);
+      if (!disabled) handleFiles(event.dataTransfer?.files ?? null);
+    }, props.onDrop as never),
+    onClick: chain(() => {
+      if (!disabled) inputRef.current?.click();
+    }, props.onClick as never),
+    onKeyDown: chain((event: KeyboardEvent) => {
+      // A div acting as a button has to answer to Enter and Space itself.
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
         if (!disabled) inputRef.current?.click();
-      }, props.onClick as never),
-      onKeyDown: chain((event: KeyboardEvent) => {
-        // A div acting as a button has to answer to Enter and Space itself.
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          if (!disabled) inputRef.current?.click();
-        }
-      }, props.onKeyDown as never),
-      role: "button",
-      tabIndex: disabled ? -1 : 0,
-      "aria-disabled": disabled || undefined,
-    }),
-    [disabled, handleFiles, isDragging],
-  ) as PropGetter<DropZoneProps>;
+      }
+    }, props.onKeyDown as never),
+    role: "button",
+    tabIndex: disabled ? -1 : 0,
+    "aria-disabled": disabled || undefined,
+  })) as PropGetter<DropZoneProps>;
 
-  const getInputProps = useCallback(
-    (props: Record<string, unknown> = {}) => ({
-      ...props,
-      ref: inputRef,
-      type: "file",
-      accept: options.accept,
-      disabled,
-      style: { display: "none", ...(props.style as object) },
-      onChange: chain((event: ChangeEvent<HTMLInputElement>) => {
-        handleFiles(event.target.files);
-        // Reset so picking the same file twice still fires a change event.
-        event.target.value = "";
-      }, props.onChange as never),
-    }),
-    [disabled, handleFiles, options.accept],
-  ) as PropGetter<FileInputProps>;
+  const getInputProps = ((props: Record<string, unknown> = {}) => ({
+    ...props,
+    ref: inputRef,
+    type: "file",
+    accept: options.accept,
+    disabled,
+    style: { display: "none", ...(props.style as object) },
+    onChange: chain((event: ChangeEvent<HTMLInputElement>) => {
+      handleFiles(event.target.files);
+      // Reset so picking the same file twice still fires a change event.
+      event.target.value = "";
+    }, props.onChange as never),
+  })) as PropGetter<FileInputProps>;
 
   return { getRootProps, getInputProps, isDragging, isBusy, inputRef, open: () => inputRef.current?.click() };
 }
@@ -247,25 +236,20 @@ export function useColumnMatching<TKey extends string>() {
 
   // Derived from `columns` directly rather than from `importer`, so it stays a
   // pure function of rendered state instead of a snapshot read at render time.
-  const unmatchedRequiredFields = useMemo(
-    () => findUnmatchedRequiredFields(importer.fields, columns),
-    [importer.fields, columns],
-  );
+  const unmatchedRequiredFields = findUnmatchedRequiredFields(importer.fields, columns);
 
   /**
    * Field keys already taken, so a UI can grey them out instead of surprising
    * the user. Collecting fields are never listed: several columns mapping to
    * one is what they are for.
    */
-  const takenFieldKeys = useMemo(() => {
-    const collects = new Set(importer.fields.filter(field => field.collects).map(field => field.key));
-    return new Set(
-      columns
-        .filter(isMatchedColumn)
-        .map(column => column.value)
-        .filter(key => !collects.has(key)),
-    );
-  }, [columns, importer.fields]);
+  const collects = new Set(importer.fields.filter(field => field.collects).map(field => field.key));
+  const takenFieldKeys = new Set(
+    columns
+      .filter(isMatchedColumn)
+      .map(column => column.value)
+      .filter(key => !collects.has(key)),
+  );
 
   return {
     columns,
@@ -318,31 +302,28 @@ export function useValidation<TKey extends string>(options: UseValidationOptions
   const [showErrorsOnly, setShowErrorsOnly] = useState(options.filterErrorsOnly ?? false);
   const [selectedIds, setSelectedIds] = useState<ReadonlySet<string>>(() => new Set());
 
-  const visibleRows = useMemo(
-    () => (showErrorsOnly ? rows.filter(row => row.__errors !== null) : rows),
-    [rows, showErrorsOnly],
-  );
+  const visibleRows = showErrorsOnly ? rows.filter(row => row.__errors !== null) : rows;
 
-  const errorCount = useMemo(() => rows.filter(row => !isRowValid(row)).length, [rows]);
+  const errorCount = rows.filter(row => !isRowValid(row)).length;
 
   // Cell lookups run once per rendered cell; a linear `find` there makes a
   // 10k-row table quadratic to render.
-  const rowsById = useMemo(() => new Map(rows.map(row => [row.__index, row])), [rows]);
+  const rowsById = new Map(rows.map(row => [row.__index, row]));
 
-  const toggleSelected = useCallback((rowId: string) => {
+  const toggleSelected = (rowId: string) => {
     setSelectedIds(current => {
       const next = new Set(current);
       if (next.has(rowId)) next.delete(rowId);
       else next.add(rowId);
       return next;
     });
-  }, []);
+  };
 
-  const deleteSelected = useCallback(async () => {
+  const deleteSelected = async () => {
     if (selectedIds.size === 0) return;
     await deleteRows([...selectedIds]);
     setSelectedIds(new Set());
-  }, [deleteRows, selectedIds]);
+  };
 
   return {
     rows,

@@ -34,7 +34,7 @@ Rewritten from [`react-spreadsheet-import`](https://github.com/UgnisSoftware/rea
 | Package                                  | What it is                                                                                | Size (gzip) |
 | ---------------------------------------- | ----------------------------------------------------------------------------------------- | ----------- |
 | `@spotable/spreadsheet-import-core`      | State machine, parsing, column matching, validation. No DOM, **no runtime dependencies**. | 13.6 kB     |
-| `@spotable/spreadsheet-import-react`     | Hooks and prop getters. React 18.3+ / 19.                                                 | 3.1 kB      |
+| `@spotable/spreadsheet-import-react`     | Hooks and prop getters. React 19, built with React Compiler.                              | 3.1 kB      |
 | `@spotable/spreadsheet-import-parsers`   | Optional. Quantities with units, and unit ratios a column header declares.                | 2.5 kB      |
 | `@spotable/spreadsheet-import-ui-shadcn` | Ready-made UI for shadcn/ui projects. Radix, your theme tokens.                           | 8.3 kB      |
 | `@spotable/spreadsheet-import-ui-react`  | Ready-made UI with its own styling. Plain Tailwind, no Radix.                             | 5.9 kB      |
@@ -655,7 +655,7 @@ Behavioural fixes, each covered by a test:
 
 New: **`number` and `date` field types**, a `custom` validation rule, pluggable parsers, and a dependency-free CSV parser. Upstream could only ever hand you strings — its `Data` type was `string | boolean | undefined`, and `mapWorkbook` read sheets with SheetJS's `raw: false`, so even genuinely numeric cells arrived as formatted text.
 
-Modernized: React 19, TypeScript 5.9 with `noUncheckedIndexedAccess`, Vitest, tsdown, pnpm workspaces, Biome. Gone: Chakra UI, Emotion, framer-motion, `react-data-grid`, `react-icons`, lodash, uuid, `js-levenshtein`, `ttypescript`, Rollup 2, Jest, Storybook. The core has no runtime dependencies at all; upstream pulled in several hundred kilobytes before rendering a row.
+Modernized: React 19 with React Compiler, TypeScript 7 with `noUncheckedIndexedAccess`, Vitest, tsdown, pnpm workspaces, Biome. Gone: Chakra UI, Emotion, framer-motion, `react-data-grid`, `react-icons`, lodash, uuid, `js-levenshtein`, `ttypescript`, Rollup 2, Jest, Storybook. The core has no runtime dependencies at all; upstream pulled in several hundred kilobytes before rendering a row.
 
 ---
 

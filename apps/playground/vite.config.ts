@@ -2,11 +2,12 @@ import { fileURLToPath } from "node:url";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
+import { reactCompiler } from "../../tools/react-compiler";
 
 const resolve = (path: string) => fileURLToPath(new URL(path, import.meta.url));
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), reactCompiler(), tailwindcss()],
   resolve: {
     // Point at source so editing the packages hot-reloads the demo.
     alias: [
