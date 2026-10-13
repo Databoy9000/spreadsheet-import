@@ -1,6 +1,6 @@
 {
   "name": "@spotable/spreadsheet-import-parsers",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Column parsers for messy supplier data: quantities with units, and unit ratios declared by a column header.",
   "license": "MIT",
   "type": "module",

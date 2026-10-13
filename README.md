@@ -139,7 +139,7 @@ type Field = {
   fieldType: FieldType        // see the table below
   description?: string        // help text
   alternateMatches?: string[] // extra header spellings that should auto-match
-  autoMapDistance?: number | ((header, field) => number) // per-field typo budget, overrides the importer's
+  autoMapDistance?: number | ((header: string, field: Field) => number) // per-field typo budget, overrides the importer's
   validations?: Validation[]
   example?: string            // sample value shown before upload
 }
