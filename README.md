@@ -498,7 +498,7 @@ const importer = createImporter({ fields, parser, onSubmit })
 |                                 |                                                                                       |
 | ------------------------------- | ------------------------------------------------------------------------------------- |
 | `step`                          | `upload` · `selectSheet` · `selectHeader` · `matchColumns` · `validate` · `submitted` |
-| `isBusy`                        | A parse, hook, validation or submit is in flight                                      |
+| `isBusy`                        | A parse, hook, validation or submit is in flight (row edits: only if async hooks run) |
 | `error`                         | Last recoverable `SpreadsheetImportError`, or `null`                                  |
 | `file`, `workbook`, `sheetName` | What was uploaded and chosen                                                          |
 | `sheetRows`, `headerRowIndex`   | The selected sheet and the highlighted header row                                     |

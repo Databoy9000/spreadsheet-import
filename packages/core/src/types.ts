@@ -395,6 +395,11 @@ export type FileLike = {
   type?: string;
   arrayBuffer: () => Promise<ArrayBuffer>;
   text?: () => Promise<string>;
+  /**
+   * Byte stream of the file, as a browser `File` has. Parsers that can read
+   * incrementally prefer it, so a huge upload is never held whole in memory.
+   */
+  stream?: () => ReadableStream<Uint8Array>;
 };
 
 export type ParseOptions = {

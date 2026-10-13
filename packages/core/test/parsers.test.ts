@@ -5,7 +5,7 @@ import { createCsvParser, dropTrailingBlankRows, parseCsv, sniffDelimiter } from
 import { createExcelJsParser, excelJsCellToString } from "../src/parsers/exceljs.js";
 import { combineParsers } from "../src/parsers/index.js";
 import { createXlsxParser, sheetRowCount } from "../src/parsers/xlsx.js";
-import { SpreadsheetImportError } from "../src/types.js";
+import { type FileLike, SpreadsheetImportError } from "../src/types.js";
 import { fileFromDisk, fileFromString } from "./helpers.js";
 
 describe("sniffDelimiter", () => {
@@ -210,6 +210,95 @@ describe("createCsvParser", () => {
 
   it("allows a file exactly at maxRows", async () => {
     await expect(parser.parse(fileFromDisk("clean.csv"), { maxRows: 120 })).resolves.toBeDefined();
+  });
+
+  describe("streaming", () => {
+    /** A file whose bytes arrive `chunkSize` at a time, counting what was pulled. */
+    const streamedFile = (file: FileLike, bytes: Uint8Array, chunkSize: number) => {
+      const stats = { pulled: 0, cancelled: false };
+      let offset = 0;
+      const streamed: FileLike = {
+        ...file,
+        stream: () =>
+          new ReadableStream<Uint8Array>({
+            pull(controller) {
+              if (offset >= bytes.length) return controller.close();
+              controller.enqueue(bytes.slice(offset, offset + chunkSize));
+              offset += chunkSize;
+              stats.pulled++;
+            },
+            cancel() {
+              stats.cancelled = true;
+            },
+          }),
+      };
+      return { streamed, stats };
+    };
+
+    const bytesOf = async (file: FileLike) => new Uint8Array(await file.arrayBuffer());
+
+    it.each(["clean.csv", "messy-semicolon.csv", "quoted.csv", "tabs.tsv"])(
+      "reads %s identically one byte at a time",
+      async name => {
+        const file = fileFromDisk(name);
+        const whole = await parser.parse(file, {});
+        const { streamed } = streamedFile(file, await bytesOf(file), 1);
+
+        expect(await parser.parse(streamed, {})).toEqual(whole);
+      },
+    );
+
+    it("keeps multi-byte characters split across chunks intact", async () => {
+      const file = fileFromString("a.csv", "naam,stad\nJosé,Liège 😀\n");
+      const { streamed } = streamedFile(file, await bytesOf(file), 1);
+
+      const workbook = await parser.parse(streamed, {});
+      expect(workbook.sheets[0]!.rows[1]).toEqual(["José", "Liège 😀"]);
+    });
+
+    const bigFile = async () => {
+      const lines = ["h", ...Array.from({ length: 10_000 }, (_, i) => `row ${i}`)];
+      const file = fileFromString("big.csv", lines.join("\n"));
+      return { file, bytes: await bytesOf(file) };
+    };
+
+    it("stops reading once the row limit is exceeded", async () => {
+      const { file, bytes } = await bigFile();
+      const { streamed, stats } = streamedFile(file, bytes, 64);
+
+      const commas = createCsvParser({ delimiter: "," });
+      await expect(commas.parse(streamed, { maxRows: 10 })).rejects.toMatchObject({ code: "too-many-rows" });
+      expect(stats.pulled).toBeLessThan(5);
+      expect(stats.cancelled).toBe(true);
+    });
+
+    it("reads no further than the sniffing window when the delimiter is sniffed", async () => {
+      const { file, bytes } = await bigFile();
+      const { streamed, stats } = streamedFile(file, bytes, 64);
+
+      await expect(parser.parse(streamed, { maxRows: 10 })).rejects.toMatchObject({ code: "too-many-rows" });
+      // The delimiter is sniffed from the first 8 KiB, so that much is read
+      // before any row can be judged — and not much more.
+      expect(stats.pulled * 64).toBeLessThan(8192 + 3 * 64);
+      expect(stats.pulled * 64).toBeLessThan(bytes.length / 4);
+    });
+
+    it("reports a failing stream as a read error", async () => {
+      const file: FileLike = {
+        ...fileFromString("a.csv", "a,b"),
+        stream: () =>
+          new ReadableStream<Uint8Array>({
+            pull() {
+              throw new Error("disk gone");
+            },
+          }),
+      };
+
+      await expect(parser.parse(file, {})).rejects.toMatchObject({
+        code: "parse-failed",
+        message: "Could not read a.csv.",
+      });
+    });
   });
 
   it("falls back to arrayBuffer when the file has no text()", async () => {

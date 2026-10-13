@@ -411,6 +411,58 @@ describe("createImporter", () => {
       expect(added.firstName).toBeUndefined();
       expect(added.__errors?.firstName).toBeDefined();
     });
+
+    it("notifies once per edit when validation is synchronous", async () => {
+      const listener = vi.fn();
+      importer.subscribe(listener);
+
+      await importer.updateCell(importer.getState().rows[4]!.__index, "firstName", "Filled In");
+
+      expect(listener).toHaveBeenCalledTimes(1);
+      expect(listener.mock.calls[0]![0].isBusy).toBe(false);
+    });
+
+    it("reports busy while a slow async hook runs", async () => {
+      // Open while the flow reaches validation; closed for the edit below.
+      let gate: Promise<void> = Promise.resolve();
+      const slow = makeImporter({
+        rowHook: async row => {
+          await gate;
+          return row;
+        },
+      });
+      await runToValidation(slow, "clean.csv");
+
+      let release!: () => void;
+      gate = new Promise<void>(resolve => {
+        release = resolve;
+      });
+      const busyStates: boolean[] = [];
+      slow.subscribe(state => busyStates.push(state.isBusy));
+
+      const editing = slow.updateCell(slow.getState().rows[4]!.__index, "firstName", "Filled In");
+      await new Promise(resolve => setTimeout(resolve, 5));
+      expect(slow.getState().isBusy).toBe(true);
+
+      release();
+      await editing;
+      expect(slow.getState().isBusy).toBe(false);
+      expect(busyStates).toEqual([true, false]);
+    });
+
+    it("submits queued edits rather than the rows before them", async () => {
+      const onSubmit = vi.fn();
+      const submitting = makeImporter({ onSubmit });
+      await runToValidation(submitting, "clean.csv");
+      const rowId = submitting.getState().rows[4]!.__index;
+
+      // Not awaited: submit must wait for the edit on its own.
+      void submitting.updateCell(rowId, "firstName", "Filled In");
+      await submitting.submit();
+
+      const submitted = onSubmit.mock.calls[0]![0].all.find((row: { __index: string }) => row.__index === rowId);
+      expect(submitted.firstName).toBe("Filled In");
+    });
   });
 
   describe("navigation", () => {

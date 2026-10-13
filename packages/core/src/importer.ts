@@ -433,7 +433,13 @@ export function createImporter<TKey extends string>(options: ImporterOptions<TKe
 
   /** Re-run validation over the current rows and store the outcome. */
   const revalidate = async (rows: ValidatedRow<TKey>[], changedRowIndexes?: number[]) => {
-    patch({ isBusy: true });
+    // Flag busy only if validation is still running once control returns to
+    // the event loop. Without async hooks it finishes within microtasks, and
+    // an edit then notifies once instead of twice (busy, then result) — every
+    // notification re-renders the review table. A hook doing real I/O still
+    // shows as busy. `submit` waits on the mutation queue, so it never needs
+    // this flag to stay correct.
+    const busyTimer = setTimeout(() => patch({ isBusy: true }), 0);
     try {
       const next = await validateTable(rows, {
         fields: config.fields,
@@ -442,8 +448,10 @@ export function createImporter<TKey extends string>(options: ImporterOptions<TKe
         tableHook: config.tableHook,
         changedRowIndexes,
       });
+      clearTimeout(busyTimer);
       patch({ rows: next, isBusy: false, error: null });
     } catch (error) {
+      clearTimeout(busyTimer);
       fail(error);
     }
   };
@@ -461,6 +469,8 @@ export function createImporter<TKey extends string>(options: ImporterOptions<TKe
   };
 
   const submit: Importer<TKey>["submit"] = async () => {
+    // Let queued edits land first, so the submitted rows include them.
+    await mutationQueue;
     const result = getResult();
 
     if (config.blockInvalidSubmit && result.invalidData.length > 0) {
