@@ -1,6 +1,6 @@
 {
   "name": "@spotable/spreadsheet-import-ui-react",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "description": "Tailwind reference UI for @spotable/spreadsheet-import-react. Copy it or import it.",
   "license": "MIT",
   "type": "module",

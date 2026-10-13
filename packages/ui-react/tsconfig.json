@@ -17,6 +17,7 @@
   },
   "include": [
     "src",
-    "test"
+    "test",
+    "../react/test/setup.ts"
   ]
 }
